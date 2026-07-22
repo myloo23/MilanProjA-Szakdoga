@@ -19,6 +19,3 @@ def echo():
     data = request.json
     app.logger.info(f"Echo received: {data}")
     return jsonify(received=data)
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
