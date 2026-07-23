@@ -4,4 +4,4 @@ __pycache__/
 .DS_Store
 .pytest_cache/
 .coverage
-htmlcov/ #future proofing pytest_cache, coverage, and htmlcov currently doesnt exists
+htmlcov/
