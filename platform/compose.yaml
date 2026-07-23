@@ -1,0 +1,102 @@
+name: projecta
+
+services:
+  gitea:
+    image: docker.gitea.com/gitea:${GITEA_VERSION}
+    container_name: projecta-gitea
+    restart: unless-stopped
+
+    environment:
+      USER_UID: "1000"
+      USER_GID: "1000"
+      GITEA__server__ROOT_URL: "http://localhost:${GITEA_HTTP_PORT}/"
+      GITEA__server__SSH_PORT: "${GITEA_SSH_PORT}"
+      GITEA__actions__ENABLED: "true"
+
+    ports:
+      - "${GITEA_HTTP_PORT}:3000"
+      - "${GITEA_SSH_PORT}:22"
+
+    volumes:
+      - gitea-data:/data
+
+    networks:
+      - platform
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--spider",
+          "--quiet",
+          "http://localhost:3000/api/healthz",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  registry:
+    image: registry:${REGISTRY_VERSION}
+    container_name: projecta-registry
+    restart: unless-stopped
+
+    ports:
+      - "${REGISTRY_HTTP_PORT}:5000"
+
+    volumes:
+      - registry-data:/var/lib/registry
+
+    networks:
+      - platform
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--spider",
+          "--quiet",
+          "http://localhost:5000/v2/",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  act-runner:
+    image: docker.io/gitea/act_runner:${RUNNER_VERSION}
+    container_name: projecta-act-runner
+    restart: unless-stopped
+
+    depends_on:
+      gitea:
+        condition: service_healthy
+
+    environment:
+      CONFIG_FILE: /config.yaml
+      GITEA_INSTANCE_URL: "http://gitea:3000"
+      GITEA_RUNNER_REGISTRATION_TOKEN: "${GITEA_RUNNER_REGISTRATION_TOKEN}"
+      GITEA_RUNNER_NAME: "${GITEA_RUNNER_NAME}"
+
+    volumes:
+      - ./config.yaml:/config.yaml:ro
+      - runner-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    networks:
+      - platform
+
+networks:
+  platform:
+    name: projecta-platform
+
+volumes:
+  gitea-data:
+    name: projecta-gitea-data
+
+  runner-data:
+    name: projecta-runner-data
+
+  registry-data:
+    name: projecta-registry-data

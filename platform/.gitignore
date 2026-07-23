@@ -1,0 +1,8 @@
+# Local environment variables
+.env
+
+# Generated runner registration
+.runner
+
+# macOS
+.DS_Store
