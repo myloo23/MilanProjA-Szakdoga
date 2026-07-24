@@ -1,0 +1,24 @@
+name: Runner Verification
+
+on:
+  push:
+    branches:
+      - main
+      - feature/verify-runner
+
+jobs:
+  verify-runner:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print Hello
+        run: echo "Hello from the Gitea Runner!"
+
+      - name: Show system information
+        run: |
+          uname -a
+          whoami
+          pwd
+
+      - name: Check Docker
+        run: docker version
