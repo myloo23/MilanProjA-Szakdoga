@@ -4,21 +4,51 @@ on:
   push:
     branches:
       - main
-      - feature/verify-runner
+      - feature/add-checkout-step
 
 jobs:
   verify-runner:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Print Hello
-        run: echo "Hello from the Gitea Runner!"
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Show system information
+      - name: Verify checked-out source
         run: |
-          uname -a
-          whoami
           pwd
+          ls -la
+          git rev-parse HEAD
 
-      - name: Check Docker
-        run: docker version
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify Python version
+        run: python --version
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --require-hashes -r requirements-dev.txt
+      
+      - name: Run tests
+        run: python -m pytest
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --tag projecta-flask:${{ github.sha }} \
+            --tag projecta-flask:latest \
+            .
+      
+      - name: Tag Docker image
+        run: |
+          docker tag \
+            projecta-flask:${{ github.sha }} \
+            localhost:5001/projecta-flask:${{ github.sha }}
+
+      - name: Push Docker image
+        run: |
+          docker push localhost:5001/projecta-flask:${{ github.sha }}

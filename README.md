@@ -158,3 +158,4 @@ curl -X POST localhost:8000/echo -H 'Content-Type: application/json' -d '{"hi":"
 ---
 
 <sub>Deploy target: local Docker host · No Kubernetes (that's Project C) · Every stage runnable via <code>make</code>.</sub>
+
