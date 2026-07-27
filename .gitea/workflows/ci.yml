@@ -63,6 +63,16 @@ jobs:
         run: |
           curl --fail http://flask-test:8000/health
 
+      - name: Scan image with Trivy
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image \
+            --exit-code 1 \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            localhost:5001/projecta-flask:${{ github.sha }}
+
       - name: Cleanup container
         if: always()
         run: |
