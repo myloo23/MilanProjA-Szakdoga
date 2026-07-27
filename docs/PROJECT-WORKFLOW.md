@@ -230,7 +230,7 @@ Sprint boundaries align to the mandated weekly mentor demo — **your sprint rev
 4. **Run the deploy playbook a second time → `changed=0`.** Idempotence, demonstrated not claimed.
 5. Deliberately deploy a broken image → smoke test fails the deploy → roll back to the previous SHA in one command.
 
-**Risks:** the `localhost:5000` resolution trap between runner and Docker daemon. Budget a half-day.
+**Risks:** the `localhost:5001` resolution trap between runner and Docker daemon. Budget a half-day.
 
 ---
 

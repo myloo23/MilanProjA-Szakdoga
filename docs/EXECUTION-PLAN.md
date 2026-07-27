@@ -9,7 +9,7 @@
 | Decision | Choice | Why |
 |---|---|---|
 | SCM + CI | Gitea + Gitea Actions (`act_runner`) | Light, GitHub-Actions syntax = transferable, self-hosted = full ownership story |
-| Artifact | Docker image, pushed to local registry `localhost:5000` | Build-once/deploy-immutable. Option 1 (build+run same host) is a demo, not a pipeline |
+| Artifact | Docker image, pushed to local registry `localhost:5001` | Build-once/deploy-immutable. Option 1 (build+run same host) is a demo, not a pipeline |
 | Image tag | `<git-sha-short>` + `v<semver>` on tags. **Never `latest`** | Traceable, rollback-able, forces immutability |
 | Deploy | Ansible + `community.docker`, inventory-driven | Idempotent, declarative, no orchestrator |
 | App runtime | **Gunicorn**, not `flask run` / `app.run()` | The starter code ships a dev server — production-grade means WSGI + workers |
@@ -62,7 +62,7 @@ Gitea + `act_runner` in docker-compose, runner registered with a label (`local-d
 Pipeline `ci.yml` on every push + PR, stages in order, fail-fast:
 `lint → unit tests (+coverage gate) → build image → trivy scan (fail on HIGH/CRITICAL) → push to local registry`.
 - Dependency + pip cache to keep runs under ~2 min.
-- Tags: `localhost:5000/flaskapp:${GITHUB_SHA::7}`.
+- Tags: `localhost:5001/flaskapp:${GITHUB_SHA::7}`.
 - Build metadata injected via `--build-arg`, surfaced by the app on `/` or a `/version` endpoint.
 *Exit criteria:* a commit to a feature branch produces a green pipeline and a pushed, scanned, uniquely-tagged image.
 
@@ -96,7 +96,7 @@ Pipeline `ci.yml` on every push + PR, stages in order, fail-fast:
 
 ### P0 — must exist or the project fails
 - [ ] Gitea + act_runner running via docker-compose, runner registered
-- [ ] Local registry container up, Docker daemon configured for `localhost:5000` as insecure registry
+- [ ] Local registry container up, Docker daemon configured for `localhost:5001` as insecure registry
 - [ ] Dockerfile multi-stage, non-root, digest-pinned base
 - [ ] `ci.yml`: lint → test → build → push, triggered on push
 - [ ] Ansible playbook deploys pulled image idempotently
@@ -138,7 +138,7 @@ Pipeline `ci.yml` on every push + PR, stages in order, fail-fast:
 | B1 | **Admin rights on the TCS laptop.** Docker Desktop, VM hypervisors and daemon config (`insecure-registries`) usually need admin. | Kills the whole project if unresolved | Ask your mentor day 1. Fallbacks: Rancher Desktop / Podman / colima; or run the whole stack inside WSL2 |
 | B2 | **Corporate proxy / TLS interception.** `docker pull`, `pip install`, `ansible-galaxy` may all fail behind the TCS network. | Blocks Phase 0 | Get proxy env vars + CA cert early; bake into Dockerfile build args and CI runner env |
 | B3 | **Docker socket access from the CI runner.** Gitea Actions runner needs `/var/run/docker.sock` mounted to build images and for Ansible to deploy. | Blocks Phase 3–4 | Mount the socket, and **state in your docs that you know this is a privilege-escalation path** in real environments; name rootless Docker / BuildKit-in-container as the production answer |
-| B4 | **`localhost:5000` means different things inside and outside a container.** Classic trap: the runner pushes to `localhost:5000` fine, then Ansible/daemon can't resolve it. | Silent Phase 4 failure | Use a fixed hostname (`registry:5000` on a shared Docker network + `/etc/hosts` entry) rather than `localhost` |
+| B4 | **`localhost:5001` (host) vs `registry:5000` (in-network) mean different things inside and outside a container.** Classic trap: the runner pushes to `localhost:5001` fine, then Ansible/daemon can't resolve it. | Silent Phase 4 failure | Use a fixed hostname (`registry:5000` on a shared Docker network + `/etc/hosts` entry) rather than `localhost` |
 
 **Open questions to confirm with your mentor**
 1. Is the "local machine" the TCS laptop or a personal one? Determines everything in B1/B2.

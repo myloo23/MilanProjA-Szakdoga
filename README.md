@@ -29,7 +29,7 @@ push  →  CI (lint · test · build · scan · push)  →  CD (Ansible deploy) 
 flowchart LR
     Dev([Developer]) -->|git push| Gitea[Gitea + Actions]
     Gitea -->|ci.yml| CI{{lint · test · build · scan}}
-    CI -->|push image| Reg[(Local Registry<br/>localhost:5000)]
+    CI -->|push image| Reg[(Local Registry<br/>localhost:5001)]
     Gitea -->|cd.yml on main| Ansible[Ansible<br/>community.docker]
     Reg -->|pull by SHA| Ansible
     Ansible -->|run container| App[Flask App<br/>Gunicorn :8000]
@@ -115,7 +115,7 @@ pie showData
 |-------|------|
 | App | Flask 3.1 · Gunicorn |
 | SCM + CI | Gitea + Gitea Actions (`act_runner`) |
-| Artifact | Docker image → local registry (`localhost:5000`), tagged by git SHA |
+| Artifact | Docker image → local registry (`localhost:5001`), tagged by git SHA |
 | Deploy | Ansible + `community.docker` (idempotent) |
 | Metrics | `prometheus_client` · cAdvisor · node_exporter |
 | Logs | JSON stdout → Grafana Alloy → Loki |

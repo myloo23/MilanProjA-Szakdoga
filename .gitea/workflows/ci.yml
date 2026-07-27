@@ -54,7 +54,6 @@ jobs:
           docker run -d \
             --name flask-test \
             --network projecta-platform \
-            -p 5000:8000 \
             localhost:5001/projecta-flask:${{ github.sha }}
 
       - name: Wait for application
