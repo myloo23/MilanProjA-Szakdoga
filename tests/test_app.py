@@ -44,3 +44,9 @@ def test_echo_invalid_json_returns_400(client):
     assert response.get_json() == {
         "error": "Invalid JSON payload"
     }
+
+def test_ready_returns_ready(client):
+    response = client.get("/ready")
+
+    assert response.status_code == 200
+    assert response.get_json() == {"status": "READY"}

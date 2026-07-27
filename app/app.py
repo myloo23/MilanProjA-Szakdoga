@@ -16,6 +16,12 @@ def home():
 def health():
     return jsonify(status="UP")
 
+@app.route('/ready')
+def ready():
+    # no external deps yet; when you add one (DB/registry),
+    # check it here and return 503 if it's unreachable
+    return jsonify(status="READY")
+
 @app.route('/echo', methods=['POST'])
 def echo():
     try:
