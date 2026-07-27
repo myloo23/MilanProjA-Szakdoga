@@ -1,13 +1,11 @@
-name: Runner Verification
+name: CI Workflow
 
 on:
   push:
-    branches:
-      - main
-      - feature/add-checkout-step
+  pull_request:
 
 jobs:
-  verify-runner:
+  build-test-push:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,6 +22,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: requirements-dev.txt
 
       - name: Verify Python version
         run: python --version
@@ -33,21 +33,42 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --require-hashes -r requirements-dev.txt
       
-      - name: Run tests
-        run: python -m pytest
+      - name: Run Ruff
+        run: ruff check .
+
+      - name: Run tests with coverage
+        run: |
+          python -m pytest \
+            --cov=app \
+            --cov-report=term-missing \
+            --cov-fail-under=80
 
       - name: Build Docker image
         run: |
           docker build \
-            --tag projecta-flask:${{ github.sha }} \
-            --tag projecta-flask:latest \
+            --tag localhost:5001/projecta-flask:${{ github.sha }} \
             .
-      
-      - name: Tag Docker image
+
+      - name: Run container
         run: |
-          docker tag \
-            projecta-flask:${{ github.sha }} \
+          docker run -d \
+            --name flask-test \
+            --network projecta-platform \
+            -p 5000:8000 \
             localhost:5001/projecta-flask:${{ github.sha }}
+
+      - name: Wait for application
+        run: sleep 5
+
+      - name: Verify application
+        run: |
+          curl --fail http://flask-test:8000/health
+
+      - name: Cleanup container
+        if: always()
+        run: |
+          docker stop flask-test || true
+          docker rm flask-test || true
 
       - name: Push Docker image
         run: |

@@ -6,3 +6,9 @@ docs/
 .pytest_cache/
 .env
 .env.*
+.gitignore
+.ruff_cache
+tests
+.vscode
+.idea
+README.md
