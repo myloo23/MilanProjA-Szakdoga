@@ -1,6 +1,6 @@
 # app.py
 from flask import Flask, jsonify, request
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, UnsupportedMediaType
 import logging
 
 
@@ -26,7 +26,7 @@ def ready():
 def echo():
     try:
         data = request.get_json()
-    except BadRequest:
+    except (BadRequest, UnsupportedMediaType):
         app.logger.error("Invalid JSON payload received")
         return jsonify(error="Invalid JSON payload"), 400
 

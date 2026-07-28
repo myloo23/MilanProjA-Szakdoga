@@ -45,6 +45,26 @@ def test_echo_invalid_json_returns_400(client):
         "error": "Invalid JSON payload"
     }
 
+def test_echo_without_content_type_returns_400(client):
+    response = client.post("/echo", data='{"name":"Milan"}')
+
+    assert response.status_code == 400
+    assert response.get_json() == {
+        "error": "Invalid JSON payload"
+    }
+
+def test_echo_wrong_content_type_returns_400(client):
+    response = client.post(
+        "/echo",
+        data='{"name":"Milan"}',
+        content_type="text/plain",
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {
+        "error": "Invalid JSON payload"
+    }
+
 def test_ready_returns_ready(client):
     response = client.get("/ready")
 
