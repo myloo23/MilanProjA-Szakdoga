@@ -85,8 +85,13 @@ Gitea and `act_runner` in compose, runner registered.
 *Exit criteria:* a commit on a feature branch produces a green pipeline and a
 scanned, uniquely tagged image in the registry. **Met.**
 
-**Phase 4 — CD with Ansible** ⬜ *Current focus*
+**Phase 4 — CD with Ansible** 🟡 *Current focus*
 
+- ✅ `ansible/` scaffold: `ansible.cfg`, `requirements.yml`, a `local_docker`
+  inventory group and `group_vars`, plus `playbooks/ping.yml` proving the socket,
+  the collection and the `projecta-platform` network before any deploy logic.
+  `docker_host` is inventory-driven, so a remote target costs an inventory edit
+  and no role change.
 - `ansible/roles/deploy_app`: pull the image by tag, run the container
   (`recreate: true`, `restart_policy: unless-stopped`, resource limits, log driver),
   then a post-deploy smoke test (`uri` module polling `/health` with retries) that
@@ -416,9 +421,10 @@ than written separately.
 
 ## 7. Next actions
 
-1. Write the `deploy_app` Ansible role and the inventory.
-2. Add `cd.yml` on `main`, passing the CI-built SHA as `app_version`.
+1. ✅ Ansible scaffold and inventory — `ansible-playbook playbooks/ping.yml` green.
+2. Write the `deploy_app` role: pull by SHA, run the container.
 3. Add the post-deploy smoke test that can fail the play.
-4. Rehearse the rollback and document it.
-5. Enable branch protection on `main` with the current CI checks as required.
-6. Write the ADR for choosing Ansible over a shell script, the same day the role lands.
+4. Add `cd.yml` on `main`, passing the CI-built SHA as `app_version`.
+5. Rehearse the rollback and document it.
+6. Enable branch protection on `main` with the current CI checks as required.
+7. Write the ADR for choosing Ansible over a shell script, the same day the role lands.

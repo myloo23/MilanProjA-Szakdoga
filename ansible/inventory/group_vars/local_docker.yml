@@ -1,0 +1,25 @@
+---
+# Where the Docker daemon lives. A remote deploy becomes
+# tcp://<host>:2376 plus the TLS variables, with no change to the role.
+docker_host: "unix:///var/run/docker.sock"
+
+# The registry endpoint as seen by the Docker daemon that pulls the image.
+# From the host that is localhost:5001; from inside a container on the
+# projecta-platform network it is registry:5000. Confusing the two is risk B4
+# in PLAN.md and the most likely way CD fails silently — so it is one variable,
+# named once, here.
+registry_endpoint: "localhost:5001"
+
+app_name: projecta-flask
+app_image_repository: "{{ registry_endpoint }}/{{ app_name }}"
+
+# app_version is deliberately NOT defaulted. CD passes the exact SHA CI built:
+#   ansible-playbook playbooks/deploy.yml -e app_version=<git-sha>
+# A default here would let a deploy silently ship a different artifact than the
+# one the pipeline tested, which is the whole guarantee this project is built on.
+
+app_container_name: "{{ app_name }}"
+app_network: projecta-platform
+app_host_port: 8000
+app_container_port: 8000
+app_health_path: /health

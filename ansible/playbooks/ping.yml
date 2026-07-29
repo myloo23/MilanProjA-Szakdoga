@@ -1,0 +1,68 @@
+---
+# Skeleton check. Proves the target is reachable, the Docker daemon answers
+# through community.docker, and the network the app will join exists — before
+# any deployment logic is written. If this play is not green, nothing built on
+# top of it can be trusted.
+#
+#   cd ansible && ansible-playbook playbooks/ping.yml
+#
+- name: Verify the deploy target
+  hosts: local_docker
+  gather_facts: true
+
+  tasks:
+    - name: Reach the target
+      ansible.builtin.ping:
+
+    - name: Report what this play is pointed at
+      ansible.builtin.debug:
+        msg: >-
+          host={{ inventory_hostname }}
+          connection={{ ansible_connection }}
+          docker_host={{ docker_host }}
+          image={{ app_image_repository }}:<app_version>
+
+    - name: Confirm the Docker socket exists
+      ansible.builtin.stat:
+        path: "{{ docker_host | regex_replace('^unix://', '') }}"
+      register: docker_socket
+      when: docker_host.startswith('unix://')
+
+    - name: Fail early with a readable message if the socket is missing
+      ansible.builtin.assert:
+        that: docker_socket.stat.exists
+        fail_msg: >-
+          No Docker socket at {{ docker_host }}. Is Docker running?
+        success_msg: "Docker socket present at {{ docker_host }}"
+      when: docker_host.startswith('unix://')
+
+    - name: Query the Docker daemon through community.docker
+      community.docker.docker_host_info:
+        docker_host: "{{ docker_host }}"
+      register: docker_info
+      tags: [docker]
+
+    - name: Report the daemon version
+      ansible.builtin.debug:
+        msg: >-
+          Docker {{ docker_info.host_info.ServerVersion }}
+          · {{ docker_info.host_info.Containers }} containers
+          · {{ docker_info.host_info.Images }} images
+      tags: [docker]
+
+    - name: Look up the network the app will join
+      community.docker.docker_network_info:
+        name: "{{ app_network }}"
+        docker_host: "{{ docker_host }}"
+      register: app_network_info
+      tags: [docker]
+
+    - name: Assert the platform network exists
+      ansible.builtin.assert:
+        that: app_network_info.exists
+        fail_msg: >-
+          Network '{{ app_network }}' not found. Bring the platform stack up
+          first: docker compose --env-file platform/.env
+          -f platform/compose.yaml up -d
+        success_msg: "Network '{{ app_network }}' is present"
+      tags: [docker]

@@ -1,0 +1,9 @@
+---
+# Install with: ansible-galaxy collection install -r requirements.yml
+collections:
+  # Drives the Docker daemon (docker_container, docker_image_pull,
+  # docker_host_info). Pinned exactly, like the base image digest and the
+  # requirements hashes — a collection that silently upgrades is a deploy that
+  # silently changes behaviour.
+  - name: community.docker
+    version: "4.8.7"

@@ -271,7 +271,70 @@ the point — a stage that only works in CI cannot be debugged.
 
 ---
 
-## 7. Git workflow
+## 7. Ansible (CD)
+
+Everything Ansible lives in `ansible/`. `ansible.cfg` is only read from the
+current working directory, so **run every command from inside `ansible/`**.
+
+```
+ansible/
+├── ansible.cfg                        # inventory path, diff always on
+├── requirements.yml                   # community.docker collection
+├── inventory/
+│   ├── hosts.yml                      # the local_docker group
+│   └── group_vars/local_docker.yml    # docker_host, registry, app variables
+├── playbooks/
+│   └── ping.yml                       # skeleton check
+└── roles/                             # deploy_app lands here next
+```
+
+### First-time setup
+
+```bash
+cd ansible
+ansible-galaxy collection install -r requirements.yml
+```
+
+### Verify the target
+
+```bash
+cd ansible
+ansible-playbook playbooks/ping.yml
+```
+
+Green means: the host is reachable, the Docker socket answers, the
+`community.docker` collection is installed, and the `projecta-platform` network
+exists. Run this before debugging anything further up the stack — it separates
+"my playbook is wrong" from "my environment is wrong" in five seconds.
+
+```bash
+ansible-playbook playbooks/ping.yml --skip-tags docker   # connectivity only
+ansible-inventory --graph --vars                          # what the host resolves to
+```
+
+### The two variables that matter
+
+| Variable | Set in | Why |
+|---|---|---|
+| `docker_host` | `group_vars/local_docker.yml` | Which Docker daemon to drive. `unix:///var/run/docker.sock` today; a remote target is `tcp://host:2376` plus TLS vars and no role change |
+| `app_version` | **passed by CD only** — `-e app_version=<git-sha>` | The exact image CI built. Deliberately has no default, so a deploy cannot silently ship an untested artifact |
+
+`registry_endpoint` is the other one to watch: `localhost:5001` from the host,
+`registry:5000` from inside a container on `projecta-platform`. See
+[section 5](#5-platform-stack).
+
+### Dry run
+
+```bash
+ansible-playbook playbooks/deploy.yml -e app_version=<sha> --check --diff
+```
+
+`diff` is on by default in `ansible.cfg`, so `--check` shows what a run would
+change without changing it.
+
+---
+
+## 8. Git workflow
 
 Trunk-based development, short-lived branches off `main`, Conventional Commits,
 squash merge via pull request. Full rules and branch protection settings in
