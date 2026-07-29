@@ -1,0 +1,7 @@
+# Ansible itself, pinned so the laptop and the CI runner install the same
+# version. A control node that differs between local and CI turns "works on my
+# machine" into a pipeline failure nobody can reproduce.
+#
+#   pip install -r ansible/requirements-ansible.txt
+#
+ansible-core==2.21.2

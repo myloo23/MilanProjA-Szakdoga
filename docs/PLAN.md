@@ -107,8 +107,11 @@ scanned, uniquely tagged image in the registry. **Met.**
 - Inventory with a real `local_docker` host group, variables in `group_vars/`,
   secrets in `ansible-vault` with the vault password coming from a Gitea Actions
   secret.
-- `cd.yml` triggers only on `main` and passes `app_version` as the exact CI-built
-  SHA. **No rebuild in CD** — deploy the artifact CI produced.
+- ✅ A `deploy` job gated on `needs: build-test-push` and `refs/heads/main`, passing
+  `app_version=${{ github.sha }}` — the exact artifact the pipeline just tested,
+  scanned and pushed. **No rebuild in CD.** It runs with
+  `deploy_app_smoke_vantage=network`, because a job container's `localhost` is
+  itself, not the Docker host.
 - Rollback path: the same playbook with `app_version=<previous-sha>`. Document and
   rehearse it.
 
@@ -370,8 +373,13 @@ mistakes and leaves a visible trail of your thinking.
 
 ### Pipeline practices
 
-- CI and CD are separate workflows. CI produces an artifact; CD consumes it. Never
-  rebuild in the deploy stage — that breaks the immutability guarantee.
+- CI produces an artifact; CD consumes it, and **never rebuilds** — rebuilding in
+  the deploy stage breaks the immutability guarantee the pipeline exists to give.
+  They are separate *jobs* rather than separate workflows: the runner has
+  capacity 1, so two independently triggered workflows can be scheduled in either
+  order, and CD would wait for an image CI has not pushed while CI waits for the
+  runner. `needs:` makes the ordering a fact rather than a hope. Split them into
+  separate workflow files only once there is a trigger that guarantees ordering.
 - Fail fast, cheapest first: lint, then tests, then build, then scan, then push.
 - Every stage must be runnable locally. A stage that only works in CI cannot be
   debugged.

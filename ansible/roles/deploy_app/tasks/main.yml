@@ -4,10 +4,13 @@
     that:
       - app_version | default('', true) | length >= 7
       - app_version | default('', true) is match('^[0-9a-fA-F]+$')
+      - deploy_app_smoke_vantage in ['host', 'network']
     fail_msg: >-
       app_version must be the git SHA that CI built and pushed, e.g.
-      -e app_version=1a2b3c4. There is no default on purpose: deploying an
-      unknown artifact is worse than not deploying at all.
+      -e app_version=1a2b3c4 — there is no default on purpose, since deploying
+      an unknown artifact is worse than not deploying at all — and
+      deploy_app_smoke_vantage must be 'host' or 'network'
+      (got '{{ deploy_app_smoke_vantage }}').
     success_msg: "Deploying {{ app_image_repository }}:{{ app_version }}"
     quiet: true
 

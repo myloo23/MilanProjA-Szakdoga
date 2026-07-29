@@ -14,6 +14,21 @@ deploy_app_log_options:
 
 # Post-deploy verification. Same endpoints as scripts/smoke.sh — one definition
 # of "healthy", exercised by hand and by the pipeline.
-deploy_app_smoke_base: "http://localhost:{{ app_host_port }}"
+#
+# Where the smoke test looks from. The app answers at two different addresses
+# depending on who is asking, which is risk B4 in PLAN.md made explicit rather
+# than discovered during a demo:
+#
+#   host     published port on the Docker host — localhost:8000. The default,
+#            because that is where a human runs this from.
+#   network  the container's own name and internal port on projecta-platform.
+#            CD must use this: its job runs in a container on that network, so
+#            "localhost" there is the job container, not the Docker host.
+#
+deploy_app_smoke_vantage: host
+deploy_app_smoke_base: >-
+  {{ 'http://' ~ app_container_name ~ ':' ~ app_container_port
+     if deploy_app_smoke_vantage == 'network'
+     else 'http://localhost:' ~ app_host_port }}
 deploy_app_smoke_retries: 10
 deploy_app_smoke_delay: 2

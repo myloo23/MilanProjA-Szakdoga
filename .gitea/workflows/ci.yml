@@ -1,5 +1,12 @@
-name: CI Workflow
+name: Pipeline
 
+# One workflow, two jobs, one directed graph: build-test-push produces the
+# artifact, deploy consumes it. They are separate jobs — separate containers,
+# no shared state — but not separate workflows, because the runner has
+# capacity 1 and two independently triggered workflows can be scheduled in
+# either order. CD would then wait for an image CI has not pushed yet while CI
+# waits for the runner to free up. `needs:` makes the ordering a fact instead
+# of a hope.
 on:
   push:
   pull_request:
@@ -86,3 +93,50 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           docker push localhost:5001/projecta-flask:${{ github.sha }}
+
+  deploy:
+    # Runs only after the artifact exists, and only for main. Do not add this
+    # job to the required status checks on main: it never runs on a pull
+    # request, so requiring it would block every merge forever.
+    needs: build-test-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: ansible/requirements-ansible.txt
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r ansible/requirements-ansible.txt
+
+      - name: Install Ansible collections
+        run: ansible-galaxy collection install -r ansible/requirements.yml
+
+      - name: Deploy the artifact this pipeline built
+        working-directory: ansible
+        # No build step here, deliberately. This deploys ${{ github.sha }} — the
+        # exact image the job above tested, scanned and pushed. Rebuilding would
+        # produce a different artifact than the one that passed the gates, which
+        # is the guarantee the whole pipeline exists to provide.
+        #
+        # smoke_vantage=network because this job runs in a container on
+        # projecta-platform: localhost here is the job container, not the Docker
+        # host, so the smoke test must reach the app by container name.
+        run: |
+          ansible-playbook playbooks/deploy.yml \
+            -e app_version=${{ github.sha }} \
+            -e deploy_app_smoke_vantage=network
+
+      - name: Report what is now running
+        run: |
+          echo "Deployed ${{ github.sha }}"
+          echo "Roll back with: ansible-playbook playbooks/deploy.yml -e app_version=<previous-sha>"

@@ -264,10 +264,31 @@ all wiped. Use only when deliberately testing the clean-machine setup path.
 7. Run the container on `projecta-platform` and curl `/health` — a container smoke test
 8. Scan the image with Trivy, failing on HIGH or CRITICAL
 9. Clean up the test container
-10. Push the image to the local registry
+10. Push the image to the local registry (`main` only — feature branches build,
+    test and scan, but do not publish)
 
 Every stage above is runnable locally with the commands in this document, which is
 the point — a stage that only works in CI cannot be debugged.
+
+### The deploy job
+
+A second job, `deploy`, runs only after `build-test-push` succeeds and only on
+`main`. It installs the pinned `ansible-core` and collections, then runs
+`playbooks/deploy.yml` with `app_version=${{ github.sha }}` — the exact image the
+first job produced. It never builds anything.
+
+Two jobs in one workflow rather than two workflow files, because the runner has
+`capacity: 1`: two independently triggered workflows could be scheduled in either
+order, and CD would sit waiting for an image CI had not pushed yet while CI waited
+for the runner to free up. `needs:` removes the question.
+
+The deploy job passes `deploy_app_smoke_vantage=network`. Its steps run inside a
+container on `projecta-platform`, so `localhost` there is the job container — the
+smoke test has to reach the app by container name instead. Same trap as the
+registry addressing above.
+
+**Do not add `deploy` to the required status checks on `main`.** It never runs on
+a pull request, so requiring it would block every merge permanently.
 
 ---
 
@@ -291,9 +312,13 @@ ansible/
 ### First-time setup
 
 ```bash
+pip install -r ansible/requirements-ansible.txt   # same ansible-core as CI
 cd ansible
 ansible-galaxy collection install -r requirements.yml
 ```
+
+Both files are pinned. A control node that differs between your laptop and the
+runner turns "works on my machine" into a pipeline failure nobody can reproduce.
 
 ### Verify the target
 
@@ -318,6 +343,7 @@ ansible-inventory --graph --vars                          # what the host resolv
 |---|---|---|
 | `docker_host` | `group_vars/local_docker.yml` | Which Docker daemon to drive. `unix:///var/run/docker.sock` today; a remote target is `tcp://host:2376` plus TLS vars and no role change |
 | `app_version` | **passed by CD only** — `-e app_version=<git-sha>` | The exact image CI built. Deliberately has no default, so a deploy cannot silently ship an untested artifact |
+| `deploy_app_smoke_vantage` | role default `host`; CD passes `network` | Where the smoke test looks from. `host` = published port on the Docker host, `network` = container name on `projecta-platform`, which is what a CI job container must use |
 
 `registry_endpoint` is the other one to watch: `localhost:5001` from the host,
 `registry:5000` from inside a container on `projecta-platform`. See
