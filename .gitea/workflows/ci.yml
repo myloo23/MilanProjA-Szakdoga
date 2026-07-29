@@ -121,6 +121,14 @@ jobs:
       - name: Install Ansible collections
         run: ansible-galaxy collection install -r ansible/requirements.yml
 
+      - name: Verify the deploy target
+        working-directory: ansible
+        # Same skeleton check that runs on a laptop. It costs a second and it
+        # separates "the runner's environment is wrong" from "the deploy is
+        # wrong" — a distinction that is expensive to make from a half-finished
+        # deploy's logs.
+        run: ansible-playbook playbooks/ping.yml
+
       - name: Deploy the artifact this pipeline built
         working-directory: ansible
         # No build step here, deliberately. This deploys ${{ github.sha }} — the
