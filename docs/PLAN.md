@@ -85,7 +85,7 @@ Gitea and `act_runner` in compose, runner registered.
 *Exit criteria:* a commit on a feature branch produces a green pipeline and a
 scanned, uniquely tagged image in the registry. **Met.**
 
-**Phase 4 — CD with Ansible** 🟡 *Current focus*
+**Phase 4 — CD with Ansible** ✅
 
 - ✅ `ansible/` scaffold: `ansible.cfg`, `requirements.yml`, a `local_docker`
   inventory group and `group_vars`, plus `playbooks/ping.yml` proving the socket,
@@ -104,21 +104,25 @@ scanned, uniquely tagged image in the registry. **Met.**
   spec and recreates only on a real difference — which a new image tag always is.
   So a new SHA redeploys, a re-run reports `changed=0`, and the claim in the
   review demo is true rather than aspirational.
-- Inventory with a real `local_docker` host group, variables in `group_vars/`,
-  secrets in `ansible-vault` with the vault password coming from a Gitea Actions
-  secret.
+- ⬜ Secrets in `ansible-vault` with the vault password from a Gitea Actions secret.
+  Deliberately not built yet: nothing in this deploy is secret. Adding vault before
+  there is a secret to put in it would be ceremony, not security.
 - ✅ A `deploy` job gated on `needs: build-test-push` and `refs/heads/main`, passing
   `app_version=${{ github.sha }}` — the exact artifact the pipeline just tested,
   scanned and pushed. **No rebuild in CD.** It runs with
   `deploy_app_smoke_vantage=network`, because a job container's `localhost` is
   itself, not the Docker host.
-- Rollback path: the same playbook with `app_version=<previous-sha>`. Document and
-  rehearse it.
+- ✅ Rollback: the same playbook with `app_version=<previous-sha>`. Documented in
+  `DEVELOPMENT.md` and rehearsed — deployed a different SHA (`changed=1`, image
+  swapped in place, smoke green) and returned to the previous one the same way.
+  There is no separate rollback path to keep working, which is why it can be
+  trusted in an incident.
 
 *Exit criteria:* merge to `main` → container running the new SHA, smoke test passed,
-zero manual steps.
+zero manual steps. **Met** — verified by the container's `version` label matching
+`git rev-parse HEAD` after a merge.
 
-**Phase 5 — Observability** ⬜
+**Phase 5 — Observability** ⬜ *Current focus*
 
 - Prometheus scrapes the app's `/metrics`, cAdvisor (container CPU and memory) and
   node_exporter (host). Scrape config committed.
@@ -154,7 +158,7 @@ between sprints, and milestones show whether the outcome is still on track.
 | Milestone | Definition of complete | Status |
 |---|---|:---:|
 | **M1 — Pipeline Foundation** | A commit triggers lint, test, build, scan and push of an immutably tagged image | ✅ |
-| **M2 — Automated Delivery** | Merge to `main` deploys that exact image via Ansible, with a smoke test that can fail the deploy | 🟡 |
+| **M2 — Automated Delivery** | Merge to `main` deploys that exact image via Ansible, with a smoke test that can fail the deploy | ✅ |
 | **M3 — Observability** | Metric spike → one-click pivot to the matching logs; dashboards provisioned as code | ⬜ |
 | **M4 — Production Readiness** | Rollback rehearsed, ADRs written, clean-machine reproducible, demo scripted | ⬜ |
 
@@ -170,31 +174,44 @@ Dockerfile; `ci.yml` through to the registry push; ADR-0001 and ADR-0002.
 Still open from this sprint: JSON structured logging and `/metrics`, both moved into
 Phase 5's dependency chain.
 
-### Sprint 2 — "Artifact to Running Container" · M2 🟡 *Current*
+### Sprint 2 — "Artifact to Running Container" · M2 ✅
 
 *Goal: a merge to `main` deploys the exact image CI built, verifies it is healthy,
-and can be rolled back in under a minute.*
+and can be rolled back in under a minute.* **Met.**
 
-Scope: the `deploy_app` Ansible role; inventory and `group_vars`; secrets via
-ansible-vault; a post-deploy smoke test that fails the play; `cd.yml` on `main`
-passing `app_version` from CI with no rebuild; `rollback.yml` plus a rehearsal;
-`ansible-lint` and `hadolint` added to CI; branch protection on `main`.
+Delivered: the `deploy_app` role with an inventory-driven target; a post-deploy
+smoke test that fails the play and prints the rollback command with the previous
+SHA already in it; a `deploy` job gated on `needs: build-test-push` and `main`,
+passing `app_version` with no rebuild; a rehearsed rollback; branch protection on
+`main` with a required status check.
+
+Also delivered, unplanned: Gitea moved from being a pull mirror of GitHub to
+being the origin. The old arrangement put pull requests on GitHub where no checks
+ran and checks in Gitea where no pull request existed, so branch protection could
+not gate anything.
+
+Still open, carried forward: `ansible-lint` and `hadolint` in CI; ansible-vault
+(nothing secret exists yet, so it is not urgent); ADR-0003.
 
 Review demo:
 
-1. Open a pull request — show the required checks blocking the merge.
+1. Open a pull request — the required check blocks the merge until it is green.
 2. Merge → CD runs → the new container is live and the smoke test passes.
-3. `curl /version` — the running SHA matches the merge commit. This is the
-   traceability moment.
+3. The running container's `version` label matches the merge commit:
+   `docker inspect --format '{{index .Config.Labels "version"}}' projecta-flask`
+   against `git rev-parse HEAD`. This is the traceability moment. (It becomes
+   `curl /version` once the endpoint lands in Phase 3.)
 4. Run the deploy playbook a second time → `changed=0`. Idempotence demonstrated,
    not claimed.
-5. Deliberately deploy a broken image → the smoke test fails the deploy → roll back
-   to the previous SHA in one command.
+5. Deliberately fail a deploy → the smoke test fails the play, dumps the last 50
+   log lines → roll back to the previous SHA with the same command.
 
-Main risk: the `localhost:5001` versus `registry:5000` resolution difference between
-the runner and the Docker daemon. Budget half a day.
+The `localhost` risk landed in a different place than expected — not the registry
+(the daemon resolves `localhost:5001` fine, which is why the CI push always
+worked) but the smoke test, which runs inside the job container where `localhost`
+is the container itself. Handled by `deploy_app_smoke_vantage`.
 
-### Sprint 3 — "See What's Happening" · M3 ⬜
+### Sprint 3 — "See What's Happening" · M3 ⬜ *Current*
 
 *Goal: when the app misbehaves, spot it on a dashboard and reach the responsible log
 line in one click.*
@@ -233,8 +250,8 @@ rehearsals of the full demo on a cold machine.
 - [x] Multi-stage, non-root, digest-pinned Dockerfile
 - [x] `ci.yml`: lint → test → build → scan → push on every push
 - [x] A README a stranger can follow to a running stack
-- [ ] Ansible playbook deploying the pulled image idempotently
-- [ ] `cd.yml` on `main` passing the CI SHA to Ansible
+- [x] Ansible playbook deploying the pulled image idempotently
+- [x] A `deploy` job on `main` passing the CI SHA to Ansible
 - [ ] Prometheus scraping the app's `/metrics`; a Grafana dashboard with request
       rate, error rate and latency
 - [ ] Alloy to Loki, app logs queryable by `level` and `path`
@@ -247,8 +264,8 @@ rehearsals of the full demo on a cold machine.
 - [x] Gunicorn instead of the Flask dev server
 - [x] Secrets kept out of Git (`platform/.env` gitignored)
 - [ ] Structured JSON logging with a correlation `request_id`
-- [ ] Post-deploy smoke test that fails the deploy
-- [ ] Documented and rehearsed rollback
+- [x] Post-deploy smoke test that fails the deploy
+- [x] Documented and rehearsed rollback
 - [ ] Grafana provisioned as code — no click-configured dashboards
 - [ ] cAdvisor and node_exporter for CPU and memory
 - [ ] `ansible-lint` and `hadolint` in CI
@@ -273,14 +290,18 @@ rehearsals of the full demo on a cold machine.
 | B1 | **Admin rights on the TCS laptop.** Docker Desktop, hypervisors and daemon config (`insecure-registries`) usually need admin. | Kills the project if unresolved | Ask the mentor immediately. Fallbacks: Rancher Desktop, Podman, colima, or run the whole stack inside WSL2 |
 | B2 | **Corporate proxy and TLS interception.** `docker pull`, `pip install` and `ansible-galaxy` can all fail behind the TCS network. | Blocks setup | Get proxy environment variables and the CA certificate early; bake them into build args and the runner environment |
 | B3 | **Docker socket access from the CI runner.** The runner needs `/var/run/docker.sock` mounted to build images and for Ansible to deploy. | Blocks CI and CD | Mount the socket, and state in the docs that this is a privilege-escalation path in real environments. The production answer is rootless Docker or BuildKit-in-container |
-| B4 | **`localhost:5001` (host) and `registry:5000` (in-network) mean different things inside and outside a container.** The runner pushes to `localhost:5001` fine, then Ansible or the daemon cannot resolve it. | Silent CD failure | Use a fixed hostname on the shared Docker network rather than `localhost` |
+| B4 | ~~**`localhost:5001` (host) and `registry:5000` (in-network) mean different things inside and outside a container.**~~ **Resolved, and not where expected.** The registry was never the problem: the docker CLI in a job container talks to the mounted socket, so the *daemon* resolves `localhost:5001` — which is why the CI push always worked. It bit the smoke test instead, which runs inside the job container where `localhost` is that container. | Was: silent CD failure | Handled by `deploy_app_smoke_vantage` (`host` or `network`), asserted by the role so a wrong value fails at the first task |
 
 ### Open questions for the mentor
 
 1. Is the "local machine" the TCS laptop or a personal one? This determines B1 and B2.
-2. Is a second host (a VM via Multipass or Vagrant) allowed as the deploy target? A
-   real SSH-based Ansible inventory is a much stronger story than `connection: local`,
-   but it costs RAM.
+2. ~~Is a second host (a VM via Multipass or Vagrant) allowed as the deploy target?~~
+   **Decided: local Docker host.** Ansible is orchestrating Docker here rather than
+   configuring a remote OS, so a local connection is the correct shape, not a
+   shortcut — and a VM would cost ~1GB of RAM right before Sprint 3 adds
+   Prometheus, Grafana and Loki. `docker_host` is inventory-driven, so pointing at
+   a remote target later is an inventory edit and no role change. Worth confirming
+   with the mentor only if they specifically want to see SSH orchestration.
 3. Does depth on observability count for more than pipeline sophistication? Bias
    effort accordingly.
 4. Is committing the whole platform stack, including Gitea itself, acceptable — or

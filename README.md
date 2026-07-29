@@ -20,8 +20,9 @@ build-artifact-deploy loop that real pipelines run every day.
 push  →  CI (lint · test · build · scan · push)  →  CD (Ansible deploy)  →  observe (metrics + logs)
 ```
 
-CI works today. CD and observability are the remaining phases — see
-[`docs/PLAN.md`](docs/PLAN.md) for the roadmap.
+CI and CD work today: a merge to `main` deploys the exact image the pipeline
+built and verifies it, with zero manual steps. Observability is the remaining
+phase — see [`docs/PLAN.md`](docs/PLAN.md) for the roadmap.
 
 ## Architecture
 
@@ -30,9 +31,9 @@ flowchart LR
     Dev([Developer]) -->|git push| Gitea[Gitea + Actions]
     Gitea -->|ci.yml| CI{{lint · test · build · scan}}
     CI -->|push image| Reg[(Local Registry<br/>localhost:5001)]
-    Gitea -.->|cd.yml on main<br/>planned| Ansible[Ansible<br/>community.docker]
-    Reg -.->|pull by SHA| Ansible
-    Ansible -.->|run container| App[Flask App<br/>Gunicorn :8000]
+    Gitea -->|deploy job on main| Ansible[Ansible<br/>community.docker]
+    Reg -->|pull by SHA| Ansible
+    Ansible -->|run container + smoke test| App[Flask App<br/>Gunicorn :8000]
     App -.->|/metrics| Prom[(Prometheus)]
     App -.->|stdout JSON| Alloy[Grafana Alloy]
     Alloy -.-> Loki[(Loki)]
@@ -53,9 +54,10 @@ flowchart LR
     D --> S[Container smoke test<br/>/health]
     S --> E[Scan<br/>trivy]
     E --> F[Push<br/>SHA tag]
-    F -.->|planned| G[Ansible deploy]
+    F -->|main only| G[Ansible deploy<br/>+ post-deploy smoke test]
     C -.fail.-> X[Stop]
     E -.HIGH/CRITICAL.-> X
+    G -.smoke fails.-> R[Roll back<br/>same playbook, previous SHA]
 ```
 
 ## Status
@@ -63,7 +65,7 @@ flowchart LR
 | Sprint | Focus | Exit criteria | Status |
 |--------|-------|---------------|:------:|
 | **1 · Foundation & App** | Repo, production-grade Flask app, hardened container | Tests and lint green; `docker run` serves all routes | ✅ Done |
-| **2 · Pipeline** | Gitea Actions CI + Ansible CD, immutable SHA-tagged artifact | Merge to `main` → new container, smoke test passes, zero manual steps | 🟡 In progress |
+| **2 · Pipeline** | Gitea Actions CI + Ansible CD, immutable SHA-tagged artifact | Merge to `main` → new container, smoke test passes, zero manual steps | ✅ Done |
 | **3 · Observability & Demo** | Prometheus + Grafana + Loki, ADRs, runbook, live demo | Incident walkthrough runs end to end in under 60 seconds | ⬜ Planned |
 
 | Area | State |
@@ -75,9 +77,12 @@ flowchart LR
 | Gunicorn WSGI runtime | ✅ |
 | Platform stack: Gitea + act_runner + local registry via compose | ✅ |
 | CI: lint → test → build → smoke test → trivy scan → push | ✅ |
+| CD: merge to `main` → Ansible deploys that SHA, smoke test gates it | ✅ |
+| `main` protected — no direct pushes, required status check, squash-only | ✅ |
+| Rehearsed one-command rollback to any previous SHA | ✅ |
 | Structured JSON logging with `request_id` | ⬜ |
 | `/metrics` endpoint (`prometheus_client`) | ⬜ |
-| CD with Ansible, smoke test and rollback | ⬜ |
+| `ansible-lint` and `hadolint` in CI | ⬜ |
 | Prometheus / Grafana / Loki observability | ⬜ |
 | Runbook and demo script | ⬜ |
 
@@ -89,7 +94,7 @@ flowchart LR
 | SCM + CI | Gitea + Gitea Actions (`act_runner`) | ✅ |
 | Artifact | Docker image → local registry (`localhost:5001`), tagged by git SHA | ✅ |
 | Image scanning | Trivy, fails on HIGH/CRITICAL | ✅ |
-| Deploy | Ansible + `community.docker` | ⬜ Planned |
+| Deploy | Ansible + `community.docker`, inventory-driven | ✅ |
 | Metrics | `prometheus_client` · cAdvisor · node_exporter | ⬜ Planned |
 | Logs | JSON stdout → Grafana Alloy → Loki | ⬜ Planned |
 | Dashboards | Grafana, provisioned as code | ⬜ Planned |
@@ -134,8 +139,10 @@ To bring up the local CI platform (Gitea, runner, registry), see
 .
 ├── app/                          # Flask application
 ├── tests/                        # pytest suite
+├── ansible/                      # CD: inventory, deploy_app role, playbooks
 ├── platform/                     # compose stack: Gitea, act_runner, registry
-├── .gitea/workflows/             # ci.yml
+├── scripts/                      # smoke.sh — the same checks CI runs, by hand
+├── .gitea/workflows/             # ci.yml (build-test-push + deploy jobs)
 ├── docs/                         # plan, development guide, ADRs, assignment brief
 ├── Dockerfile
 ├── requirements.in / .txt        # runtime deps (hash-locked)
