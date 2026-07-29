@@ -298,22 +298,10 @@ rehearsals of the full demo on a cold machine.
 
 ### Branching — trunk-based
 
-```
-main (protected, always deployable)
- ├── feat/cd-ansible-role      ← lives under 2 days
- ├── fix/echo-invalid-json
- └── docs/adr-registry-choice
-```
-
-Not GitFlow. GitFlow's `develop`, `release/*` and `hotfix/*` branches exist to
-coordinate multiple teams shipping versioned releases on separate cadences. With one
-person continuously deploying to one environment, GitFlow is cargo-culting and an
-interviewer will spot it. Trunk-based development is the correct answer for a CD
-pipeline — be ready to explain that trade-off, because the question will come.
-
-Branch from `main`, rebase onto `main` before opening a pull request, delete after
-merge, and keep nothing alive longer than about two days. A long branch means the
-story was too big.
+Short-lived `<type>/<kebab-description>` branches off a protected `main`, rebased
+before review, squash-merged through a pull request, deleted after. Nothing lives
+longer than about two days; only `main` publishes an image. Rules, the GitFlow
+trade-off and the exact branch-protection settings: [`BRANCHING.md`](BRANCHING.md).
 
 Tags: `v0.1.0`, `v0.2.0` at each milestone, annotated rather than lightweight.
 
@@ -410,6 +398,7 @@ mistakes and leaves a visible trail of your thinking.
 | `README.md` | What it is, how to run it, current status | Any interface change |
 | `docs/PLAN.md` | Roadmap, sprints, open work, conventions | Weekly, and whenever a phase completes |
 | `docs/DEVELOPMENT.md` | Commands, platform operations, Git workflow | Any tooling or workflow change |
+| `docs/BRANCHING.md` | Branch model, merge policy, `main` protection settings | Any change to how work reaches `main` |
 | `docs/adr/*.md` | One decision each: context, decision, consequences | **The day the decision is made** |
 | `docs/RUNBOOK.md` *(planned)* | Deploy, rollback, alert meanings, common failures | Every operational change |
 | `docs/DEMO.md` *(planned)* | Scripted click-path with expected output | Before each review |

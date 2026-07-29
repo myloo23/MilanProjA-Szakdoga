@@ -274,7 +274,8 @@ the point — a stage that only works in CI cannot be debugged.
 ## 7. Git workflow
 
 Trunk-based development, short-lived branches off `main`, Conventional Commits,
-squash merge via pull request. Full rationale in [`PLAN.md`](PLAN.md).
+squash merge via pull request. Full rules and branch protection settings in
+[`BRANCHING.md`](BRANCHING.md).
 
 ```bash
 git checkout main && git pull
@@ -304,5 +305,6 @@ and reverts trivial.
 |----------|----------|
 | [`../README.md`](../README.md) | Project overview, architecture, status |
 | [`PLAN.md`](PLAN.md) | Roadmap, sprints, TODO, risks, conventions |
+| [`BRANCHING.md`](BRANCHING.md) | Branching strategy and branch protection settings |
 | [`adr/`](adr/) | Architecture decision records |
 | [`ProjectA.md`](ProjectA.md) | Original assignment brief |

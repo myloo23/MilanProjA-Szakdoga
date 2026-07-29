@@ -80,5 +80,9 @@ jobs:
           docker rm flask-test || true
 
       - name: Push Docker image
+        # Only main publishes. Feature branches build, test and scan the image
+        # but must not put an artifact in the registry — the registry holds
+        # deployable artifacts only, and CD deploys by SHA from main.
+        if: github.ref == 'refs/heads/main'
         run: |
           docker push localhost:5001/projecta-flask:${{ github.sha }}

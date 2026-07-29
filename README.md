@@ -148,6 +148,7 @@ To bring up the local CI platform (Gitea, runner, registry), see
 |----------|----------|
 | [`docs/PLAN.md`](docs/PLAN.md) | Roadmap, sprint plan, TODO checklist, risks, working conventions |
 | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Day-to-day commands, platform operations, Git workflow |
+| [`docs/BRANCHING.md`](docs/BRANCHING.md) | Branching strategy, merge policy, `main` protection settings |
 | [`docs/adr/`](docs/adr/) | Architecture decision records |
 | [`docs/ProjectA.md`](docs/ProjectA.md) | Original assignment brief, kept verbatim as the requirements reference |
 
