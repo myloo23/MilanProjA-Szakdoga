@@ -92,10 +92,18 @@ scanned, uniquely tagged image in the registry. **Met.**
   the collection and the `projecta-platform` network before any deploy logic.
   `docker_host` is inventory-driven, so a remote target costs an inventory edit
   and no role change.
-- `ansible/roles/deploy_app`: pull the image by tag, run the container
-  (`recreate: true`, `restart_policy: unless-stopped`, resource limits, log driver),
-  then a post-deploy smoke test (`uri` module polling `/health` with retries) that
-  fails the play if the container is unhealthy.
+- ✅ `ansible/roles/deploy_app`: pull the image by SHA, run the container
+  (`restart_policy: unless-stopped`, memory and CPU limits, `json-file` log driver
+  with rotation), then a post-deploy smoke test (`uri` with retries) that fails the
+  play. On failure it dumps the last 50 log lines and prints the exact rollback
+  command with the previously running SHA already filled in.
+
+  **Not** `recreate: true`, despite an earlier draft of this plan. Forcing
+  recreation would report `changed` on every run and make the idempotence demo
+  fail by design. `docker_container` compares the running container against the
+  spec and recreates only on a real difference — which a new image tag always is.
+  So a new SHA redeploys, a re-run reports `changed=0`, and the claim in the
+  review demo is true rather than aspirational.
 - Inventory with a real `local_docker` host group, variables in `group_vars/`,
   secrets in `ansible-vault` with the vault password coming from a Gitea Actions
   secret.

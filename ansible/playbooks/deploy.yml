@@ -1,0 +1,16 @@
+---
+# Deploy the exact image CI already built, tested, scanned and pushed. This
+# playbook never builds anything — rebuilding here would break the guarantee
+# that what runs is what was tested.
+#
+#   ansible-playbook playbooks/deploy.yml -e app_version=<git-sha>
+#
+# Rollback is the same command with an earlier SHA. There is no separate
+# rollback path to keep working, which is why it can be trusted in an incident.
+#
+- name: Deploy Project A
+  hosts: local_docker
+  gather_facts: false
+
+  roles:
+    - role: deploy_app

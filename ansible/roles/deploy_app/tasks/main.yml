@@ -1,0 +1,97 @@
+---
+- name: Assert a deployable app_version was supplied
+  ansible.builtin.assert:
+    that:
+      - app_version | default('', true) | length >= 7
+      - app_version | default('', true) is match('^[0-9a-fA-F]+$')
+    fail_msg: >-
+      app_version must be the git SHA that CI built and pushed, e.g.
+      -e app_version=1a2b3c4. There is no default on purpose: deploying an
+      unknown artifact is worse than not deploying at all.
+    success_msg: "Deploying {{ app_image_repository }}:{{ app_version }}"
+    quiet: true
+
+- name: Record what is running now, so a failure can name its own rollback
+  community.docker.docker_container_info:
+    name: "{{ app_container_name }}"
+    docker_host: "{{ docker_host }}"
+  register: deploy_app_running_before
+
+- name: Derive the previous version tag
+  ansible.builtin.set_fact:
+    deploy_app_previous_version: >-
+      {{ deploy_app_running_before.container.Config.Image | regex_replace('^.*:', '')
+         if deploy_app_running_before.exists else '' }}
+
+- name: Deploy and verify
+  block:
+    - name: Pull the image CI built
+      # not_present, not always: a SHA tag is immutable, so re-pulling would
+      # report changed on every run and break the idempotence guarantee.
+      community.docker.docker_image_pull:
+        name: "{{ app_image_repository }}"
+        tag: "{{ app_version }}"
+        pull: not_present
+        docker_host: "{{ docker_host }}"
+
+    - name: Run the container
+      # No recreate: true here. The module compares the running container
+      # against this spec and recreates it only when something actually
+      # differs — which a new image tag always does. That is what makes a
+      # second run report changed=0 while a new SHA still redeploys.
+      community.docker.docker_container:
+        name: "{{ app_container_name }}"
+        image: "{{ app_image_repository }}:{{ app_version }}"
+        state: started
+        restart_policy: "{{ deploy_app_restart_policy }}"
+        networks:
+          - name: "{{ app_network }}"
+        published_ports:
+          - "{{ app_host_port }}:{{ app_container_port }}"
+        memory: "{{ deploy_app_memory }}"
+        cpus: "{{ deploy_app_cpus }}"
+        log_driver: "{{ deploy_app_log_driver }}"
+        log_options: "{{ deploy_app_log_options }}"
+        labels:
+          app: "{{ app_name }}"
+          version: "{{ app_version }}"
+          managed-by: ansible
+        docker_host: "{{ docker_host }}"
+
+    - name: Verify the deployed container
+      ansible.builtin.include_tasks: smoke.yml
+
+  rescue:
+    - name: Capture the last log lines so the failure is diagnosable
+      # community.docker has no logs module; the CLI is the only route, and a
+      # read of the log buffer changes nothing.
+      ansible.builtin.command:
+        cmd: "docker logs --tail 50 {{ app_container_name }}"
+      environment:
+        DOCKER_HOST: "{{ docker_host }}"
+      register: deploy_app_failed_logs
+      changed_when: false
+      failed_when: false
+
+    - name: Fail the deploy and name the way back
+      ansible.builtin.fail:
+        msg: |
+          Deploy of {{ app_version }} failed verification. The container was
+          left running for inspection — it did not pass its checks, so do not
+          treat it as live.
+
+          {% if deploy_app_previous_version and deploy_app_previous_version != app_version %}
+          Roll back:
+            ansible-playbook playbooks/deploy.yml -e app_version={{ deploy_app_previous_version }}
+          {% elif deploy_app_previous_version == app_version %}
+          This same version was already running, so there is nothing to roll
+          back to — rolling back to {{ app_version }} would redeploy the
+          failure. Pick an earlier SHA:
+            curl -s {{ registry_endpoint }}/v2/{{ app_name }}/tags/list
+          {% else %}
+          Nothing was running before this deploy, so there is no previous SHA
+          to roll back to. Fix forward.
+          {% endif %}
+
+          Last 50 log lines from {{ app_container_name }}:
+          {{ deploy_app_failed_logs.stdout | default('(no logs — did the container start at all?)') }}

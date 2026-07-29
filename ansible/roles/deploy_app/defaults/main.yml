@@ -1,0 +1,19 @@
+---
+# Container runtime shape. Overridable per inventory group; the values here are
+# what a single-node laptop deploy should look like.
+deploy_app_restart_policy: unless-stopped
+deploy_app_memory: "256m"
+deploy_app_cpus: 0.5
+
+# json-file is what Alloy tails in Sprint 3, so the log driver is set now rather
+# than retrofitted. Rotation is capped so a chatty container cannot fill the disk.
+deploy_app_log_driver: json-file
+deploy_app_log_options:
+  max-size: "10m"
+  max-file: "3"
+
+# Post-deploy verification. Same endpoints as scripts/smoke.sh — one definition
+# of "healthy", exercised by hand and by the pipeline.
+deploy_app_smoke_base: "http://localhost:{{ app_host_port }}"
+deploy_app_smoke_retries: 10
+deploy_app_smoke_delay: 2

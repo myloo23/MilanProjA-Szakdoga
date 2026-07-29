@@ -323,6 +323,37 @@ ansible-inventory --graph --vars                          # what the host resolv
 `registry:5000` from inside a container on `projecta-platform`. See
 [section 5](#5-platform-stack).
 
+### Deploy
+
+```bash
+cd ansible
+ansible-playbook playbooks/deploy.yml -e app_version=<git-sha>
+```
+
+Pulls that exact image from the registry, runs it with resource limits and a
+rotating `json-file` log driver, then verifies `/health`, `/ready` and both
+`/echo` paths. Any check failing fails the play — the deploy does not "succeed
+with warnings".
+
+Run it a second time with the same SHA and it reports `changed=0`. That is the
+idempotence claim, and it is worth demonstrating rather than asserting.
+
+### Roll back
+
+```bash
+ansible-playbook playbooks/deploy.yml -e app_version=<previous-sha>
+```
+
+Same playbook, earlier SHA. There is no separate rollback path to keep working,
+which is exactly why it can be trusted during an incident. When a deploy fails
+its smoke test the play prints this command with the previous SHA already in it.
+
+Find recent SHAs with `git log --oneline main`, or ask the registry:
+
+```bash
+curl -s localhost:5001/v2/projecta-flask/tags/list
+```
+
 ### Dry run
 
 ```bash

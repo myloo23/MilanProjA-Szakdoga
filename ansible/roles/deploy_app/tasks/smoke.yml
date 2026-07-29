@@ -1,0 +1,57 @@
+---
+# Post-deploy verification. Every task here fails the play, which is the point:
+# a deploy that cannot prove the app works is a failed deploy, not a warning.
+# These are the same checks as scripts/smoke.sh, so the pipeline and a laptop
+# agree on what "healthy" means.
+
+- name: Wait for the application to report healthy
+  ansible.builtin.uri:
+    url: "{{ deploy_app_smoke_base }}{{ app_health_path }}"
+    status_code: 200
+  register: deploy_app_smoke_health
+  retries: "{{ deploy_app_smoke_retries }}"
+  delay: "{{ deploy_app_smoke_delay }}"
+  until: deploy_app_smoke_health.status | default(0) == 200
+  changed_when: false
+
+- name: Check readiness
+  ansible.builtin.uri:
+    url: "{{ deploy_app_smoke_base }}/ready"
+    status_code: 200
+  changed_when: false
+
+- name: Echo a valid payload
+  ansible.builtin.uri:
+    url: "{{ deploy_app_smoke_base }}/echo"
+    method: POST
+    body_format: json
+    body:
+      smoke: "{{ app_version }}"
+    status_code: 200
+  register: deploy_app_smoke_echo
+  changed_when: false
+
+- name: Assert the payload came back intact
+  # /echo wraps the request body: {"received": {...}}. Asserting the wrapper as
+  # well as the content means a change to the response shape fails the deploy
+  # rather than passing silently.
+  ansible.builtin.assert:
+    that: deploy_app_smoke_echo.json.received.smoke | default('') == app_version
+    fail_msg: >-
+      /echo did not return the payload it was sent. Expected
+      {"received": {"smoke": "{{ app_version }}"}}, got:
+      {{ deploy_app_smoke_echo.json | default('nothing') }}
+    quiet: true
+
+- name: Assert a wrong Content-Type still returns 400, not 500
+  # Regression guard for the /echo contract fixed in #15. The observability
+  # demo depends on this being a controllable error signal, so a deploy that
+  # loses it is a broken deploy.
+  ansible.builtin.uri:
+    url: "{{ deploy_app_smoke_base }}/echo"
+    method: POST
+    body: "not json"
+    headers:
+      Content-Type: text/plain
+    status_code: 400
+  changed_when: false
