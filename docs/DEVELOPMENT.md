@@ -11,7 +11,7 @@ The fastest path from `git clone` to a working app. This is also the sequence to
 test on a clean machine before a demo.
 
 ```bash
-git clone https://github.com/tcsdevopsintern/Milan-ProjectA.git
+git clone http://localhost:3000/milan/Milan-ProjectA.git   # Gitea — the origin
 cd Milan-ProjectA
 
 # 1. Python environment
@@ -32,6 +32,11 @@ docker build -t flaskapp:dev .
 docker run -p 8000:8000 flaskapp:dev
 curl localhost:8000/health
 ```
+
+Cloning from Gitea needs the platform stack running, which a genuinely cold
+machine will not have. For that case clone the GitHub backup instead —
+`https://github.com/tcsdevopsintern/Milan-ProjectA.git` — bring the platform up
+per [section 5](#5-platform-stack), then repoint `origin` at Gitea.
 
 Both requirements files are hash-locked, so `pip install` reproduces the exact same
 dependency versions every time — no drift between a laptop and CI.
@@ -407,8 +412,12 @@ git add <specific files>                       # avoid `git add -A` — review w
 git commit -m "feat(app): add /metrics endpoint"
 git rebase main                                # keep the branch current before opening a PR
 git push -u origin feat/short-description
-gh pr create --fill
+# then open the pull request in Gitea — the push output prints a direct link
 ```
+
+`main` is protected: pushing to it directly is rejected, and a pull request
+cannot merge until `Pipeline / build-test-push` is green. Merges are squash-only.
+Full settings in [`BRANCHING.md`](BRANCHING.md).
 
 Commit types: `feat`, `fix`, `docs`, `ci`, `build`, `refactor`, `test`, `chore`,
 `perf`. Scopes: `app`, `ci`, `cd`, `ansible`, `docker`, `obs`, `docs`.
