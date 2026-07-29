@@ -74,7 +74,7 @@ artifact just ships it faster.
 
 **Phase 3 — CI** ✅
 Gitea and `act_runner` in compose, runner registered.
-`ci.yml` runs on every push and pull request, fail-fast in cost order:
+`ci.yml` runs on every pull request and on pushes to `main`, fail-fast in cost order:
 `lint → tests with coverage gate → build → container smoke test → trivy scan → push`.
 
 - Pip caching keyed on `requirements-dev.txt`.

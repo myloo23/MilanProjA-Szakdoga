@@ -258,7 +258,9 @@ all wiped. Use only when deliberately testing the clean-machine setup path.
 
 ## 6. CI pipeline
 
-`.gitea/workflows/ci.yml` runs on every push and pull request:
+`.gitea/workflows/ci.yml` runs on every pull request, and on pushes to `main`
+(which, with `main` protected, means merges). A branch commit is therefore built
+once, not twice:
 
 1. Check out the repository
 2. Set up Python 3.12 with a pip cache

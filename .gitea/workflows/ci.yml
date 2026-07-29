@@ -8,7 +8,16 @@ name: Pipeline
 # waits for the runner to free up. `needs:` makes the ordering a fact instead
 # of a hope.
 on:
+  # Branch commits are covered by the pull_request run, so push is narrowed to
+  # main. A bare `push:` alongside `pull_request:` builds every branch commit
+  # twice — two identical runs, on a runner with capacity 1, where the second
+  # one is queueing behind the first for no reason.
+  #
+  # The trade-off: a branch with no pull request open yet gets no CI. Trunk-based
+  # development answers that by opening the pull request early, which is the
+  # habit worth having anyway.
   push:
+    branches: [main]
   pull_request:
 
 jobs:
