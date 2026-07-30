@@ -72,12 +72,42 @@ jobs:
             --network projecta-platform \
             localhost:5001/projecta-flask:${{ github.sha }}
 
-      - name: Wait for application
-        run: sleep 5
-
-      - name: Verify application
+      - name: Wait for the container to report healthy
+        # The image already declares what "healthy" means, in the Dockerfile's
+        # HEALTHCHECK. This reads that verdict rather than re-implementing the
+        # probe, so CI and the image cannot drift apart the way a hand-rolled
+        # curl loop eventually would.
+        #
+        # It replaces `sleep 5`, which was a bet that the app starts in under
+        # five seconds — silently fine on a warm runner, a flake on a cold one,
+        # and in neither case a statement about the application.
+        #
+        # Bounded at 30s so a hung app fails this step with evidence instead of
+        # hanging until the runner's own timeout kills the job. The loop exits
+        # early if the container stops: once it is not running, waiting longer
+        # cannot change the answer.
         run: |
-          curl --fail http://flask-test:8000/health
+          for _ in $(seq 1 30); do
+            state=$(docker inspect -f '{{.State.Status}}:{{.State.Health.Status}}' flask-test)
+            case "$state" in
+              running:healthy) echo "container healthy ($state)"; exit 0 ;;
+              running:*)       sleep 1 ;;
+              *)               echo "container stopped while starting ($state)"; break ;;
+            esac
+          done
+          echo "container never reported healthy (last state: ${state:-unknown})"
+          docker inspect -f '{{json .State.Health}}' flask-test
+          docker logs flask-test
+          exit 1
+
+      - name: Verify the application answers over the network
+        # Kept, and no longer a race: the step above has already established the
+        # app is up, so a failure here means something narrower and more useful
+        # — the app is healthy from the inside but unreachable from another
+        # container on projecta-platform. The HEALTHCHECK probes localhost from
+        # within the container and can never catch that.
+        run: |
+          curl --fail --show-error --silent http://flask-test:8000/health
 
       - name: Scan image with Trivy
         run: |
