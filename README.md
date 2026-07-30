@@ -6,40 +6,42 @@
 ![Status](https://img.shields.io/badge/status-in%20progress-yellow)
 ![CI](https://img.shields.io/badge/CI-Gitea%20Actions-609926?logo=gitea&logoColor=white)
 ![App](https://img.shields.io/badge/app-Flask%203.1-000000?logo=flask&logoColor=white)
-![Runtime](https://img.shields.io/badge/runtime-Gunicorn-499848?logo=gunicorn&logoColor=white)
 ![Container](https://img.shields.io/badge/container-Docker-2496ED?logo=docker&logoColor=white)
 
 ---
 
 ## What it does
 
-Automates the path from a Git commit to a running, monitored container — the classic
-build-artifact-deploy loop that real pipelines run every day.
+Automates the path from a Git commit to a running, verified container.
 
 ```
-push  →  CI (lint · test · build · scan · push)  →  CD (Ansible deploy)  →  observe (metrics + logs)
+push → CI (lint · test · build · scan · push) → CD (Ansible deploy) → observe
 ```
 
-CI and CD work today: a merge to `main` deploys the exact image the pipeline
-built and verifies it, with zero manual steps. Observability is the remaining
-phase — see [`docs/PLAN.md`](docs/PLAN.md) for the roadmap.
+CI and CD work today. A merge into `release/sprint2` or `main` deploys the exact
+image the pipeline built and verifies it, with zero manual steps. Observability
+is the remaining phase — see [`docs/PLAN.md`](docs/PLAN.md).
+
+**Review lives on GitHub, the pipeline runs on a self-hosted Gitea.** Neither
+forge can do both: Gitea is on `localhost` and unreachable to reviewers, GitHub
+has no runner. See [ADR-0004](docs/adr/0004-github-for-review-gitea-for-execution.md).
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    Dev([Developer]) -->|git push| Gitea[Gitea + Actions]
+    Dev([Developer]) -->|push| Gitea[Gitea + Actions]
+    Dev -->|pull request| GH[GitHub<br/>review + protection]
     Gitea -->|ci.yml| CI{{lint · test · build · scan}}
     CI -->|push image| Reg[(Local Registry<br/>localhost:5001)]
-    Gitea -->|deploy job on main| Ansible[Ansible<br/>community.docker]
+    Gitea -->|deploy on main + release/*| Ansible[Ansible<br/>community.docker]
     Reg -->|pull by SHA| Ansible
-    Ansible -->|run container + smoke test| App[Flask App<br/>Gunicorn :8000]
+    Ansible -->|run + smoke test| App[Flask App<br/>Gunicorn :8000]
     App -.->|/metrics| Prom[(Prometheus)]
     App -.->|stdout JSON| Alloy[Grafana Alloy]
     Alloy -.-> Loki[(Loki)]
     Prom -.-> Graf[Grafana]
     Loki -.-> Graf
-    Graf -.->|metric → log pivot| Dev
 ```
 
 Solid lines are built. Dashed lines are planned.
@@ -48,13 +50,14 @@ Solid lines are built. Dashed lines are planned.
 
 ```mermaid
 flowchart LR
-    A[Commit] --> B[Lint<br/>ruff]
-    B --> C[Unit tests<br/>pytest, 80% gate]
-    C --> D[Build image<br/>multi-stage]
-    D --> S[Container smoke test<br/>/health]
-    S --> E[Scan<br/>trivy]
+    A[Commit] --> B[ruff]
+    B --> H[hadolint]
+    H --> C[pytest<br/>80% gate]
+    C --> D[Build image]
+    D --> S[Health gate<br/>+ network check]
+    S --> E[trivy]
     E --> F[Push<br/>SHA tag]
-    F -->|main only| G[Ansible deploy<br/>+ post-deploy smoke test]
+    F -->|main + release/* only| G[Ansible deploy<br/>+ smoke test]
     C -.fail.-> X[Stop]
     E -.HIGH/CRITICAL.-> X
     G -.smoke fails.-> R[Roll back<br/>same playbook, previous SHA]
@@ -62,102 +65,89 @@ flowchart LR
 
 ## Status
 
-| Sprint | Focus | Exit criteria | Status |
-|--------|-------|---------------|:------:|
-| **1 · Foundation & App** | Repo, production-grade Flask app, hardened container | Tests and lint green; `docker run` serves all routes | ✅ Done |
-| **2 · Pipeline** | Gitea Actions CI + Ansible CD, immutable SHA-tagged artifact | Merge to `main` → new container, smoke test passes, zero manual steps | ✅ Done |
-| **3 · Observability & Demo** | Prometheus + Grafana + Loki, ADRs, runbook, live demo | Incident walkthrough runs end to end in under 60 seconds | ⬜ Planned |
+| Sprint | Focus | Status |
+|---|---|:--:|
+| **1 · Foundation & App** | Repo, production-grade Flask app, hardened container | ✅ Done |
+| **2 · Pipeline** | Gitea Actions CI + Ansible CD, immutable SHA-tagged artifact | 🟡 Nearly |
+| **3 · Observability & Demo** | Prometheus + Grafana + Loki, runbook, live demo | ⬜ Planned |
 
 | Area | State |
-|------|:-----:|
+|---|:--:|
 | Flask app: `/`, `/health`, `/ready`, `/echo` with 400 on bad JSON | ✅ |
-| pytest suite with an 80% coverage gate in CI | ✅ |
+| pytest suite with an 80% coverage gate | ✅ |
 | Hardened Dockerfile: multi-stage, non-root, digest-pinned, healthcheck | ✅ |
-| Dependency locking (pip-tools, hashes) | ✅ |
-| Gunicorn WSGI runtime | ✅ |
-| Platform stack: Gitea + act_runner + local registry via compose | ✅ |
-| CI: lint → test → build → smoke test → trivy scan → push | ✅ |
-| CD: merge to `main` → Ansible deploys that SHA, smoke test gates it | ✅ |
-| `main` protected — no direct pushes, required status check, squash-only | ✅ |
-| Rehearsed one-command rollback to any previous SHA | ✅ |
-| Structured JSON logging with `request_id` | ⬜ |
-| `/metrics` endpoint (`prometheus_client`) | ⬜ |
-| `ansible-lint` and `hadolint` in CI | ⬜ |
-| Prometheus / Grafana / Loki observability | ⬜ |
-| Runbook and demo script | ⬜ |
+| Dependency locking (pip-tools, hashes) · Gunicorn runtime | ✅ |
+| Platform stack: Gitea + act_runner + registry via compose | ✅ |
+| CI: ruff → hadolint → tests → build → health gate → trivy → push | ✅ |
+| CD: Ansible deploys that SHA, smoke test gates it | ✅ |
+| Protected branches on GitHub, reviewed pull requests, CODEOWNERS | ✅ |
+| `ansible-lint` in CI | ⬜ |
+| Rehearsed rollback to a previous SHA | ⬜ |
+| Structured JSON logging · `/metrics` endpoint | ⬜ |
+| Prometheus / Grafana / Loki · runbook and demo script | ⬜ |
 
 ## Stack
 
-| Layer | Tool | State |
-|-------|------|:-----:|
-| App | Flask 3.1 · Gunicorn | ✅ |
-| SCM + CI | Gitea + Gitea Actions (`act_runner`) | ✅ |
-| Artifact | Docker image → local registry (`localhost:5001`), tagged by git SHA | ✅ |
-| Image scanning | Trivy, fails on HIGH/CRITICAL | ✅ |
-| Deploy | Ansible + `community.docker`, inventory-driven | ✅ |
-| Metrics | `prometheus_client` · cAdvisor · node_exporter | ⬜ Planned |
-| Logs | JSON stdout → Grafana Alloy → Loki | ⬜ Planned |
-| Dashboards | Grafana, provisioned as code | ⬜ Planned |
+| Layer | Tool |
+|---|---|
+| App | Flask 3.1 · Gunicorn |
+| Review | GitHub — protected branches, CODEOWNERS |
+| CI | Gitea + Gitea Actions (`act_runner`), self-hosted |
+| Artifact | Docker image → `localhost:5001`, tagged by git SHA |
+| Scanning | hadolint (Dockerfile) · Trivy (image, fails on HIGH/CRITICAL) |
+| Deploy | Ansible + `community.docker`, inventory-driven |
+| Observability | Prometheus · Loki · Grafana *(planned)* |
 
 ## Endpoints
 
 | Route | Method | Purpose |
-|-------|--------|---------|
+|---|---|---|
 | `/` | GET | Hello message |
-| `/health` | GET | Liveness probe — `{"status":"UP"}` |
-| `/ready` | GET | Readiness probe — `{"status":"READY"}` |
-| `/echo` | POST | Echo JSON back · returns `400` on an invalid payload |
+| `/health` | GET | Liveness — `{"status":"UP"}` |
+| `/ready` | GET | Readiness — `{"status":"READY"}` |
+| `/echo` | POST | Echo JSON back · `400` on an invalid payload |
 | `/metrics` | GET | Prometheus metrics *(planned)* |
 
 ## Quick start
 
 ```bash
-# Set up the environment
-python3.12 -m venv .venv
-source .venv/bin/activate
+python3.12 -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
 
-# Run tests and lint
-pytest
-ruff check .
+pytest && ruff check .
 
-# Build and run the container
 docker build -t flaskapp:dev .
 docker run -p 8000:8000 flaskapp:dev
-
-# Verify
 curl localhost:8000/health
-curl -X POST localhost:8000/echo -H 'Content-Type: application/json' -d '{"hi":"there"}'
 ```
 
-To bring up the local CI platform (Gitea, runner, registry), see
+For the local CI platform (Gitea, runner, registry) see
 [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md).
 
 ## Repository layout
 
 ```
 .
-├── app/                          # Flask application
-├── tests/                        # pytest suite
-├── ansible/                      # CD: inventory, deploy_app role, playbooks
-├── platform/                     # compose stack: Gitea, act_runner, registry
-├── scripts/                      # smoke.sh — the same checks CI runs, by hand
-├── .gitea/workflows/             # ci.yml (build-test-push + deploy jobs)
-├── docs/                         # plan, development guide, ADRs, assignment brief
-├── Dockerfile
-├── requirements.in / .txt        # runtime deps (hash-locked)
-└── requirements-dev.in / .txt    # dev deps (hash-locked)
+├── app/                  # Flask application
+├── tests/                # pytest suite
+├── ansible/              # CD: inventory, deploy_app role, playbooks
+├── platform/             # compose stack: Gitea, act_runner, registry
+├── scripts/              # smoke.sh — the checks CI runs, by hand
+├── .gitea/workflows/     # ci.yml (build-test-push + deploy)
+├── docs/                 # plan, dev guide, ADRs, assignment brief
+├── CODEOWNERS            # reviewers, per branch
+└── Dockerfile
 ```
 
 ## Docs
 
 | Document | Contents |
-|----------|----------|
-| [`docs/PLAN.md`](docs/PLAN.md) | Roadmap, sprint plan, TODO checklist, risks, working conventions |
-| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Day-to-day commands, platform operations, Git workflow |
-| [`docs/BRANCHING.md`](docs/BRANCHING.md) | Branching strategy, merge policy, `main` protection settings |
-| [`docs/adr/`](docs/adr/) | Architecture decision records |
-| [`docs/ProjectA.md`](docs/ProjectA.md) | Original assignment brief, kept verbatim as the requirements reference |
+|---|---|
+| [`docs/PLAN.md`](docs/PLAN.md) | Roadmap, sprints, open work, risks |
+| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Commands: app, platform, Ansible |
+| [`docs/BRANCHING.md`](docs/BRANCHING.md) | Branches, merge policy, protection |
+| [`docs/adr/`](docs/adr/) | Why the big decisions were made |
+| [`docs/ProjectA.md`](docs/ProjectA.md) | Original assignment brief, verbatim |
 
 ---
 
