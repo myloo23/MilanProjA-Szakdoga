@@ -80,7 +80,8 @@ flowchart LR
 | Platform stack: Gitea + act_runner + registry via compose | ✅ |
 | CI: ruff → hadolint → tests → build → health gate → trivy → push | ✅ |
 | CD: Ansible deploys that SHA, smoke test gates it | ✅ |
-| Protected branches on GitHub, reviewed pull requests, CODEOWNERS | ✅ |
+| Reviewed pull requests on GitHub, CODEOWNERS, protection rules configured | ✅ |
+| Protection *enforced* — needs a public repository on this plan | ⬜ |
 | `ansible-lint` in CI | ⬜ |
 | Rehearsed rollback to a previous SHA | ⬜ |
 | Structured JSON logging · `/metrics` endpoint | ⬜ |

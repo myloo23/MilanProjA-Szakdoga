@@ -25,10 +25,11 @@ Split them by what each is actually able to do.
 
 Consequences of that split:
 
-- **The repository is public.** On a private repository, branch protection and
-  `CODEOWNERS` are unavailable on this plan, so neither could be enforced. The
-  repository contains no secrets — `.env` is ignored and the full history was
-  checked before the switch.
+- **Enforcement follows visibility, and the decision does not.** Branch
+  protection and `CODEOWNERS` work on public repositories on this plan, not on
+  private ones. The repository is private, so the rules are configured but not
+  enforced, and the process is upheld by hand. The split between the two forges
+  does not depend on this — only whether a tool or a person enforces it.
 - **Triggers are push-based.** With no pull request in Gitea, a
   `pull_request:` trigger can never fire, and feature branches would get no CI
   at all.
@@ -42,8 +43,8 @@ Consequences of that split:
 
 **Positive**
 
-- Each rule is enforced in exactly one place, so the two forges cannot drift.
-- Review is a real gate: the merge button is blocked without an approval.
+- Each rule is defined in exactly one place, so the two forges cannot drift.
+- Review is reachable: colleagues and mentors can open, read and approve.
 - The pipeline keeps running on owned infrastructure, so ADR-0001's ownership
   story survives intact.
 
@@ -51,17 +52,18 @@ Consequences of that split:
 
 - Two remotes to push to, and it is possible to open a pull request on code
   that was never built.
-- The pipeline result is copied by hand into the pull request, which means it
-  can be stale or wrong. A reviewer has to trust the author on that.
-- The work is public. Nothing confidential can ever be committed.
+- The pipeline result is copied by hand into the pull request, so it can be
+  stale or wrong. A reviewer has to trust the author on that.
+- While the repository is private, nothing stops a merge without approval. The
+  process holds only as long as the discipline does.
 
 ## Alternatives considered
 
 - **Keep Gitea as the origin.** Costs nothing to leave alone and makes review
   impossible, which was the requirement. Rejected.
 - **Self-hosted GitHub Actions runner.** Would put checks on the pull request
-  and remove the copy-paste evidence. Not rejected on merit — deferred, as the
-  current split satisfies the requirement without a second runner to maintain.
-- **Stay private, no enforcement, review by discipline.** Workable, and the
-  fallback if the repository ever has to be private again. Rejected while
-  public is allowed: a rule a tool enforces survives a tired Friday.
+  and remove the copy-paste evidence. Deferred, not rejected on merit — the
+  current split meets the requirement without a second runner to maintain.
+- **Public repository for enforced protection.** Tried, and it worked: the merge
+  button was correctly blocked without an approval. Reverted on instruction —
+  the work stays private, so enforcement is traded for confidentiality.

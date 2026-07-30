@@ -95,9 +95,9 @@ Delivered: the `deploy_app` role; the in-role smoke test; the `deploy` job;
 health-gated waits replacing a fixed `sleep`; `hadolint`; ADR-0003 and ADR-0004.
 
 Unplanned but delivered: the review model changed mid-sprint. GitHub became the
-source of truth for review and protection, Gitea kept execution, and the
-repository went public — protection and CODEOWNERS do not work on a private
-repository on this plan.
+source of truth for review, Gitea kept execution. Protection and CODEOWNERS are
+configured but not enforced — that needs a public repository on this plan, and
+the work stays private.
 
 Still open: `ansible-lint`; the rollback rehearsal.
 

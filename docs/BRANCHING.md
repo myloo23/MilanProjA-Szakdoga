@@ -50,6 +50,23 @@ prefix matching would need `startsWith()`, unverified under `act_runner`.
 
 ## Protection
 
+**Enforcement depends on repository visibility.** Branch rulesets and
+`CODEOWNERS` work on public repositories on this plan, not on private ones.
+The repository is currently **private**, so neither is enforced: the merge
+button is live and the Reviewers field stays empty.
+
+The rules below stay configured regardless. They take effect the moment the
+repository is public again, and until then they are the checklist the process
+follows by hand:
+
+1. Request the reviewers manually on every pull request.
+2. Never merge without at least one approval, even though nothing stops you.
+3. Never push to `main` or `release/sprint2`, even though nothing stops you.
+
+The symptom is worth recognising, because it looks like success: an empty
+Reviewers field and a green merge button are exactly what a correctly
+configured repository shows once its rules are satisfied.
+
 **GitHub** — one ruleset, `Active`, targets `main` and `release/*`, empty bypass list:
 
 | Rule | |
