@@ -8,21 +8,36 @@ name: Pipeline
 # waits for the runner to free up. `needs:` makes the ordering a fact instead
 # of a hope.
 on:
-  # Branch commits are covered by the pull_request run, so push is narrowed to
-  # main. A bare `push:` alongside `pull_request:` builds every branch commit
-  # twice — two identical runs, on a runner with capacity 1, where the second
-  # one is queueing behind the first for no reason.
+  # Push-only, deliberately, and this is a reversal worth understanding.
   #
-  # The trade-off: a branch with no pull request open yet gets no CI. Trunk-based
-  # development answers that by opening the pull request early, which is the
-  # habit worth having anyway.
+  # Review now happens on GitHub; Gitea is the execution environment. No pull
+  # request will ever be opened here again, so a `pull_request:` trigger would
+  # be a rule that can never fire — and every feature branch would silently get
+  # no CI at all. A pipeline that does not run looks exactly like a pipeline
+  # that has nothing to complain about.
+  #
+  # That also retires the reason push was once narrowed to main: the duplicate
+  # run it avoided came from push and pull_request both firing, and one half of
+  # that pair no longer exists.
+  #
+  # The branch list mirrors the naming convention in docs/BRANCHING.md. Anything
+  # outside it — a scratch branch, an experiment — gets no runner, which on a
+  # runner with capacity 1 is the difference between a queue and a wait.
   push:
-    branches: [main]
-  pull_request:
+    branches:
+      - main
+      - 'release/**'
+      - 'feature/**'
+      - 'hotfix/**'
 
 jobs:
   build-test-push:
     runs-on: ubuntu-latest
+
+    # Published downstream so the deploy job can reuse this decision instead of
+    # re-deriving it. One definition of "this ref ships", two consumers.
+    outputs:
+      ships: ${{ steps.ref_gate.outputs.ships }}
 
     steps:
       - name: Checkout repository
@@ -33,6 +48,33 @@ jobs:
           pwd
           ls -la
           git rev-parse HEAD
+
+      - name: Decide whether this ref ships an artifact
+        id: ref_gate
+        # `main` and `release/*` are protected on GitHub and reach this runner
+        # only after review, so they are the refs allowed to publish an image
+        # and deploy it. Feature and hotfix branches build, test and scan —
+        # they prove the change is sound without putting anything in the
+        # registry, which holds deployable artifacts only.
+        #
+        # Written as a shell `case` rather than an `if:` expression on purpose:
+        # prefix matching would need startsWith(), whose support under
+        # act_runner is not something to bet a release gate on. `case` is POSIX.
+        #
+        # The ref arrives through the environment, never interpolated straight
+        # into the script. `${{ }}` is substituted as raw text before the shell
+        # ever sees it, so a branch named with shell metacharacters would run as
+        # code here. Branch names come from whoever can push — treat them as
+        # input, not as trusted values.
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          case "$REF" in
+            refs/heads/main|refs/heads/release/*) ships=true ;;
+            *)                                    ships=false ;;
+          esac
+          echo "ships=$ships" >> "$GITHUB_OUTPUT"
+          echo "$REF -> ships=$ships"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -156,19 +198,21 @@ jobs:
           docker rm flask-test || true
 
       - name: Push Docker image
-        # Only main publishes. Feature branches build, test and scan the image
-        # but must not put an artifact in the registry — the registry holds
-        # deployable artifacts only, and CD deploys by SHA from main.
-        if: github.ref == 'refs/heads/main'
+        # Only reviewed refs publish. A feature branch builds, tests and scans
+        # its image, then throws it away — the registry holds deployable
+        # artifacts only, and nothing is deployable before review.
+        if: steps.ref_gate.outputs.ships == 'true'
         run: |
           docker push localhost:5001/projecta-flask:${{ github.sha }}
 
   deploy:
-    # Runs only after the artifact exists, and only for main. Do not add this
-    # job to the required status checks on main: it never runs on a pull
-    # request, so requiring it would block every merge forever.
+    # Runs only after the artifact exists, and only for refs that published one.
+    # release/* deploys as well as main: release/sprint2 is the sprint
+    # checkpoint and the branch that gets demonstrated, so waiting until the
+    # end-of-sprint merge to find out whether it deploys would put the first
+    # real CD run at the most expensive possible moment.
     needs: build-test-push
-    if: github.ref == 'refs/heads/main'
+    if: needs.build-test-push.outputs.ships == 'true'
     runs-on: ubuntu-latest
 
     steps:
