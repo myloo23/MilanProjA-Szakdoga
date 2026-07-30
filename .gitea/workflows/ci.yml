@@ -52,6 +52,36 @@ jobs:
       - name: Run Ruff
         run: ruff check .
 
+      - name: Lint the Dockerfile
+        # A step inside this job rather than a job of its own. A separate job
+        # would be the textbook answer, but this runner has capacity 1: two
+        # jobs would not run in parallel, they would queue, paying a second
+        # container start-up for a lint that takes under a second.
+        #
+        # Pinned, not :latest. The whole pipeline rests on the claim that an
+        # artifact is reproducible; a gate that silently changes its own rules
+        # between runs undermines that, and a linter that gains a rule
+        # overnight fails a build nobody touched.
+        #
+        # The threshold is stated explicitly even though `info` is currently
+        # hadolint's default, so the strictness is a decision in this file
+        # rather than an upstream default we inherited without noticing.
+        #
+        # The binary is named explicitly. This image declares CMD but no
+        # ENTRYPOINT, so any argument passed here replaces the command
+        # outright instead of appending to it — leaving Docker to execute
+        # `--failure-threshold` as though it were a program.
+        #
+        # hadolint prints nothing when it finds nothing, so a clean run and a
+        # run that received an empty stdin look identical from the log. The
+        # guard makes the difference explicit: a gate that cannot fail is not
+        # a gate, and the failure mode here is silence, not an error.
+        run: |
+          test -s Dockerfile || { echo "Dockerfile is missing or empty"; exit 1; }
+          docker run --rm -i hadolint/hadolint:v2.14.0 \
+            /bin/hadolint --failure-threshold info - < Dockerfile
+          echo "hadolint v2.14.0: no findings at or above info"
+
       - name: Run tests with coverage
         run: |
           python -m pytest \

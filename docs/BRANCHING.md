@@ -85,7 +85,12 @@ Three of those are easy to get wrong:
 - **Never require `Pipeline / deploy`.** It only runs on `main`, so requiring it
   would block every merge permanently.
 
-Add `hadolint` and `ansible-lint` to the pattern list when they land.
+`hadolint` and `ansible-lint` need no change here. A required status check is
+reported per *job*, not per step, and both run as steps inside
+`build-test-push` — deliberately, because the runner has capacity 1, so a
+separate lint job would queue behind this one rather than run alongside it.
+They gate merges through the check that already exists. A new pattern entry
+would only be needed if one of them were promoted to its own job.
 
 ## The everyday loop
 
