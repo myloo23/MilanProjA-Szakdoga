@@ -47,11 +47,12 @@ Multi-stage, digest-pinned base, non-root `appuser`, `HEALTHCHECK`.
 ⬜ Remaining: OCI labels (`revision`, `source`, `created`, `version`).
 
 **Phase 3 — CI** ✅
-`ruff → hadolint → pytest (80% gate) → build → health gate → network check →
-trivy → push`. Fail-fast in cost order.
+`ruff → hadolint → pytest (80% gate) → ansible-lint → build → health gate →
+network check → trivy → push`. Fail-fast in cost order — `ansible-lint` sits
+after the checks that need no installation and before the build.
 ⬜ Remaining: build metadata via `--build-arg`, surfaced on a `/version` endpoint.
 
-**Phase 4 — CD with Ansible** 🟡
+**Phase 4 — CD with Ansible** ✅
 
 - ✅ `ansible/` scaffold with an inventory-driven `docker_host`, so a remote
   target costs an inventory edit and no role change
@@ -84,16 +85,22 @@ filtered log query, one alert rule.
 | Milestone | Complete when | Status |
 |---|---|:--:|
 | **M1 — Pipeline Foundation** | A commit triggers lint, test, build, scan, push of an immutably tagged image | ✅ |
-| **M2 — Automated Delivery** | A reviewed merge deploys that exact image, with a smoke test that can fail the deploy | 🟡 |
+| **M2 — Automated Delivery** | A reviewed merge deploys that exact image, with a smoke test that can fail the deploy | ✅ ¹ |
 | **M3 — Observability** | Metric spike → one click to the matching logs; dashboards as code | ⬜ |
 | **M4 — Production Readiness** | Rollback rehearsed, ADRs written, clean-machine reproducible, demo scripted | 🟡 |
+
+¹ The deploy, the smoke gate and the rollback are all demonstrated. "Reviewed"
+is followed by hand rather than enforced — rulesets and `CODEOWNERS` do not
+apply to private repositories on this plan. Marked ✅ because the delivery
+mechanism is complete and the gap is a billing tier, not missing work; the
+qualification is stated rather than buried.
 
 ### Sprint 1 — "Commit to Artifact" ✅
 
 Platform stack via compose, app hardening, coverage gate, hardened Dockerfile,
 `ci.yml` through to the registry push, ADR-0001 and ADR-0002.
 
-### Sprint 2 — "Artifact to Running Container" 🟡
+### Sprint 2 — "Artifact to Running Container" ✅
 
 *Goal: a reviewed merge deploys the exact image CI built, verifies it, and can be
 rolled back in under a minute.*
@@ -106,20 +113,33 @@ source of truth for review, Gitea kept execution. Protection and CODEOWNERS are
 configured but not enforced — that needs a public repository on this plan, and
 the work stays private.
 
-Also delivered: the rollback rehearsal, executed rather than asserted — 7s to
-recover, with the ~34s total outage window measured and recorded rather than
-quietly averaged away (`docs/RUNBOOK.md`).
+Also delivered: `ansible-lint` at the `production` profile; the rollback
+rehearsal, executed rather than asserted — 7s to recover, with the ~34s total
+outage window measured and recorded rather than quietly averaged away
+(`docs/RUNBOOK.md`).
 
-Still open: `ansible-lint`.
+Nothing open. The sprint goal is met with one honest qualification: "a
+**reviewed** merge" is a process the repository follows by hand, not one it
+enforces, because rulesets and `CODEOWNERS` do not apply to private
+repositories on this plan. Configured, documented, unenforced — see
+[`BRANCHING.md`](BRANCHING.md).
 
 **Review demo**
 
-1. Open a pull request — the merge is blocked until a code owner approves.
+1. Open a pull request and show the ruleset and `CODEOWNERS` config. **Do not
+   claim the merge is blocked — it is not.** Rulesets and `CODEOWNERS` are
+   inert on a private repository on this plan, so the Reviewers field stays
+   empty and the merge button stays green. Say that before anyone clicks it:
+   the rules exist, the plan does not enforce them, and the process compensates
+   by hand ([`BRANCHING.md`](BRANCHING.md)). Naming the limitation is stronger
+   than demonstrating a block that will not happen.
 2. Merge → CD runs → the new container is live and the smoke test passes.
 3. The container's `version` label matches the merge commit:
    `docker inspect --format '{{index .Config.Labels "version"}}' projecta-flask`
    against `git rev-parse HEAD`.
-4. Run the deploy a second time → `changed=0`. Idempotence shown, not claimed.
+4. Run the deploy a second time → `changed=0`. Verified 2026-07-31 against
+   `fbc1254e`: `ok=11 changed=0`, every smoke check re-run and passing.
+   Idempotence shown, not claimed.
 5. Deploy a broken image → the smoke test fails the deploy and prints its own
    rollback command → roll back with one line. Rehearsed 2026-07-31: 27s to
    detect, 7s to recover. Quote the ~34s outage window, not the 7s — replace
@@ -161,7 +181,7 @@ today's warm-host rollback number into a defensible one.
 - [x] `/echo` 400 handling, coverage gate, Trivy scan, Gunicorn, secrets out of Git
 - [x] Post-deploy smoke test that fails the deploy
 - [x] `hadolint` in CI
-- [ ] `ansible-lint` in CI
+- [x] `ansible-lint` in CI — `production` profile, gated in `build-test-push`
 - [x] **Rollback rehearsed**, not just documented — 7s, `docs/RUNBOOK.md`
 - [ ] Structured JSON logging with `request_id`
 - [ ] Grafana provisioned as code, cAdvisor and node_exporter
@@ -251,8 +271,11 @@ inherited.
 
 ## 7. Next actions
 
-1. `ansible-lint` in CI, as a step inside `build-test-push`.
+1. Merge both Sprint 2 branches, then `release/sprint2` → `main` once the
+   mentors validate the sprint.
 2. Start the logging and `/metrics` work — Sprint 3 depends on both.
-3. `/version` endpoint via `--build-arg` — the demo currently proves the running
+3. Pre-commit hooks with `gitleaks`, from the mentors' training. The only
+   outstanding item whose failure mode is hard to undo.
+4. `/version` endpoint via `--build-arg` — the demo currently proves the running
    SHA with the container's `version` label, which works; the endpoint would
    make it provable without Docker access.

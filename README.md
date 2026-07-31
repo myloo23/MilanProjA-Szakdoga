@@ -53,12 +53,14 @@ flowchart LR
     A[Commit] --> B[ruff]
     B --> H[hadolint]
     H --> C[pytest<br/>80% gate]
-    C --> D[Build image]
+    C --> AL[ansible-lint<br/>production profile]
+    AL --> D[Build image]
     D --> S[Health gate<br/>+ network check]
     S --> E[trivy]
     E --> F[Push<br/>SHA tag]
     F -->|main + release/* only| G[Ansible deploy<br/>+ smoke test]
     C -.fail.-> X[Stop]
+    AL -.fail.-> X
     E -.HIGH/CRITICAL.-> X
     G -.smoke fails.-> R[Roll back<br/>same playbook, previous SHA]
 ```
@@ -68,8 +70,8 @@ flowchart LR
 | Sprint | Focus | Status |
 |---|---|:--:|
 | **1 · Foundation & App** | Repo, production-grade Flask app, hardened container | ✅ Done |
-| **2 · Pipeline** | Gitea Actions CI + Ansible CD, immutable SHA-tagged artifact | 🟡 Nearly |
-| **3 · Observability & Demo** | Prometheus + Grafana + Loki, runbook, live demo | ⬜ Planned |
+| **2 · Pipeline** | Gitea Actions CI + Ansible CD, immutable SHA-tagged artifact | ✅ Done |
+| **3 · Observability & Demo** | Prometheus + Grafana + Loki, live incident demo | ⬜ Planned |
 
 | Area | State |
 |---|:--:|
@@ -78,11 +80,11 @@ flowchart LR
 | Hardened Dockerfile: multi-stage, non-root, digest-pinned, healthcheck | ✅ |
 | Dependency locking (pip-tools, hashes) · Gunicorn runtime | ✅ |
 | Platform stack: Gitea + act_runner + registry via compose | ✅ |
-| CI: ruff → hadolint → tests → build → health gate → trivy → push | ✅ |
+| CI: ruff → hadolint → tests → ansible-lint → build → health gate → trivy → push | ✅ |
 | CD: Ansible deploys that SHA, smoke test gates it | ✅ |
 | Reviewed pull requests on GitHub, CODEOWNERS, protection rules configured | ✅ |
 | Protection *enforced* — needs a public repository on this plan | ⬜ |
-| `ansible-lint` in CI | ⬜ |
+| `ansible-lint` in CI, at the `production` profile | ✅ |
 | Rehearsed rollback to a previous SHA — 7s, [`RUNBOOK.md`](docs/RUNBOOK.md) | ✅ |
 | Zero-downtime swap — a bad deploy is live for ~27s before the smoke test fails it | ⬜ |
 | Structured JSON logging · `/metrics` endpoint | ⬜ |
@@ -135,8 +137,9 @@ For the local CI platform (Gitea, runner, registry) see
 ├── ansible/              # CD: inventory, deploy_app role, playbooks
 ├── platform/             # compose stack: Gitea, act_runner, registry
 ├── scripts/              # smoke.sh — the checks CI runs, by hand
+│                         # rollback-drill.sh — the rehearsal, repeatable
 ├── .gitea/workflows/     # ci.yml (build-test-push + deploy)
-├── docs/                 # plan, dev guide, ADRs, assignment brief
+├── docs/                 # plan, dev guide, runbook, ADRs, assignment brief
 ├── CODEOWNERS            # reviewers, per branch
 └── Dockerfile
 ```
@@ -148,6 +151,7 @@ For the local CI platform (Gitea, runner, registry) see
 | [`docs/PLAN.md`](docs/PLAN.md) | Roadmap, sprints, open work, risks |
 | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Commands: app, platform, Ansible |
 | [`docs/BRANCHING.md`](docs/BRANCHING.md) | Branches, merge policy, protection |
+| [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Failed deploy, rollback, rehearsal results |
 | [`docs/adr/`](docs/adr/) | Why the big decisions were made |
 | [`docs/ProjectA.md`](docs/ProjectA.md) | Original assignment brief, verbatim |
 

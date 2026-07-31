@@ -1,0 +1,15 @@
+# ansible-lint, on top of the exact control node the deploy uses.
+#
+#   pip install -r ansible/requirements-lint.txt
+#
+# The -r line is the whole point. ansible-core stays pinned once, in
+# requirements-ansible.txt, and the linter inherits that pin. Pinning it a
+# second time here would let CI lint against one Ansible and deploy with
+# another — the same drift the control-node pin exists to prevent, moved one
+# file to the left.
+-r requirements-ansible.txt
+
+# Pinned like hadolint, for the same reason: a linter that gains a rule
+# overnight fails a build nobody touched. Bump it deliberately, in its own
+# commit, so a new finding is attributable.
+ansible-lint==26.6.0
