@@ -8,3 +8,7 @@ __pycache__/
 htmlcov/
 platform/.env
 platform/data/
+
+# Drill transcripts. The result that matters is summarised in docs/RUNBOOK.md;
+# the raw logs are point-in-time noise and would accumulate one per run.
+docs/rollback-drill-*.log

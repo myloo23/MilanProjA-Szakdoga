@@ -63,7 +63,7 @@ trivy → push`. Fail-fast in cost order.
 - ✅ **Rollback rehearsed** end to end on 2026-07-31: a deliberately broken image
   deployed, the smoke test failed the deploy and printed its own rollback
   command, that command restored service in **7s**. Evidence in
-  `docs/RUNBOOK.md`; transcript in `docs/rollback-drill-20260731-103657.log`;
+  `docs/RUNBOOK.md`; full transcript in commit `eac8fe5`;
   repeatable via `scripts/rollback-drill.sh`
 - ⬜ **Zero-downtime swap.** The drill measured what replace-then-verify costs:
   the broken container was live for **27s** before the smoke test gave up, so the
@@ -141,8 +141,9 @@ that sentence about cardinality is worth more than another dashboard.
 
 ### Hardening week ⬜
 
-No new features. Remaining ADRs, `RUNBOOK.md`, `CHANGELOG.md`, the clean-machine
-test, `DEMO.md`, two timed rehearsals on a cold machine.
+No new features. Remaining ADRs, `CHANGELOG.md`, the clean-machine test,
+`DEMO.md`, two timed rehearsals on a cold machine — the cold run is what turns
+today's warm-host rollback number into a defensible one.
 
 ---
 
