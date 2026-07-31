@@ -172,6 +172,36 @@ today's warm-host rollback number into a defensible one.
 
 - [ ] Alert routing, zero-downtime swap, auto-changelog, SBOM, dependency updates
 
+### From the mentors' Git strategy training
+
+Reference material lives outside the repo (see `.gitignore`); what it asks for
+that is not already done is tracked here, because a reviewer should find open
+work in one place rather than two.
+
+Most of it is already satisfied: branch protection, CODEOWNERS, conventional
+commits, squash for `feature/*` and a merge commit for `release/* → main` are
+all configured and reasoned about in [`BRANCHING.md`](BRANCHING.md). Genuinely
+outstanding:
+
+- [ ] Pre-commit hooks with `gitleaks` — the one gap with a failure mode that is
+      hard to undo. Nothing stops a secret reaching history today
+- [ ] Rehearse the leaked-secret drill: commit a fake credential, watch the hook
+      block it, practise removal from history. Same standard as the rollback —
+      unrehearsed is unclaimable
+- [ ] Release tags and `CHANGELOG.md`. Deploys are traceable by SHA but not by
+      release. The training's separate `DEPLOYMENTS.md` folds into the changelog
+      rather than becoming a second file to keep true
+- [ ] `CONTRIBUTING.md` — thin entry point pointing at `BRANCHING.md`, not a
+      restatement of it
+
+**Deliberate divergence.** The training recommends `main` + `dev`. This project
+runs `main` + `release/sprint2` because the sprint checkpoint *is* the thing
+demonstrated to mentors, and a long-lived `dev` alongside it would be a third
+branch with no distinct job. Documented in
+[`BRANCHING.md`](BRANCHING.md) and [ADR-0004](adr/0004-github-for-review-gitea-for-execution.md).
+Expect this to be asked about; the answer is that the strategy was chosen, not
+inherited.
+
 ---
 
 ## 5. Risks

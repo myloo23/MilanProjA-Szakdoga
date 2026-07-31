@@ -12,3 +12,9 @@ platform/data/
 # Drill transcripts. The result that matters is summarised in docs/RUNBOOK.md;
 # the raw logs are point-in-time noise and would accumulate one per run.
 docs/rollback-drill-*.log
+
+# Mentor reference material, kept locally for reading. Not committed: it is
+# input to this project, not part of it, and its brief is already extracted to
+# docs/ProjectA.md. What it asks for that is not yet done is tracked as open
+# work in docs/PLAN.md, which is where a reviewer should look.
+docs/project_work_additionals/
