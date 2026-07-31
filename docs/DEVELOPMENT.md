@@ -223,7 +223,10 @@ Deploy pulls that exact image, runs it with limits and log rotation, then checks
 `/health`, `/ready` and both `/echo` paths. Any failure fails the play — there is
 no "succeeded with warnings".
 
-Run it twice with the same SHA and the second reports `changed=0`.
+Run it twice with the same SHA and the second reports `changed=0`. Verified
+2026-07-31 against `fbc1254e`: `ok=11 changed=0`, with every smoke check re-run
+and passing. Worth knowing when you are unsure whether a deploy landed — running
+it again is free.
 
 **Rollback is the same command with an earlier SHA.** No separate path to keep
 working, which is why it can be trusted in an incident. A failed deploy prints

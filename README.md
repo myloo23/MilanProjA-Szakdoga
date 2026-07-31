@@ -60,6 +60,7 @@ flowchart LR
     E --> F[Push<br/>SHA tag]
     F -->|main + release/* only| G[Ansible deploy<br/>+ smoke test]
     C -.fail.-> X[Stop]
+    AL -.fail.-> X
     E -.HIGH/CRITICAL.-> X
     G -.smoke fails.-> R[Roll back<br/>same playbook, previous SHA]
 ```
@@ -69,8 +70,8 @@ flowchart LR
 | Sprint | Focus | Status |
 |---|---|:--:|
 | **1 · Foundation & App** | Repo, production-grade Flask app, hardened container | ✅ Done |
-| **2 · Pipeline** | Gitea Actions CI + Ansible CD, immutable SHA-tagged artifact | 🟡 Nearly |
-| **3 · Observability & Demo** | Prometheus + Grafana + Loki, runbook, live demo | ⬜ Planned |
+| **2 · Pipeline** | Gitea Actions CI + Ansible CD, immutable SHA-tagged artifact | ✅ Done |
+| **3 · Observability & Demo** | Prometheus + Grafana + Loki, live incident demo | ⬜ Planned |
 
 | Area | State |
 |---|:--:|
@@ -136,8 +137,9 @@ For the local CI platform (Gitea, runner, registry) see
 ├── ansible/              # CD: inventory, deploy_app role, playbooks
 ├── platform/             # compose stack: Gitea, act_runner, registry
 ├── scripts/              # smoke.sh — the checks CI runs, by hand
+│                         # rollback-drill.sh — the rehearsal, repeatable
 ├── .gitea/workflows/     # ci.yml (build-test-push + deploy)
-├── docs/                 # plan, dev guide, ADRs, assignment brief
+├── docs/                 # plan, dev guide, runbook, ADRs, assignment brief
 ├── CODEOWNERS            # reviewers, per branch
 └── Dockerfile
 ```
@@ -149,6 +151,7 @@ For the local CI platform (Gitea, runner, registry) see
 | [`docs/PLAN.md`](docs/PLAN.md) | Roadmap, sprints, open work, risks |
 | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Commands: app, platform, Ansible |
 | [`docs/BRANCHING.md`](docs/BRANCHING.md) | Branches, merge policy, protection |
+| [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Failed deploy, rollback, rehearsal results |
 | [`docs/adr/`](docs/adr/) | Why the big decisions were made |
 | [`docs/ProjectA.md`](docs/ProjectA.md) | Original assignment brief, verbatim |
 
