@@ -83,9 +83,10 @@ flowchart LR
 | Reviewed pull requests on GitHub, CODEOWNERS, protection rules configured | ✅ |
 | Protection *enforced* — needs a public repository on this plan | ⬜ |
 | `ansible-lint` in CI | ⬜ |
-| Rehearsed rollback to a previous SHA | ⬜ |
+| Rehearsed rollback to a previous SHA — 7s, [`RUNBOOK.md`](docs/RUNBOOK.md) | ✅ |
+| Zero-downtime swap — a bad deploy is live for ~27s before the smoke test fails it | ⬜ |
 | Structured JSON logging · `/metrics` endpoint | ⬜ |
-| Prometheus / Grafana / Loki · runbook and demo script | ⬜ |
+| Prometheus / Grafana / Loki · demo script | ⬜ |
 
 ## Stack
 

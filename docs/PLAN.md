@@ -60,8 +60,15 @@ trivy → push`. Fail-fast in cost order.
   prints the rollback command with the previous SHA already filled in
 - ✅ `deploy` job gated on `needs: build-test-push` and a ref check. **No rebuild
   in CD** — it deploys the artifact CI tested
-- ⬜ **Rollback rehearsal.** The path exists and is documented; it has not been
-  executed end to end, so it is not yet a claim that can be made
+- ✅ **Rollback rehearsed** end to end on 2026-07-31: a deliberately broken image
+  deployed, the smoke test failed the deploy and printed its own rollback
+  command, that command restored service in **7s**. Evidence in
+  `docs/RUNBOOK.md`; full transcript in commit `eac8fe5`;
+  repeatable via `scripts/rollback-drill.sh`
+- ⬜ **Zero-downtime swap.** The drill measured what replace-then-verify costs:
+  the broken container was live for **27s** before the smoke test gave up, so the
+  real outage window is ~34s, not 7s. Known P2 item, now a number instead of a
+  note
 - ⬜ `ansible-vault` — deliberately not built. Nothing here is secret yet, and
   vault before a secret is ceremony, not security
 
@@ -99,7 +106,11 @@ source of truth for review, Gitea kept execution. Protection and CODEOWNERS are
 configured but not enforced — that needs a public repository on this plan, and
 the work stays private.
 
-Still open: `ansible-lint`; the rollback rehearsal.
+Also delivered: the rollback rehearsal, executed rather than asserted — 7s to
+recover, with the ~34s total outage window measured and recorded rather than
+quietly averaged away (`docs/RUNBOOK.md`).
+
+Still open: `ansible-lint`.
 
 **Review demo**
 
@@ -110,7 +121,11 @@ Still open: `ansible-lint`; the rollback rehearsal.
    against `git rev-parse HEAD`.
 4. Run the deploy a second time → `changed=0`. Idempotence shown, not claimed.
 5. Deploy a broken image → the smoke test fails the deploy and prints its own
-   rollback command → roll back with one line.
+   rollback command → roll back with one line. Rehearsed 2026-07-31: 27s to
+   detect, 7s to recover. Quote the ~34s outage window, not the 7s — replace
+   -then-verify means the smoke test bounds downtime rather than preventing it,
+   and saying so first is stronger than being asked. Repeat with
+   `scripts/rollback-drill.sh`.
 
 ### Sprint 3 — "See What's Happening" ⬜ *Next*
 
@@ -126,8 +141,9 @@ that sentence about cardinality is worth more than another dashboard.
 
 ### Hardening week ⬜
 
-No new features. Remaining ADRs, `RUNBOOK.md`, `CHANGELOG.md`, the clean-machine
-test, `DEMO.md`, two timed rehearsals on a cold machine.
+No new features. Remaining ADRs, `CHANGELOG.md`, the clean-machine test,
+`DEMO.md`, two timed rehearsals on a cold machine — the cold run is what turns
+today's warm-host rollback number into a defensible one.
 
 ---
 
@@ -146,14 +162,45 @@ test, `DEMO.md`, two timed rehearsals on a cold machine.
 - [x] Post-deploy smoke test that fails the deploy
 - [x] `hadolint` in CI
 - [ ] `ansible-lint` in CI
-- [ ] **Rollback rehearsed**, not just documented
+- [x] **Rollback rehearsed**, not just documented — 7s, `docs/RUNBOOK.md`
 - [ ] Structured JSON logging with `request_id`
 - [ ] Grafana provisioned as code, cAdvisor and node_exporter
-- [ ] Runbook and remaining ADRs
+- [x] Runbook — `docs/RUNBOOK.md`, Deploy and Rollback sections
+- [ ] Remaining ADRs
 
 **P2 — only after P0 and P1**
 
 - [ ] Alert routing, zero-downtime swap, auto-changelog, SBOM, dependency updates
+
+### From the mentors' Git strategy training
+
+Reference material lives outside the repo (see `.gitignore`); what it asks for
+that is not already done is tracked here, because a reviewer should find open
+work in one place rather than two.
+
+Most of it is already satisfied: branch protection, CODEOWNERS, conventional
+commits, squash for `feature/*` and a merge commit for `release/* → main` are
+all configured and reasoned about in [`BRANCHING.md`](BRANCHING.md). Genuinely
+outstanding:
+
+- [ ] Pre-commit hooks with `gitleaks` — the one gap with a failure mode that is
+      hard to undo. Nothing stops a secret reaching history today
+- [ ] Rehearse the leaked-secret drill: commit a fake credential, watch the hook
+      block it, practise removal from history. Same standard as the rollback —
+      unrehearsed is unclaimable
+- [ ] Release tags and `CHANGELOG.md`. Deploys are traceable by SHA but not by
+      release. The training's separate `DEPLOYMENTS.md` folds into the changelog
+      rather than becoming a second file to keep true
+- [ ] `CONTRIBUTING.md` — thin entry point pointing at `BRANCHING.md`, not a
+      restatement of it
+
+**Deliberate divergence.** The training recommends `main` + `dev`. This project
+runs `main` + `release/sprint2` because the sprint checkpoint *is* the thing
+demonstrated to mentors, and a long-lived `dev` alongside it would be a third
+branch with no distinct job. Documented in
+[`BRANCHING.md`](BRANCHING.md) and [ADR-0004](adr/0004-github-for-review-gitea-for-execution.md).
+Expect this to be asked about; the answer is that the strategy was chosen, not
+inherited.
 
 ---
 
@@ -205,5 +252,7 @@ test, `DEMO.md`, two timed rehearsals on a cold machine.
 ## 7. Next actions
 
 1. `ansible-lint` in CI, as a step inside `build-test-push`.
-2. Rehearse the rollback end to end and record the result.
-3. Start the logging and `/metrics` work — Sprint 3 depends on both.
+2. Start the logging and `/metrics` work — Sprint 3 depends on both.
+3. `/version` endpoint via `--build-arg` — the demo currently proves the running
+   SHA with the container's `version` label, which works; the endpoint would
+   make it provable without Docker access.
