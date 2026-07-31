@@ -134,12 +134,18 @@ live on GitHub, so that event would never fire here.
 3. `ruff check .`
 4. `hadolint` on the Dockerfile
 5. `pytest` with coverage, failing under 80%
-6. Build `localhost:5001/projecta-flask:<git-sha>`
-7. Wait for the container's own `HEALTHCHECK` to report healthy, bounded at 30s
-8. `curl` the app across `projecta-platform` — proves it is *reachable*, which a
+6. `ansible-lint` at the `production` profile, over the playbooks and the role
+7. Build `localhost:5001/projecta-flask:<git-sha>`
+8. Wait for the container's own `HEALTHCHECK` to report healthy, bounded at 30s
+9. `curl` the app across `projecta-platform` — proves it is *reachable*, which a
    healthcheck probing its own localhost cannot
-9. Trivy, failing on HIGH or CRITICAL
-10. Push to the registry — **only if this ref ships**
+10. Trivy, failing on HIGH or CRITICAL
+11. Push to the registry — **only if this ref ships**
+
+Steps 1–5 run against dependencies the job already has; step 6 is the first that
+pays for a download, which is why it sits there rather than beside `ruff`. It
+still precedes the build, because a playbook that cannot lint cannot deploy the
+image the later steps produce.
 
 `deploy` runs after it, on the same condition. It installs pinned `ansible-core`
 and collections, then runs `playbooks/deploy.yml` with `app_version=<sha>`. It
@@ -168,6 +174,24 @@ pip install -r ansible/requirements-ansible.txt   # same ansible-core as CI
 cd ansible
 ansible-galaxy collection install -r requirements.yml
 ```
+
+### Lint before you run
+
+```bash
+pip install -r ansible/requirements-lint.txt      # inherits the ansible-core pin
+cd ansible
+ansible-lint .
+```
+
+The strictness lives in `ansible/.ansible-lint` (`profile: production`), not in
+a flag, so this command and the CI step cannot disagree about what passing
+means. `requirements-lint.txt` includes `requirements-ansible.txt` rather than
+repeating its pin — one `ansible-core` version, or CI eventually lints against
+an Ansible the deploy does not use.
+
+Run it with the collection installed. `syntax-check` resolves every module it
+sees, and without `community.docker` it reports `unknown-module` on tasks that
+are correct.
 
 ### Verify the target first
 

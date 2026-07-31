@@ -53,7 +53,8 @@ flowchart LR
     A[Commit] --> B[ruff]
     B --> H[hadolint]
     H --> C[pytest<br/>80% gate]
-    C --> D[Build image]
+    C --> AL[ansible-lint<br/>production profile]
+    AL --> D[Build image]
     D --> S[Health gate<br/>+ network check]
     S --> E[trivy]
     E --> F[Push<br/>SHA tag]
@@ -78,11 +79,11 @@ flowchart LR
 | Hardened Dockerfile: multi-stage, non-root, digest-pinned, healthcheck | ✅ |
 | Dependency locking (pip-tools, hashes) · Gunicorn runtime | ✅ |
 | Platform stack: Gitea + act_runner + registry via compose | ✅ |
-| CI: ruff → hadolint → tests → build → health gate → trivy → push | ✅ |
+| CI: ruff → hadolint → tests → ansible-lint → build → health gate → trivy → push | ✅ |
 | CD: Ansible deploys that SHA, smoke test gates it | ✅ |
 | Reviewed pull requests on GitHub, CODEOWNERS, protection rules configured | ✅ |
 | Protection *enforced* — needs a public repository on this plan | ⬜ |
-| `ansible-lint` in CI | ⬜ |
+| `ansible-lint` in CI, at the `production` profile | ✅ |
 | Rehearsed rollback to a previous SHA — 7s, [`RUNBOOK.md`](docs/RUNBOOK.md) | ✅ |
 | Zero-downtime swap — a bad deploy is live for ~27s before the smoke test fails it | ⬜ |
 | Structured JSON logging · `/metrics` endpoint | ⬜ |

@@ -1,0 +1,15 @@
+---
+# ansible-lint configuration. Like ansible.cfg, this is read from the working
+# directory, so every ansible-lint run happens from here: cd ansible/
+#
+# The profile is written down rather than inherited. ansible-lint ships a
+# ladder of profiles — min, basic, moderate, safety, shared, production — and
+# without this line it grades the repository against them and reports which one
+# it reached, failing only on error-level rules. Naming `production` turns that
+# report into a gate: anything short of the top profile fails the build.
+#
+# This is set to the strictest rung because the playbooks and the role already
+# pass it clean, so it costs nothing today and catches the first task that
+# would have slipped below it. Adopting a standard while you already meet it is
+# free; adopting one after you have drifted is a refactor.
+profile: production

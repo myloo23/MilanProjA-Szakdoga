@@ -131,6 +131,50 @@ jobs:
             --cov-report=term-missing \
             --cov-fail-under=80
 
+      - name: Install the Ansible control node and collections
+        # Needed only by the lint step below, and installed as its own step so a
+        # dependency-resolution failure reads as one instead of hiding inside a
+        # lint failure.
+        #
+        # requirements-lint.txt pulls in requirements-ansible.txt, so CI lints
+        # against the same ansible-core the deploy job runs. Two pins would
+        # eventually disagree, and the version that lints would stop being the
+        # version that deploys.
+        #
+        # The collection is not optional. ansible-lint's syntax-check resolves
+        # every module it sees, and without community.docker installed the role
+        # fails with unknown-module on tasks that are perfectly correct. A gate
+        # that fails for a reason unrelated to the code is worse than no gate:
+        # it teaches you to skim past red.
+        run: |
+          python -m pip install -r ansible/requirements-lint.txt
+          ansible-galaxy collection install -r ansible/requirements.yml
+
+      - name: Lint the Ansible playbooks and role
+        working-directory: ansible
+        # Placed here, after the checks that need no installation and before the
+        # build, to keep the job in cost order. ruff, hadolint and pytest all
+        # run against dependencies this job already has; this is the first gate
+        # that pays for a download, so it goes after them — and still ahead of
+        # build, scan and push, because a playbook that cannot lint is a
+        # playbook that cannot deploy the image those stages produce.
+        #
+        # A step rather than a job, for the reason hadolint is: the runner has
+        # capacity 1, so a second job would queue rather than parallelise and
+        # bill another container start-up for a lint that takes seconds.
+        #
+        # Not in the deploy job either, which is the more tempting mistake —
+        # Ansible is already installed there. But deploy runs only on refs that
+        # ship, so every feature branch would go unlinted, and feature branches
+        # are exactly where playbook mistakes are made.
+        #
+        # The strictness lives in ansible/.ansible-lint, not in a flag here, so
+        # `ansible-lint` on a laptop and `ansible-lint` in CI cannot disagree
+        # about what passing means.
+        run: |
+          ansible-lint --version
+          ansible-lint .
+
       - name: Build Docker image
         run: |
           docker build \

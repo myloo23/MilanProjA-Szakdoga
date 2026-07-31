@@ -47,8 +47,9 @@ Multi-stage, digest-pinned base, non-root `appuser`, `HEALTHCHECK`.
 ⬜ Remaining: OCI labels (`revision`, `source`, `created`, `version`).
 
 **Phase 3 — CI** ✅
-`ruff → hadolint → pytest (80% gate) → build → health gate → network check →
-trivy → push`. Fail-fast in cost order.
+`ruff → hadolint → pytest (80% gate) → ansible-lint → build → health gate →
+network check → trivy → push`. Fail-fast in cost order — `ansible-lint` sits
+after the checks that need no installation and before the build.
 ⬜ Remaining: build metadata via `--build-arg`, surfaced on a `/version` endpoint.
 
 **Phase 4 — CD with Ansible** 🟡
@@ -161,7 +162,7 @@ today's warm-host rollback number into a defensible one.
 - [x] `/echo` 400 handling, coverage gate, Trivy scan, Gunicorn, secrets out of Git
 - [x] Post-deploy smoke test that fails the deploy
 - [x] `hadolint` in CI
-- [ ] `ansible-lint` in CI
+- [x] `ansible-lint` in CI — `production` profile, gated in `build-test-push`
 - [x] **Rollback rehearsed**, not just documented — 7s, `docs/RUNBOOK.md`
 - [ ] Structured JSON logging with `request_id`
 - [ ] Grafana provisioned as code, cAdvisor and node_exporter
