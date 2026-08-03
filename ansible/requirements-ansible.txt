@@ -10,4 +10,4 @@ ansible-core==2.21.2
 # do it. A laptop usually has it already, which is exactly why its absence only
 # showed up in the clean job container — the control node needs to be declared,
 # not assumed.
-requests==2.32.3
+requests==2.33.0
