@@ -37,10 +37,24 @@ To add or change one:
 
 ```bash
 # edit requirements.in (runtime) or requirements-dev.in (tooling), then:
-pip-compile --generate-hashes --strip-extras requirements.in
-pip-compile --generate-hashes --strip-extras requirements-dev.in
+pip-compile --allow-unsafe --generate-hashes --strip-extras \
+  --output-file=requirements.txt requirements.in
+pip-compile --allow-unsafe --generate-hashes --strip-extras \
+  --output-file=requirements-dev.txt requirements-dev.in
 pip install -r requirements-dev.txt
 ```
+
+**Recompile both, in the same commit — even when you only touched one `.in`
+file.** `requirements-dev.in` starts with `-r requirements.in`, so the dev lock
+is meant to be the runtime lock plus tooling. Compile one without the other and
+the two resolve at different times: that is exactly how the image came to ship
+`gunicorn 23.0.0` while CI installed `26.0.0`. Runtime dependencies are now
+pinned in `requirements.in` rather than left floating, which is what makes the
+two locks agree.
+
+**Use these flags, not a shortened version.** `--allow-unsafe` is what pins
+`pip`, `setuptools` and `wheel` in the dev lock; drop it and the next compile
+silently removes them.
 
 **Never hand-edit the `.txt` files** — they are generated. The hashes make
 installs reproducible and tamper-evident; the Dockerfile enforces them with
