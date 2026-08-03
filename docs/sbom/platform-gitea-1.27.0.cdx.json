@@ -2,10 +2,10 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.7.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.7",
-  "serialNumber": "urn:uuid:57382d10-df7c-4ead-9420-8f6d2940d1ab",
+  "serialNumber": "urn:uuid:5690c76c-9851-43b5-b276-4a0e6863860b",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-07-31T12:23:33+00:00",
+    "timestamp": "2026-08-03T12:00:53+00:00",
     "tools": {
       "components": [
         {
@@ -78,22 +78,7 @@
   },
   "components": [
     {
-      "bom-ref": "7323569a-6b75-4cd9-9c32-0ca720bc4a43",
-      "type": "application",
-      "name": "app/gitea/gitea",
-      "properties": [
-        {
-          "name": "aquasecurity:trivy:Class",
-          "value": "lang-pkgs"
-        },
-        {
-          "name": "aquasecurity:trivy:Type",
-          "value": "gobinary"
-        }
-      ]
-    },
-    {
-      "bom-ref": "86ebf706-40fa-4c1b-b40f-1974c72a3b8b",
+      "bom-ref": "95a389df-15e2-4586-a2e2-f2460356f4e2",
       "type": "operating-system",
       "name": "alpine",
       "version": "3.24.1",
@@ -105,6 +90,21 @@
         {
           "name": "aquasecurity:trivy:Type",
           "value": "alpine"
+        }
+      ]
+    },
+    {
+      "bom-ref": "e2b4e911-eca1-4bec-a02a-0af1232d069f",
+      "type": "application",
+      "name": "app/gitea/gitea",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:Class",
+          "value": "lang-pkgs"
+        },
+        {
+          "name": "aquasecurity:trivy:Type",
+          "value": "gobinary"
         }
       ]
     },
@@ -10769,13 +10769,7 @@
   ],
   "dependencies": [
     {
-      "ref": "7323569a-6b75-4cd9-9c32-0ca720bc4a43",
-      "dependsOn": [
-        "pkg:golang/gitea.dev@v1.27.0%2Bdirty"
-      ]
-    },
-    {
-      "ref": "86ebf706-40fa-4c1b-b40f-1974c72a3b8b",
+      "ref": "95a389df-15e2-4586-a2e2-f2460356f4e2",
       "dependsOn": [
         "pkg:apk/alpine/alpine-baselayout@3.7.2-r1?arch=aarch64&distro=3.24.1",
         "pkg:apk/alpine/alpine-release@3.24.1-r0?arch=aarch64&distro=3.24.1",
@@ -10794,6 +10788,12 @@
         "pkg:apk/alpine/sqlite@3.53.2-r0?arch=aarch64&distro=3.24.1",
         "pkg:apk/alpine/ssl_client@1.37.0-r31?arch=aarch64&distro=3.24.1",
         "pkg:apk/alpine/su-exec@0.3-r0?arch=aarch64&distro=3.24.1"
+      ]
+    },
+    {
+      "ref": "e2b4e911-eca1-4bec-a02a-0af1232d069f",
+      "dependsOn": [
+        "pkg:golang/gitea.dev@v1.27.0%2Bdirty"
       ]
     },
     {
@@ -12735,8 +12735,8 @@
     {
       "ref": "pkg:oci/gitea@sha256:7dff60d7ea6df9d0bdf78971cdb1350e9b7df3fda5f115c77afe12122887bd64?arch=arm64&repository_url=docker.gitea.com%2Fgitea",
       "dependsOn": [
-        "7323569a-6b75-4cd9-9c32-0ca720bc4a43",
-        "86ebf706-40fa-4c1b-b40f-1974c72a3b8b"
+        "95a389df-15e2-4586-a2e2-f2460356f4e2",
+        "e2b4e911-eca1-4bec-a02a-0af1232d069f"
       ]
     }
   ],

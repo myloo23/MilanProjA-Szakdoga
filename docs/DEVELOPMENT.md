@@ -184,7 +184,7 @@ container, so `localhost` there is the job container, not the Docker host.
 inside `ansible/`**.
 
 ```bash
-pip install -r ansible/requirements-ansible.txt   # same ansible-core as CI
+pip install --require-hashes -r ansible/requirements-ansible.txt   # same ansible-core as CI
 cd ansible
 ansible-galaxy collection install -r requirements.yml
 ```
@@ -192,7 +192,7 @@ ansible-galaxy collection install -r requirements.yml
 ### Lint before you run
 
 ```bash
-pip install -r ansible/requirements-lint.txt      # inherits the ansible-core pin
+pip install --require-hashes -r ansible/requirements-lint.txt      # inherits the ansible-core pin
 cd ansible
 ansible-lint .
 ```
@@ -202,6 +202,33 @@ a flag, so this command and the CI step cannot disagree about what passing
 means. `requirements-lint.txt` includes `requirements-ansible.txt` rather than
 repeating its pin — one `ansible-core` version, or CI eventually lints against
 an Ansible the deploy does not use.
+
+### Changing a control-node dependency
+
+Both Ansible locks are `pip-compile` output, hashed like the application locks,
+and CI installs them with `--require-hashes`. Edit the `.in` file, never the
+`.txt`:
+
+```bash
+# edit ansible/requirements-ansible.in or ansible/requirements-lint.in, then:
+pip-compile --allow-unsafe --generate-hashes --strip-extras \
+  --output-file=ansible/requirements-ansible.txt ansible/requirements-ansible.in
+pip-compile --allow-unsafe --generate-hashes --strip-extras \
+  --output-file=ansible/requirements-lint.txt ansible/requirements-lint.in
+```
+
+Recompile both in the same commit — `requirements-lint.in` includes
+`requirements-ansible.in`, so compiling one alone lets the two locks resolve at
+different times. That is the drift `gunicorn` already demonstrated once.
+
+The control node is hashed because it is the thing that reaches the Docker
+daemon and replaces the running container. An unverified install there is a
+wider hole than an unverified install in the image it deploys.
+
+**`ansible/requirements.yml` is the exception.** Galaxy collections have no
+hash-locking equivalent, so `community.docker` is version-pinned only. That is a
+limitation of the ecosystem, not an oversight — worth saying out loud, because a
+reader who sees hashes everywhere else will wonder.
 
 Run it with the collection installed. `syntax-check` resolves every module it
 sees, and without `community.docker` it reports `unknown-module` on tasks that

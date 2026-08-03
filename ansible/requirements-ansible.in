@@ -1,0 +1,24 @@
+# Control-node dependencies. Compiled to requirements-ansible.txt with hashes:
+#
+#   pip-compile --allow-unsafe --generate-hashes --strip-extras \
+#     --output-file=ansible/requirements-ansible.txt ansible/requirements-ansible.in
+#
+# Hashed for the same reason requirements.txt is: the control node is what
+# reaches the Docker daemon and replaces the running container. An unverified
+# install there is a larger hole than an unverified install in the image it
+# deploys.
+
+# Ansible itself, pinned so the laptop and the CI runner install the same
+# version. A control node that differs between local and CI turns "works on my
+# machine" into a pipeline failure nobody can reproduce.
+ansible-core==2.21.2
+
+# community.docker talks to the Docker daemon's HTTP API and imports requests to
+# do it. A laptop usually has it already, which is exactly why its absence only
+# showed up in the clean job container — the control node needs to be declared,
+# not assumed.
+#
+# 2.33.0 rather than 2.32.3 since #29: two Dependabot alerts, a .netrc
+# credential leak via malicious URLs and insecure temp file reuse in
+# extract_zipped_paths().
+requests==2.33.0

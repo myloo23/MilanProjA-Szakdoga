@@ -48,8 +48,11 @@ Multi-stage, digest-pinned base, non-root `appuser`, `HEALTHCHECK`.
 
 **Phase 3 — CI** ✅
 `ruff → hadolint → pytest (80% gate) → ansible-lint → build → health gate →
-network check → trivy → push`. Fail-fast in cost order — `ansible-lint` sits
-after the checks that need no installation and before the build.
+network check → trivy → push → reclaim`. Fail-fast in cost order — `ansible-lint`
+sits after the checks that need no installation and before the build. Every tool
+is pinned exactly, Trivy included since `a6a4d33`; a scanner on a floating tag
+turns a build nobody touched red. `reclaim` removes the SHA-tagged image after
+the push, so the runner's disk does not grow by one image per run.
 ⬜ Remaining: build metadata via `--build-arg`, surfaced on a `/version` endpoint.
 
 **Phase 4 — CD with Ansible** ✅
@@ -117,6 +120,32 @@ Also delivered: `ansible-lint` at the `production` profile; the rollback
 rehearsal, executed rather than asserted — 7s to recover, with the ~34s total
 outage window measured and recorded rather than quietly averaged away
 (`docs/RUNBOOK.md`).
+
+**After the sprint closed (2026-08-03), a hardening pass.** Recorded here rather
+than folded into the sprint above, because the sprint goal was met at PR #25 and
+a board that quietly absorbs later work stops telling the truth about what was
+planned versus what was found.
+
+- **Software inventory / SBOM** — six CycloneDX SBOMs, 621 components, every
+  command reproducible (`docs/sbom/`). Bonus scope, and it paid for itself: it
+  found the gunicorn drift below
+- **gunicorn production/CI drift, fixed** (#28). `requirements.txt` shipped
+  `23.0.0` while `requirements-dev.txt` installed `26.0.0`; both compiled from a
+  `requirements.in` that left them unpinned. `DEVELOPMENT.md` also documented a
+  `pip-compile` command missing `--allow-unsafe`, which would have regenerated
+  the dev lock without its `pip`/`setuptools`/`wheel` pins — the drift had two
+  sources and both are closed
+- **Two Dependabot alerts on `requests`, closed** (#29). Control-node only —
+  `community.docker` imports it to reach the Docker daemon; it is absent from
+  the shipped image
+- **Trivy pinned to `0.72.0`.** It was the one tool in the pipeline still on
+  `latest`, against the argument this repo already makes for `hadolint`. The
+  scanner that gates the build is now the scanner that produced the SBOM
+- **CI reclaims its own disk.** Every run built a SHA-tagged image that nothing
+  ever removed; on a host also carrying Gitea, the registry and the deployed
+  container, that ends as a full disk during a demo
+- **SBOM regenerated** against `a6a4d33` after its own staleness guard fired —
+  see `docs/sbom/README.md`, "Guard history"
 
 Nothing open. The sprint goal is met with one honest qualification: "a
 **reviewed** merge" is a process the repository follows by hand, not one it
@@ -190,7 +219,19 @@ today's warm-host rollback number into a defensible one.
 
 **P2 — only after P0 and P1**
 
-- [ ] Alert routing, zero-downtime swap, auto-changelog, SBOM, dependency updates
+- [x] **SBOM** — six CycloneDX files, 621 components, `docs/sbom/`. Point-in-time
+      and committed, so it goes stale by design; the staleness guard in its
+      README is the compensating control, and it has fired once already
+- [ ] Alert routing, zero-downtime swap, auto-changelog
+- [ ] **Automated dependency updates.** Dependabot alerts are being acted on by
+      hand (two closed in #29). Nothing regenerates the SBOM or opens the bump
+      automatically — a `schedule:` job in `ci.yml` is the obvious next step and
+      is deliberately not built yet
+- [x] **Hash-lock the Ansible requirements.** Both control-node locks are now
+      `pip-compile --generate-hashes` output, installed with `--require-hashes`
+      in CI — the same standard as the application locks. `requirements.yml`
+      stays version-pinned only: Galaxy collections have no hash-locking
+      equivalent, which is an ecosystem limitation rather than a gap
 
 ### From the mentors' Git strategy training
 

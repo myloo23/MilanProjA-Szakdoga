@@ -43,12 +43,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify checked-out source
-        run: |
-          pwd
-          ls -la
-          git rev-parse HEAD
-
       - name: Decide whether this ref ships an artifact
         id: ref_gate
         # `main` and `release/*` are protected on GitHub and reach this runner
@@ -82,9 +76,6 @@ jobs:
           python-version: "3.12"
           cache: "pip"
           cache-dependency-path: requirements-dev.txt
-
-      - name: Verify Python version
-        run: python --version
 
       - name: Install dependencies
         run: |
@@ -147,7 +138,7 @@ jobs:
         # that fails for a reason unrelated to the code is worse than no gate:
         # it teaches you to skim past red.
         run: |
-          python -m pip install -r ansible/requirements-lint.txt
+          python -m pip install --require-hashes -r ansible/requirements-lint.txt
           ansible-galaxy collection install -r ansible/requirements.yml
 
       - name: Lint the Ansible playbooks and role
@@ -226,10 +217,20 @@ jobs:
           curl --fail --show-error --silent http://flask-test:8000/health
 
       - name: Scan image with Trivy
+        # Pinned like hadolint and ansible-lint, and for the same reason: a
+        # scanner on `latest` can gain a rule or a database entry overnight and
+        # fail a build nobody touched. That is a red pipeline you cannot
+        # attribute to a change, which is the one kind of failure that teaches
+        # people to ignore the gate.
+        #
+        # 0.72.0 is the version docs/sbom/README.md records for the inventory,
+        # so the scanner that gates the build is the scanner that produced the
+        # SBOM. Bump it deliberately, in its own commit, so a new finding is
+        # attributable to the bump rather than to the day it happened.
         run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:latest image \
+            aquasec/trivy:0.72.0 image \
             --exit-code 1 \
             --severity HIGH,CRITICAL \
             --ignore-unfixed \
@@ -248,6 +249,24 @@ jobs:
         if: steps.ref_gate.outputs.ships == 'true'
         run: |
           docker push localhost:5001/projecta-flask:${{ github.sha }}
+
+      - name: Reclaim the build's disk
+        # Every run builds an image tagged with its own SHA, so nothing ever
+        # overwrites anything and the runner's disk only grows. On a host that
+        # also carries Gitea, the registry and the deployed container, that ends
+        # as a full disk during a demo rather than as a warning.
+        #
+        # Runs after the push, never before: for shipping refs the registry is
+        # the copy that matters, and removing the local tag first would delete
+        # the artifact this job exists to publish. For every other ref the image
+        # was always disposable.
+        #
+        # `always()` so a failed scan or a failed push still cleans up, and
+        # `|| true` so cleanup can never be the thing that fails the build.
+        if: always()
+        run: |
+          docker rmi localhost:5001/projecta-flask:${{ github.sha }} || true
+          docker image prune --force || true
 
   deploy:
     # Runs only after the artifact exists, and only for refs that published one.
@@ -273,7 +292,7 @@ jobs:
       - name: Install Ansible
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r ansible/requirements-ansible.txt
+          python -m pip install --require-hashes -r ansible/requirements-ansible.txt
 
       - name: Install Ansible collections
         run: ansible-galaxy collection install -r ansible/requirements.yml

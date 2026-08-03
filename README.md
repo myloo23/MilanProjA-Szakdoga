@@ -81,11 +81,13 @@ flowchart LR
 | Dependency locking (pip-tools, hashes) · Gunicorn runtime | ✅ |
 | Platform stack: Gitea + act_runner + registry via compose | ✅ |
 | CI: ruff → hadolint → tests → ansible-lint → build → health gate → trivy → push | ✅ |
+| Every CI tool pinned exactly — Trivy included | ✅ |
+| Software inventory / SBOM — 621 components, [`docs/sbom/`](docs/sbom/) | ✅ |
 | CD: Ansible deploys that SHA, smoke test gates it | ✅ |
 | Reviewed pull requests on GitHub, CODEOWNERS, protection rules configured | ✅ |
 | Protection *enforced* — needs a public repository on this plan | ⬜ |
 | `ansible-lint` in CI, at the `production` profile | ✅ |
-| Rehearsed rollback to a previous SHA — 7s, [`RUNBOOK.md`](docs/RUNBOOK.md) | ✅ |
+| Rehearsed rollback to a previous SHA — ~34s outage window, [`RUNBOOK.md`](docs/RUNBOOK.md) | ✅ |
 | Zero-downtime swap — a bad deploy is live for ~27s before the smoke test fails it | ⬜ |
 | Structured JSON logging · `/metrics` endpoint | ⬜ |
 | Prometheus / Grafana / Loki · demo script | ⬜ |
@@ -98,7 +100,8 @@ flowchart LR
 | Review | GitHub — protected branches, CODEOWNERS |
 | CI | Gitea + Gitea Actions (`act_runner`), self-hosted |
 | Artifact | Docker image → `localhost:5001`, tagged by git SHA |
-| Scanning | hadolint (Dockerfile) · Trivy (image, fails on HIGH/CRITICAL) |
+| Scanning | hadolint v2.14.0 (Dockerfile) · Trivy 0.72.0 (image, fails on HIGH/CRITICAL) |
+| Inventory | CycloneDX SBOMs via Trivy 0.72.0 — [`docs/sbom/`](docs/sbom/) |
 | Deploy | Ansible + `community.docker`, inventory-driven |
 | Observability | Prometheus · Loki · Grafana *(planned)* |
 
@@ -139,7 +142,7 @@ For the local CI platform (Gitea, runner, registry) see
 ├── scripts/              # smoke.sh — the checks CI runs, by hand
 │                         # rollback-drill.sh — the rehearsal, repeatable
 ├── .gitea/workflows/     # ci.yml (build-test-push + deploy)
-├── docs/                 # plan, dev guide, runbook, ADRs, assignment brief
+├── docs/                 # plan, dev guide, runbook, ADRs, SBOMs, assignment brief
 ├── CODEOWNERS            # reviewers, per branch
 └── Dockerfile
 ```
@@ -153,6 +156,7 @@ For the local CI platform (Gitea, runner, registry) see
 | [`docs/BRANCHING.md`](docs/BRANCHING.md) | Branches, merge policy, protection |
 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Failed deploy, rollback, rehearsal results |
 | [`docs/adr/`](docs/adr/) | Why the big decisions were made |
+| [`docs/sbom/`](docs/sbom/) | Software inventory — 621 components, six CycloneDX SBOMs |
 | [`docs/ProjectA.md`](docs/ProjectA.md) | Original assignment brief, verbatim |
 
 ---

@@ -2,10 +2,10 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.7.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.7",
-  "serialNumber": "urn:uuid:710b984b-e4bf-4e20-bc04-74a58e5afc04",
+  "serialNumber": "urn:uuid:ccbd9f03-d7dc-457c-bc0d-9e890670ed8e",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-07-31T12:23:34+00:00",
+    "timestamp": "2026-08-03T12:00:54+00:00",
     "tools": {
       "components": [
         {
@@ -70,7 +70,7 @@
   },
   "components": [
     {
-      "bom-ref": "a2946fbc-68b8-44de-883e-ef3549c4bdeb",
+      "bom-ref": "3ba1dce6-f577-4786-a4af-02286a85dade",
       "type": "operating-system",
       "name": "alpine",
       "version": "3.22.0",
@@ -86,7 +86,7 @@
       ]
     },
     {
-      "bom-ref": "a9ef247b-3238-4799-ba79-3f46b5d96462",
+      "bom-ref": "c022ef6a-4a11-43f2-a3d9-07e4907a2c69",
       "type": "application",
       "name": "usr/local/bin/act_runner",
       "properties": [
@@ -3775,7 +3775,7 @@
   ],
   "dependencies": [
     {
-      "ref": "a2946fbc-68b8-44de-883e-ef3549c4bdeb",
+      "ref": "3ba1dce6-f577-4786-a4af-02286a85dade",
       "dependsOn": [
         "pkg:apk/alpine/alpine-baselayout@3.7.0-r0?arch=aarch64&distro=3.22.0",
         "pkg:apk/alpine/alpine-release@3.22.0-r0?arch=aarch64&distro=3.22.0",
@@ -3789,7 +3789,7 @@
       ]
     },
     {
-      "ref": "a9ef247b-3238-4799-ba79-3f46b5d96462",
+      "ref": "c022ef6a-4a11-43f2-a3d9-07e4907a2c69",
       "dependsOn": [
         "pkg:golang/gitea.com/gitea/act_runner@v0.2.12"
       ]
@@ -4422,8 +4422,8 @@
     {
       "ref": "pkg:oci/act_runner@sha256:62a561c82dd67ec77ea600db7eac78ac5fed8e2244950fbf1829c54da12e8e54?arch=arm64&repository_url=index.docker.io%2Fgitea%2Fact_runner",
       "dependsOn": [
-        "a2946fbc-68b8-44de-883e-ef3549c4bdeb",
-        "a9ef247b-3238-4799-ba79-3f46b5d96462"
+        "3ba1dce6-f577-4786-a4af-02286a85dade",
+        "c022ef6a-4a11-43f2-a3d9-07e4907a2c69"
       ]
     }
   ],
