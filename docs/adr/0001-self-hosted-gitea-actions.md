@@ -2,7 +2,10 @@
 
 ## Status
 
-Accepted — 2026-07-27
+Accepted — 2026-07-27. Partly superseded by
+[ADR-0004](0004-github-for-review-gitea-for-execution.md): GitHub is the origin
+and owns review, Gitea owns execution. The self-hosted runner, registry and
+Docker socket decided here are unchanged.
 
 ## Context
 

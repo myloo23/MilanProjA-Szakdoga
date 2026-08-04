@@ -8,31 +8,67 @@ name: Pipeline
 # waits for the runner to free up. `needs:` makes the ordering a fact instead
 # of a hope.
 on:
-  # Branch commits are covered by the pull_request run, so push is narrowed to
-  # main. A bare `push:` alongside `pull_request:` builds every branch commit
-  # twice — two identical runs, on a runner with capacity 1, where the second
-  # one is queueing behind the first for no reason.
+  # Push-only, deliberately, and this is a reversal worth understanding.
   #
-  # The trade-off: a branch with no pull request open yet gets no CI. Trunk-based
-  # development answers that by opening the pull request early, which is the
-  # habit worth having anyway.
+  # Review now happens on GitHub; Gitea is the execution environment. No pull
+  # request will ever be opened here again, so a `pull_request:` trigger would
+  # be a rule that can never fire — and every feature branch would silently get
+  # no CI at all. A pipeline that does not run looks exactly like a pipeline
+  # that has nothing to complain about.
+  #
+  # That also retires the reason push was once narrowed to main: the duplicate
+  # run it avoided came from push and pull_request both firing, and one half of
+  # that pair no longer exists.
+  #
+  # The branch list mirrors the naming convention in docs/BRANCHING.md. Anything
+  # outside it — a scratch branch, an experiment — gets no runner, which on a
+  # runner with capacity 1 is the difference between a queue and a wait.
   push:
-    branches: [main]
-  pull_request:
+    branches:
+      - main
+      - 'release/**'
+      - 'feature/**'
+      - 'hotfix/**'
 
 jobs:
   build-test-push:
     runs-on: ubuntu-latest
 
+    # Published downstream so the deploy job can reuse this decision instead of
+    # re-deriving it. One definition of "this ref ships", two consumers.
+    outputs:
+      ships: ${{ steps.ref_gate.outputs.ships }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify checked-out source
+      - name: Decide whether this ref ships an artifact
+        id: ref_gate
+        # `main` and `release/*` are protected on GitHub and reach this runner
+        # only after review, so they are the refs allowed to publish an image
+        # and deploy it. Feature and hotfix branches build, test and scan —
+        # they prove the change is sound without putting anything in the
+        # registry, which holds deployable artifacts only.
+        #
+        # Written as a shell `case` rather than an `if:` expression on purpose:
+        # prefix matching would need startsWith(), whose support under
+        # act_runner is not something to bet a release gate on. `case` is POSIX.
+        #
+        # The ref arrives through the environment, never interpolated straight
+        # into the script. `${{ }}` is substituted as raw text before the shell
+        # ever sees it, so a branch named with shell metacharacters would run as
+        # code here. Branch names come from whoever can push — treat them as
+        # input, not as trusted values.
+        env:
+          REF: ${{ github.ref }}
         run: |
-          pwd
-          ls -la
-          git rev-parse HEAD
+          case "$REF" in
+            refs/heads/main|refs/heads/release/*) ships=true ;;
+            *)                                    ships=false ;;
+          esac
+          echo "ships=$ships" >> "$GITHUB_OUTPUT"
+          echo "$REF -> ships=$ships"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -40,9 +76,6 @@ jobs:
           python-version: "3.12"
           cache: "pip"
           cache-dependency-path: requirements-dev.txt
-
-      - name: Verify Python version
-        run: python --version
 
       - name: Install dependencies
         run: |
@@ -88,6 +121,50 @@ jobs:
             --cov=app \
             --cov-report=term-missing \
             --cov-fail-under=80
+
+      - name: Install the Ansible control node and collections
+        # Needed only by the lint step below, and installed as its own step so a
+        # dependency-resolution failure reads as one instead of hiding inside a
+        # lint failure.
+        #
+        # requirements-lint.txt pulls in requirements-ansible.txt, so CI lints
+        # against the same ansible-core the deploy job runs. Two pins would
+        # eventually disagree, and the version that lints would stop being the
+        # version that deploys.
+        #
+        # The collection is not optional. ansible-lint's syntax-check resolves
+        # every module it sees, and without community.docker installed the role
+        # fails with unknown-module on tasks that are perfectly correct. A gate
+        # that fails for a reason unrelated to the code is worse than no gate:
+        # it teaches you to skim past red.
+        run: |
+          python -m pip install --require-hashes -r ansible/requirements-lint.txt
+          ansible-galaxy collection install -r ansible/requirements.yml
+
+      - name: Lint the Ansible playbooks and role
+        working-directory: ansible
+        # Placed here, after the checks that need no installation and before the
+        # build, to keep the job in cost order. ruff, hadolint and pytest all
+        # run against dependencies this job already has; this is the first gate
+        # that pays for a download, so it goes after them — and still ahead of
+        # build, scan and push, because a playbook that cannot lint is a
+        # playbook that cannot deploy the image those stages produce.
+        #
+        # A step rather than a job, for the reason hadolint is: the runner has
+        # capacity 1, so a second job would queue rather than parallelise and
+        # bill another container start-up for a lint that takes seconds.
+        #
+        # Not in the deploy job either, which is the more tempting mistake —
+        # Ansible is already installed there. But deploy runs only on refs that
+        # ship, so every feature branch would go unlinted, and feature branches
+        # are exactly where playbook mistakes are made.
+        #
+        # The strictness lives in ansible/.ansible-lint, not in a flag here, so
+        # `ansible-lint` on a laptop and `ansible-lint` in CI cannot disagree
+        # about what passing means.
+        run: |
+          ansible-lint --version
+          ansible-lint .
 
       - name: Build Docker image
         run: |
@@ -140,10 +217,20 @@ jobs:
           curl --fail --show-error --silent http://flask-test:8000/health
 
       - name: Scan image with Trivy
+        # Pinned like hadolint and ansible-lint, and for the same reason: a
+        # scanner on `latest` can gain a rule or a database entry overnight and
+        # fail a build nobody touched. That is a red pipeline you cannot
+        # attribute to a change, which is the one kind of failure that teaches
+        # people to ignore the gate.
+        #
+        # 0.72.0 is the version docs/sbom/README.md records for the inventory,
+        # so the scanner that gates the build is the scanner that produced the
+        # SBOM. Bump it deliberately, in its own commit, so a new finding is
+        # attributable to the bump rather than to the day it happened.
         run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:latest image \
+            aquasec/trivy:0.72.0 image \
             --exit-code 1 \
             --severity HIGH,CRITICAL \
             --ignore-unfixed \
@@ -156,19 +243,39 @@ jobs:
           docker rm flask-test || true
 
       - name: Push Docker image
-        # Only main publishes. Feature branches build, test and scan the image
-        # but must not put an artifact in the registry — the registry holds
-        # deployable artifacts only, and CD deploys by SHA from main.
-        if: github.ref == 'refs/heads/main'
+        # Only reviewed refs publish. A feature branch builds, tests and scans
+        # its image, then throws it away — the registry holds deployable
+        # artifacts only, and nothing is deployable before review.
+        if: steps.ref_gate.outputs.ships == 'true'
         run: |
           docker push localhost:5001/projecta-flask:${{ github.sha }}
 
+      - name: Reclaim the build's disk
+        # Every run builds an image tagged with its own SHA, so nothing ever
+        # overwrites anything and the runner's disk only grows. On a host that
+        # also carries Gitea, the registry and the deployed container, that ends
+        # as a full disk during a demo rather than as a warning.
+        #
+        # Runs after the push, never before: for shipping refs the registry is
+        # the copy that matters, and removing the local tag first would delete
+        # the artifact this job exists to publish. For every other ref the image
+        # was always disposable.
+        #
+        # `always()` so a failed scan or a failed push still cleans up, and
+        # `|| true` so cleanup can never be the thing that fails the build.
+        if: always()
+        run: |
+          docker rmi localhost:5001/projecta-flask:${{ github.sha }} || true
+          docker image prune --force || true
+
   deploy:
-    # Runs only after the artifact exists, and only for main. Do not add this
-    # job to the required status checks on main: it never runs on a pull
-    # request, so requiring it would block every merge forever.
+    # Runs only after the artifact exists, and only for refs that published one.
+    # release/* deploys as well as main: release/sprint2 is the sprint
+    # checkpoint and the branch that gets demonstrated, so waiting until the
+    # end-of-sprint merge to find out whether it deploys would put the first
+    # real CD run at the most expensive possible moment.
     needs: build-test-push
-    if: github.ref == 'refs/heads/main'
+    if: needs.build-test-push.outputs.ships == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -185,7 +292,7 @@ jobs:
       - name: Install Ansible
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r ansible/requirements-ansible.txt
+          python -m pip install --require-hashes -r ansible/requirements-ansible.txt
 
       - name: Install Ansible collections
         run: ansible-galaxy collection install -r ansible/requirements.yml

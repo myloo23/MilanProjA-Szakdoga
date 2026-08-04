@@ -1,0 +1,21 @@
+# ansible-lint, on top of the exact control node the deploy uses. Compiled to
+# requirements-lint.txt with hashes:
+#
+#   pip-compile --allow-unsafe --generate-hashes --strip-extras \
+#     --output-file=ansible/requirements-lint.txt ansible/requirements-lint.in
+#
+# The -r line is the whole point. ansible-core stays pinned once, in
+# requirements-ansible.in, and the linter inherits that pin. Pinning it a
+# second time here would let CI lint against one Ansible and deploy with
+# another — the same drift the control-node pin exists to prevent, moved one
+# file to the left.
+#
+# Recompile both files in the same commit. requirements-lint.in includes
+# requirements-ansible.in, so compiling one alone lets the two locks resolve at
+# different times — the failure gunicorn already demonstrated once.
+-r requirements-ansible.in
+
+# Pinned like hadolint, for the same reason: a linter that gains a rule
+# overnight fails a build nobody touched. Bump it deliberately, in its own
+# commit, so a new finding is attributable.
+ansible-lint==26.6.0

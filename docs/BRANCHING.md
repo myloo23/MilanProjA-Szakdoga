@@ -1,116 +1,110 @@
-# Branching Strategy
-
-Trunk-based development. One long-lived branch, short-lived branches off it,
-everything merged through a pull request. This is the single source of truth;
-`PLAN.md` and `DEVELOPMENT.md` link here.
+# Branching
 
 ```
-main (protected, always deployable, only branch that publishes an image)
- ├── feat/ansible-scaffold      ← lives < 2 days
- ├── fix/echo-invalid-json
- └── chore/sprint1-cleanup
+main (protected)                 validated sprint work only
+ └── release/sprint2 (protected) the sprint checkpoint — what gets demonstrated
+      ├── feature/sprint-2-...   lives < 2 days
+      └── hotfix/...
 ```
 
-## The rules
+## Two forges
 
-1. **`main` is always deployable.** Never commit to it directly — no exceptions,
-   including under demo pressure.
-2. **Branch from `main`, name it `<type>/<kebab-description>`.** Types are the
-   Conventional Commit types: `feat`, `fix`, `docs`, `ci`, `build`, `refactor`,
-   `test`, `chore`, `perf`.
-3. **One branch, one story.** If it lives longer than about two days, the story
-   was too big — split it.
-4. **Rebase onto `main` before opening the pull request.** No merge commits from
-   `main` into a feature branch.
-5. **Squash merge, then delete the branch.** One story becomes one commit on
-   `main`, which makes `git log` readable and a revert trivial.
-6. **Only `main` publishes.** Feature branches build, test and scan the image;
-   the push to the registry is gated on `refs/heads/main`.
+| | GitHub (`origin`) | Gitea (`gitea`, localhost:3000) |
+|---|---|---|
+| Owns | review, approval, protection | build, test, scan, deploy |
+| Pull requests | yes | never |
 
-Tags: annotated `v0.1.0`, `v0.2.0` at each milestone.
+Why: see [ADR-0004](adr/0004-github-for-review-gitea-for-execution.md).
 
-## Why not GitFlow
+**No status checks on the GitHub pull request** — there is no runner there.
+Paste the Gitea run result into the pull request description; it is the only
+evidence a reviewer has.
 
-`develop`, `release/*` and `hotfix/*` exist to coordinate multiple teams shipping
-versioned releases on separate cadences. One person, one environment, continuous
-deployment — GitFlow would be cargo-culting. Trunk-based is the correct model for
-a CD pipeline, and that trade-off is worth being able to explain out loud.
+## Rules
 
-## Where the repository lives
+1. Never commit directly to `main` or `release/sprint2`.
+2. Branch from `release/sprint2`: `feature/sprint-2-<kebab>` or `hotfix/<kebab>`.
+3. One branch, one story. Longer than ~2 days means it was too big.
+4. Push to `gitea` first and wait for green. Only then open the pull request.
+5. Pull request goes into `release/sprint2`. Chase the approvers.
+6. `feature/*` → `release/sprint2`: **squash merge**, then delete the branch.
+7. `release/sprint2` → `main`: **merge commit, never squash.** A squash would put
+   a commit on `main` that `release/sprint2` does not share, leaving the two with
+   no common history and every later merge replaying old changes.
+8. That merge happens only when the mentors validate the sprint.
 
-The self-hosted Gitea instance is the origin — it is where pull requests are
-opened, where the checks run and where `main` is protected. GitHub is a backup
-remote, pushed to manually:
+Both merge strategies must stay enabled in GitHub → Settings → General.
 
-```bash
-git remote -v
-# origin  http://localhost:3000/milan/Milan-ProjectA.git   ← authoritative
-# github  https://github.com/tcsdevopsintern/Milan-ProjectA.git  ← backup
+## What triggers what
 
-git push github main    # whenever you want the off-machine copy current
-```
+| Branch | Lint, test, scan | Push to registry | Deploy |
+|---|---|---|---|
+| `feature/**`, `hotfix/**` | yes | no | no |
+| `release/**`, `main` | yes | yes | yes |
 
-This used to be the other way round, with Gitea as a pull mirror of GitHub. That
-split the pipeline in half: pull requests lived on GitHub where no checks ran,
-and the checks ran in Gitea where no pull request ever existed. Branch protection
-could not gate anything, and deploys fired on the mirror's sync timer instead of
-on merge. Making Gitea authoritative is what turns the rest of this document from
-a description into a rule.
+`release/*` deploys because it is the branch that gets demonstrated. If CD ran
+only on `main`, its first real run would be the end-of-sprint merge.
 
-## Branch protection on `main`
+The gate is a shell `case` on the ref in `ci.yml`, not an `if:` expression —
+prefix matching would need `startsWith()`, unverified under `act_runner`.
 
-Configured in Gitea → repository **Settings → Branches → Add rule** for `main`:
+## Protection
 
-| Setting | Value |
+**Enforcement depends on repository visibility.** Branch rulesets and
+`CODEOWNERS` work on public repositories on this plan, not on private ones.
+The repository is currently **private**, so neither is enforced: the merge
+button is live and the Reviewers field stays empty.
+
+The rules below stay configured regardless. They take effect the moment the
+repository is public again, and until then they are the checklist the process
+follows by hand:
+
+1. Request the reviewers manually on every pull request.
+2. Never merge without at least one approval, even though nothing stops you.
+3. Never push to `main` or `release/sprint2`, even though nothing stops you.
+
+The symptom is worth recognising, because it looks like success: an empty
+Reviewers field and a green merge button are exactly what a correctly
+configured repository shows once its rules are satisfied.
+
+**GitHub** — one ruleset, `Active`, targets `main` and `release/*`, empty bypass list:
+
+| Rule | |
 |---|---|
-| Protected branch name pattern | `main` |
-| Push | Disable Push |
-| Force push | Disable Force Push |
-| Required approvals | `0` |
-| Enable status check | on, pattern `Pipeline / build-test-push*` |
-| Block merge if pull request is outdated | on |
-| Administrators must follow branch protection rules | on |
+| Require a pull request before merging | on, 1 approval |
+| Require review from Code Owners | on |
+| Restrict deletions · Block force pushes | on |
+| Require linear history | **off** — it would block the merge commit into `main` |
+| Require status checks | **off** — no runner on GitHub |
 
-And in **Settings → Pull Requests**: only *Create squash commit* enabled, set as
-the default.
+Reviewers come from `CODEOWNERS`, which GitHub reads **from the base branch**.
+That is what gives `main` (mentors) and `release/sprint2` (mentors + team)
+different review circles from one filename. Listed owners need write access or
+GitHub skips them silently.
 
-Three of those are easy to get wrong:
+**Gitea** — `main`: push whitelist includes `milan`, force push off. Gitea's
+`main` is a downstream copy of GitHub's and has to be able to follow it; with
+force push disabled it can only fast-forward.
 
-- **Required approvals stays at `0`.** Gitea does not count your own approval on
-  your own pull request, so a solo developer who sets `1` can never merge again.
-  The review discipline comes from reading your own diff, not from a counter.
-- **The status check pattern ends in `*`.** The context is
-  `Pipeline / build-test-push (push)` or `(pull_request)` depending on the event;
-  an exact string silently matches neither on a pull request.
-- **Never require `Pipeline / deploy`.** It only runs on `main`, so requiring it
-  would block every merge permanently.
-
-`hadolint` and `ansible-lint` need no change here. A required status check is
-reported per *job*, not per step, and both run as steps inside
-`build-test-push` — deliberately, because the runner has capacity 1, so a
-separate lint job would queue behind this one rather than run alongside it.
-They gate merges through the check that already exists. A new pattern entry
-would only be needed if one of them were promoted to its own job.
-
-## The everyday loop
+## Everyday loop
 
 ```bash
-git checkout main && git pull
-git checkout -b feat/short-description
+git checkout release/sprint2 && git pull origin release/sprint2
+git checkout -b feature/sprint-2-short-description
 
-# ... work, in small commits ...
-git add <specific files>
-git commit -m "feat(cd): add deploy_app role skeleton"
+# ... work, small commits ...
+git fetch origin && git rebase origin/release/sprint2
 
-git fetch origin && git rebase origin/main
-git push -u origin feat/short-description
+git push gitea feature/sprint-2-short-description    # 1. prove it, wait for green
+git push -u origin feature/sprint-2-short-description # 2. then ask for review
 ```
 
-Then open the pull request in Gitea — the push output prints a direct link, or go
-to the repository and use the banner on the branch. There is no `gh` equivalent
-here: that is GitHub's CLI, and origin is Gitea now. `tea` is the Gitea CLI if
-the browser step ever becomes annoying.
+Then open the pull request on GitHub into `release/sprint2` and paste the Gitea
+result in.
 
-Before requesting review, read your own diff in the web UI and leave at least one
-comment explaining a non-obvious decision. The pull request is where reasoning
-gets recorded — that is why it exists even when working solo.
+## Review etiquette
+
+Colleagues review pull requests into `release/sprint2`; mentors approve
+`release/sprint2` → `main`. Reviewing is reciprocal — approving without reading
+costs you the reviewer next time, and leaving a pull request open for days is
+the same failure from the other side.

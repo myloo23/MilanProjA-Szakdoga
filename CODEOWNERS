@@ -16,5 +16,10 @@
 #     needs all of their approvals: branch protection's "require review from
 #     Code Owners" is satisfied by one approval from anyone listed here.
 #
+#   * The repository owner is not listed. GitHub never requests review from
+#     the author of a pull request, so naming yourself here reads as an extra
+#     reviewer while adding none. On this repo that is @myloo23 — the mentor's
+#     Project A list named "myloo", which is this account.
+#
 # Pattern            Owners
-* @repimark @peterzelei @casacco
+* @repimark @peterzelei @casacco @aidana0804 @molnarg2023

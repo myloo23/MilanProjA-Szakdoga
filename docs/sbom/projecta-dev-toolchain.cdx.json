@@ -1,0 +1,740 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.7.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.7",
+  "serialNumber": "urn:uuid:57012792-5a36-495c-9a88-5c14eab91eb5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-08-03T12:00:32+00:00",
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "manufacturer": {
+            "name": "Aqua Security Software Ltd."
+          },
+          "group": "aquasecurity",
+          "name": "trivy",
+          "version": "0.72.0"
+        }
+      ]
+    },
+    "component": {
+      "bom-ref": "b98be574-e9db-4d7a-82c1-d17c5723521e",
+      "type": "application",
+      "name": ".",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:SchemaVersion",
+          "value": "2"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "09bfd21f-bf31-49a6-8334-dc8adce21726",
+      "type": "library",
+      "name": "blinker",
+      "version": "1.9.0",
+      "purl": "pkg:pypi/blinker@1.9.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "0f582ca8-9dfc-4b35-aa0f-8f5ab1b86d03",
+      "type": "library",
+      "name": "itsdangerous",
+      "version": "2.2.0",
+      "purl": "pkg:pypi/itsdangerous@2.2.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "257bcdd6-2d4d-4b07-8afb-7d31bad7d8f3",
+      "type": "library",
+      "name": "werkzeug",
+      "version": "3.1.8",
+      "purl": "pkg:pypi/werkzeug@3.1.8",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "2d1a66fd-ff66-45e4-ab06-adddbe10a911",
+      "type": "library",
+      "name": "jinja2",
+      "version": "3.1.6",
+      "purl": "pkg:pypi/jinja2@3.1.6",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "49b6fc11-bb9a-4fe7-8b07-64f8ecb63ea5",
+      "type": "library",
+      "name": "flask",
+      "version": "3.1.3",
+      "purl": "pkg:pypi/flask@3.1.3",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "4ec4ca8d-422b-49fa-b2b8-5bc205d62fcd",
+      "type": "application",
+      "name": "requirements.txt",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:Class",
+          "value": "lang-pkgs"
+        },
+        {
+          "name": "aquasecurity:trivy:Type",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "5f5c8ff7-7fce-45c4-aac3-be7d54bc2c5f",
+      "type": "library",
+      "name": "markupsafe",
+      "version": "3.0.3",
+      "purl": "pkg:pypi/markupsafe@3.0.3",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "60be673f-9ddf-4542-949b-f4519210c938",
+      "type": "library",
+      "name": "click",
+      "version": "8.4.2",
+      "purl": "pkg:pypi/click@8.4.2",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "6480af34-f7cf-4d39-b710-d8f627e5e591",
+      "type": "library",
+      "name": "gunicorn",
+      "version": "23.0.0",
+      "purl": "pkg:pypi/gunicorn@23.0.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "68fb937a-40ff-4cc5-b0f3-bd560192fecd",
+      "type": "library",
+      "name": "werkzeug",
+      "version": "3.1.8",
+      "purl": "pkg:pypi/werkzeug@3.1.8",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "7ab2067a-7a19-4fc1-872f-1ebad7b94f8a",
+      "type": "library",
+      "name": "blinker",
+      "version": "1.9.0",
+      "purl": "pkg:pypi/blinker@1.9.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "80c543de-a5db-4cfb-98a5-7d2505722e46",
+      "type": "library",
+      "name": "gunicorn",
+      "version": "23.0.0",
+      "purl": "pkg:pypi/gunicorn@23.0.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "89e694bd-938e-4441-b1d4-632be2a77067",
+      "type": "application",
+      "name": "ansible/requirements-lint.txt",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:Class",
+          "value": "lang-pkgs"
+        },
+        {
+          "name": "aquasecurity:trivy:Type",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "90de2bda-0b76-4658-8fb1-7924127f24fe",
+      "type": "library",
+      "name": "itsdangerous",
+      "version": "2.2.0",
+      "purl": "pkg:pypi/itsdangerous@2.2.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "94a19ea1-b26c-461e-b230-7ac979b037b2",
+      "type": "library",
+      "name": "jinja2",
+      "version": "3.1.6",
+      "purl": "pkg:pypi/jinja2@3.1.6",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "a16302c2-1142-406e-840d-4656ad4f292d",
+      "type": "library",
+      "name": "packaging",
+      "version": "26.2",
+      "purl": "pkg:pypi/packaging@26.2",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "bc67a3c4-6919-4a56-8680-f48bcc7adbea",
+      "type": "library",
+      "name": "markupsafe",
+      "version": "3.0.3",
+      "purl": "pkg:pypi/markupsafe@3.0.3",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "cb3d4c88-53ef-4a6f-b017-90fcbd7e6fbf",
+      "type": "application",
+      "name": "requirements-dev.txt",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:Class",
+          "value": "lang-pkgs"
+        },
+        {
+          "name": "aquasecurity:trivy:Type",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "db600a14-6e32-4b81-9b2a-d5cf207a720c",
+      "type": "library",
+      "name": "packaging",
+      "version": "26.2",
+      "purl": "pkg:pypi/packaging@26.2",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "de772257-f630-4963-bc0f-852f77b41398",
+      "type": "application",
+      "name": "ansible/requirements-ansible.txt",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:Class",
+          "value": "lang-pkgs"
+        },
+        {
+          "name": "aquasecurity:trivy:Type",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "f4ab9c5e-2ae8-4c03-b159-63c21072f0a6",
+      "type": "library",
+      "name": "click",
+      "version": "8.4.2",
+      "purl": "pkg:pypi/click@8.4.2",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "f73744bf-a947-417a-a711-d8c9d8816cb0",
+      "type": "library",
+      "name": "flask",
+      "version": "3.1.3",
+      "purl": "pkg:pypi/flask@3.1.3",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/ansible-core@2.21.2",
+      "type": "library",
+      "name": "ansible-core",
+      "version": "2.21.2",
+      "purl": "pkg:pypi/ansible-core@2.21.2",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/ansible-lint@26.6.0",
+      "type": "library",
+      "name": "ansible-lint",
+      "version": "26.6.0",
+      "purl": "pkg:pypi/ansible-lint@26.6.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/build@1.5.0",
+      "type": "library",
+      "name": "build",
+      "version": "1.5.0",
+      "purl": "pkg:pypi/build@1.5.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/coverage@7.15.2",
+      "type": "library",
+      "name": "coverage",
+      "version": "7.15.2",
+      "purl": "pkg:pypi/coverage@7.15.2",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/iniconfig@2.3.0",
+      "type": "library",
+      "name": "iniconfig",
+      "version": "2.3.0",
+      "purl": "pkg:pypi/iniconfig@2.3.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/pip-tools@7.6.0",
+      "type": "library",
+      "name": "pip-tools",
+      "version": "7.6.0",
+      "purl": "pkg:pypi/pip-tools@7.6.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/pip@26.1.2",
+      "type": "library",
+      "name": "pip",
+      "version": "26.1.2",
+      "purl": "pkg:pypi/pip@26.1.2",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/pluggy@1.6.0",
+      "type": "library",
+      "name": "pluggy",
+      "version": "1.6.0",
+      "purl": "pkg:pypi/pluggy@1.6.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/pygments@2.20.0",
+      "type": "library",
+      "name": "pygments",
+      "version": "2.20.0",
+      "purl": "pkg:pypi/pygments@2.20.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/pyproject-hooks@1.2.0",
+      "type": "library",
+      "name": "pyproject-hooks",
+      "version": "1.2.0",
+      "purl": "pkg:pypi/pyproject-hooks@1.2.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/pytest-cov@7.1.0",
+      "type": "library",
+      "name": "pytest-cov",
+      "version": "7.1.0",
+      "purl": "pkg:pypi/pytest-cov@7.1.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/pytest@9.1.1",
+      "type": "library",
+      "name": "pytest",
+      "version": "9.1.1",
+      "purl": "pkg:pypi/pytest@9.1.1",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/requests@2.33.0",
+      "type": "library",
+      "name": "requests",
+      "version": "2.33.0",
+      "purl": "pkg:pypi/requests@2.33.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/ruff@0.15.22",
+      "type": "library",
+      "name": "ruff",
+      "version": "0.15.22",
+      "purl": "pkg:pypi/ruff@0.15.22",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/setuptools@83.0.0",
+      "type": "library",
+      "name": "setuptools",
+      "version": "83.0.0",
+      "purl": "pkg:pypi/setuptools@83.0.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/wheel@0.47.0",
+      "type": "library",
+      "name": "wheel",
+      "version": "0.47.0",
+      "purl": "pkg:pypi/wheel@0.47.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "09bfd21f-bf31-49a6-8334-dc8adce21726",
+      "dependsOn": []
+    },
+    {
+      "ref": "0f582ca8-9dfc-4b35-aa0f-8f5ab1b86d03",
+      "dependsOn": []
+    },
+    {
+      "ref": "257bcdd6-2d4d-4b07-8afb-7d31bad7d8f3",
+      "dependsOn": []
+    },
+    {
+      "ref": "2d1a66fd-ff66-45e4-ab06-adddbe10a911",
+      "dependsOn": []
+    },
+    {
+      "ref": "49b6fc11-bb9a-4fe7-8b07-64f8ecb63ea5",
+      "dependsOn": []
+    },
+    {
+      "ref": "4ec4ca8d-422b-49fa-b2b8-5bc205d62fcd",
+      "dependsOn": [
+        "0f582ca8-9dfc-4b35-aa0f-8f5ab1b86d03",
+        "257bcdd6-2d4d-4b07-8afb-7d31bad7d8f3",
+        "2d1a66fd-ff66-45e4-ab06-adddbe10a911",
+        "6480af34-f7cf-4d39-b710-d8f627e5e591",
+        "7ab2067a-7a19-4fc1-872f-1ebad7b94f8a",
+        "a16302c2-1142-406e-840d-4656ad4f292d",
+        "bc67a3c4-6919-4a56-8680-f48bcc7adbea",
+        "f4ab9c5e-2ae8-4c03-b159-63c21072f0a6",
+        "f73744bf-a947-417a-a711-d8c9d8816cb0"
+      ]
+    },
+    {
+      "ref": "5f5c8ff7-7fce-45c4-aac3-be7d54bc2c5f",
+      "dependsOn": []
+    },
+    {
+      "ref": "60be673f-9ddf-4542-949b-f4519210c938",
+      "dependsOn": []
+    },
+    {
+      "ref": "6480af34-f7cf-4d39-b710-d8f627e5e591",
+      "dependsOn": []
+    },
+    {
+      "ref": "68fb937a-40ff-4cc5-b0f3-bd560192fecd",
+      "dependsOn": []
+    },
+    {
+      "ref": "7ab2067a-7a19-4fc1-872f-1ebad7b94f8a",
+      "dependsOn": []
+    },
+    {
+      "ref": "80c543de-a5db-4cfb-98a5-7d2505722e46",
+      "dependsOn": []
+    },
+    {
+      "ref": "89e694bd-938e-4441-b1d4-632be2a77067",
+      "dependsOn": [
+        "pkg:pypi/ansible-lint@26.6.0"
+      ]
+    },
+    {
+      "ref": "90de2bda-0b76-4658-8fb1-7924127f24fe",
+      "dependsOn": []
+    },
+    {
+      "ref": "94a19ea1-b26c-461e-b230-7ac979b037b2",
+      "dependsOn": []
+    },
+    {
+      "ref": "a16302c2-1142-406e-840d-4656ad4f292d",
+      "dependsOn": []
+    },
+    {
+      "ref": "b98be574-e9db-4d7a-82c1-d17c5723521e",
+      "dependsOn": [
+        "4ec4ca8d-422b-49fa-b2b8-5bc205d62fcd",
+        "89e694bd-938e-4441-b1d4-632be2a77067",
+        "cb3d4c88-53ef-4a6f-b017-90fcbd7e6fbf",
+        "de772257-f630-4963-bc0f-852f77b41398"
+      ]
+    },
+    {
+      "ref": "bc67a3c4-6919-4a56-8680-f48bcc7adbea",
+      "dependsOn": []
+    },
+    {
+      "ref": "cb3d4c88-53ef-4a6f-b017-90fcbd7e6fbf",
+      "dependsOn": [
+        "09bfd21f-bf31-49a6-8334-dc8adce21726",
+        "49b6fc11-bb9a-4fe7-8b07-64f8ecb63ea5",
+        "5f5c8ff7-7fce-45c4-aac3-be7d54bc2c5f",
+        "60be673f-9ddf-4542-949b-f4519210c938",
+        "68fb937a-40ff-4cc5-b0f3-bd560192fecd",
+        "80c543de-a5db-4cfb-98a5-7d2505722e46",
+        "90de2bda-0b76-4658-8fb1-7924127f24fe",
+        "94a19ea1-b26c-461e-b230-7ac979b037b2",
+        "db600a14-6e32-4b81-9b2a-d5cf207a720c",
+        "pkg:pypi/build@1.5.0",
+        "pkg:pypi/coverage@7.15.2",
+        "pkg:pypi/iniconfig@2.3.0",
+        "pkg:pypi/pip-tools@7.6.0",
+        "pkg:pypi/pip@26.1.2",
+        "pkg:pypi/pluggy@1.6.0",
+        "pkg:pypi/pygments@2.20.0",
+        "pkg:pypi/pyproject-hooks@1.2.0",
+        "pkg:pypi/pytest-cov@7.1.0",
+        "pkg:pypi/pytest@9.1.1",
+        "pkg:pypi/ruff@0.15.22",
+        "pkg:pypi/setuptools@83.0.0",
+        "pkg:pypi/wheel@0.47.0"
+      ]
+    },
+    {
+      "ref": "db600a14-6e32-4b81-9b2a-d5cf207a720c",
+      "dependsOn": []
+    },
+    {
+      "ref": "de772257-f630-4963-bc0f-852f77b41398",
+      "dependsOn": [
+        "pkg:pypi/ansible-core@2.21.2",
+        "pkg:pypi/requests@2.33.0"
+      ]
+    },
+    {
+      "ref": "f4ab9c5e-2ae8-4c03-b159-63c21072f0a6",
+      "dependsOn": []
+    },
+    {
+      "ref": "f73744bf-a947-417a-a711-d8c9d8816cb0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/ansible-core@2.21.2",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/ansible-lint@26.6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/build@1.5.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/coverage@7.15.2",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/iniconfig@2.3.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/pip-tools@7.6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/pip@26.1.2",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/pluggy@1.6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/pygments@2.20.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/pyproject-hooks@1.2.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/pytest-cov@7.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/pytest@9.1.1",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/requests@2.33.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/ruff@0.15.22",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/setuptools@83.0.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/wheel@0.47.0",
+      "dependsOn": []
+    }
+  ],
+  "vulnerabilities": []
+}
