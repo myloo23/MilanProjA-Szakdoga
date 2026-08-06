@@ -30,6 +30,27 @@ on:
       - 'feature/**'
       - 'hotfix/**'
 
+# Every step that touches the network, the Docker daemon or a container is
+# bounded by `timeout-minutes`. This runner has `capacity: 1`
+# (platform/config.yaml), so an unbounded step that hangs is not a slow build —
+# it is the whole pipeline stopped until a human notices, and `runner.timeout`
+# is 3h, which is the difference between an outage and a morning.
+#
+# Deliberately per step, not one number on the job. A blanket bound tells you
+# the run hung; a per-step bound tells you *which* step and, from the value,
+# what it was expected to cost. The numbers below are hang detectors, not
+# budgets — each is roughly an order of magnitude above what the step actually
+# takes, so a bound firing means something is wrong rather than slow. Where the
+# number is not obvious from the step name, the reasoning is on the step.
+#
+# Steps doing pure local work and no I/O are left unbounded on purpose: the ref
+# gate is four lines of shell that cannot block, and giving it a timeout would
+# suggest it could.
+#
+# Job-level `timeout-minutes` is deliberately absent. The spike never exercised
+# it — the step bound fired first, every time — so adding it would be an
+# untested construct guarding a tested one. Per §6, an unproven claim is worse
+# than a missing one.
 jobs:
   build-test-push:
     runs-on: ubuntu-latest
@@ -41,6 +62,7 @@ jobs:
 
     steps:
       - name: Checkout repository
+        timeout-minutes: 3
         uses: actions/checkout@v4
 
       - name: Decide whether this ref ships an artifact
@@ -51,9 +73,18 @@ jobs:
         # they prove the change is sound without putting anything in the
         # registry, which holds deployable artifacts only.
         #
-        # Written as a shell `case` rather than an `if:` expression on purpose:
-        # prefix matching would need startsWith(), whose support under
-        # act_runner is not something to bet a release gate on. `case` is POSIX.
+        # Written as a shell `case` rather than an `if:` expression, and the
+        # reason has changed. It used to say startsWith() was not something to
+        # bet a release gate on under act_runner. The Sprint 3 spike tested that
+        # claim and it was wrong: startsWith(), contains(), success() and
+        # always() all evaluate correctly on v0.2.12 (ADR-0005).
+        #
+        # The code stays as it is, because the reason it is *correct* was never
+        # the expression-support one. This gate has to publish a value two
+        # consumers read, and it has to do it without interpolating a branch
+        # name into a shell. `case` does both in four POSIX lines. That argument
+        # survives the spike; the old one did not, so it is replaced rather than
+        # quietly left standing.
         #
         # The ref arrives through the environment, never interpolated straight
         # into the script. `${{ }}` is substituted as raw text before the shell
@@ -71,6 +102,7 @@ jobs:
           echo "$REF -> ships=$ships"
 
       - name: Set up Python
+        timeout-minutes: 5
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -78,14 +110,17 @@ jobs:
           cache-dependency-path: requirements-dev.txt
 
       - name: Install dependencies
+        timeout-minutes: 5
         run: |
           python -m pip install --upgrade pip
           python -m pip install --require-hashes -r requirements-dev.txt
       
       - name: Run Ruff
+        timeout-minutes: 2
         run: ruff check .
 
       - name: Lint the Dockerfile
+        timeout-minutes: 3
         # A step inside this job rather than a job of its own. A separate job
         # would be the textbook answer, but this runner has capacity 1: two
         # jobs would not run in parallel, they would queue, paying a second
@@ -116,6 +151,7 @@ jobs:
           echo "hadolint v2.14.0: no findings at or above info"
 
       - name: Run tests with coverage
+        timeout-minutes: 5
         run: |
           python -m pytest \
             --cov=app \
@@ -123,6 +159,7 @@ jobs:
             --cov-fail-under=80
 
       - name: Install the Ansible control node and collections
+        timeout-minutes: 6
         # Needed only by the lint step below, and installed as its own step so a
         # dependency-resolution failure reads as one instead of hiding inside a
         # lint failure.
@@ -142,6 +179,7 @@ jobs:
           ansible-galaxy collection install -r ansible/requirements.yml
 
       - name: Lint the Ansible playbooks and role
+        timeout-minutes: 3
         working-directory: ansible
         # Placed here, after the checks that need no installation and before the
         # build, to keep the job in cost order. ruff, hadolint and pytest all
@@ -167,12 +205,18 @@ jobs:
           ansible-lint .
 
       - name: Build Docker image
+        # The one step that legitimately costs minutes on a cold layer cache:
+        # the builder stage runs a hash-checked pip install of the whole runtime
+        # lock. Ten minutes is generous against an observed ~90s warm, which is
+        # the point — a bound that fires on a slow day trains you to raise it.
+        timeout-minutes: 10
         run: |
           docker build \
             --tag localhost:5001/projecta-flask:${{ github.sha }} \
             .
 
       - name: Run container
+        timeout-minutes: 2
         run: |
           docker run -d \
             --name flask-test \
@@ -180,6 +224,11 @@ jobs:
             localhost:5001/projecta-flask:${{ github.sha }}
 
       - name: Wait for the container to report healthy
+        # The loop already bounds itself at 30 iterations. This is not that
+        # bound restated — it guards `docker inspect` itself hanging against a
+        # wedged daemon, which the loop cannot detect because it never returns
+        # to run the next iteration.
+        timeout-minutes: 2
         # The image already declares what "healthy" means, in the Dockerfile's
         # HEALTHCHECK. This reads that verdict rather than re-implementing the
         # probe, so CI and the image cannot drift apart the way a hand-rolled
@@ -208,6 +257,9 @@ jobs:
           exit 1
 
       - name: Verify the application answers over the network
+        # curl is called without --max-time, so on a black-holed connection it
+        # waits forever. This is the only thing that bounds it.
+        timeout-minutes: 2
         # Kept, and no longer a race: the step above has already established the
         # app is up, so a failure here means something narrower and more useful
         # — the app is healthy from the inside but unreachable from another
@@ -217,6 +269,11 @@ jobs:
           curl --fail --show-error --silent http://flask-test:8000/health
 
       - name: Scan image with Trivy
+        # The likeliest step in this file to hang, and not because of the scan:
+        # Trivy downloads its vulnerability database on a cache miss, from a
+        # registry this project does not control. Ten minutes covers a slow
+        # fetch; anything past that is not slow, it is stuck.
+        timeout-minutes: 10
         # Pinned like hadolint and ansible-lint, and for the same reason: a
         # scanner on `latest` can gain a rule or a database entry overnight and
         # fail a build nobody touched. That is a red pipeline you cannot
@@ -237,12 +294,14 @@ jobs:
             localhost:5001/projecta-flask:${{ github.sha }}
 
       - name: Cleanup container
+        timeout-minutes: 2
         if: always()
         run: |
           docker stop flask-test || true
           docker rm flask-test || true
 
       - name: Push Docker image
+        timeout-minutes: 5
         # Only reviewed refs publish. A feature branch builds, tests and scans
         # its image, then throws it away — the registry holds deployable
         # artifacts only, and nothing is deployable before review.
@@ -251,6 +310,7 @@ jobs:
           docker push localhost:5001/projecta-flask:${{ github.sha }}
 
       - name: Reclaim the build's disk
+        timeout-minutes: 3
         # Every run builds an image tagged with its own SHA, so nothing ever
         # overwrites anything and the runner's disk only grows. On a host that
         # also carries Gitea, the registry and the deployed container, that ends
@@ -290,14 +350,17 @@ jobs:
           cache-dependency-path: ansible/requirements-ansible.txt
 
       - name: Install Ansible
+        timeout-minutes: 5
         run: |
           python -m pip install --upgrade pip
           python -m pip install --require-hashes -r ansible/requirements-ansible.txt
 
       - name: Install Ansible collections
+        timeout-minutes: 5
         run: ansible-galaxy collection install -r ansible/requirements.yml
 
       - name: Verify the deploy target
+        timeout-minutes: 2
         working-directory: ansible
         # Same skeleton check that runs on a laptop. It costs a second and it
         # separates "the runner's environment is wrong" from "the deploy is
@@ -306,6 +369,11 @@ jobs:
         run: ansible-playbook playbooks/ping.yml
 
       - name: Deploy the artifact this pipeline built
+        # Bounded above the smoke test's own retry budget, not below it. The
+        # role retries the smoke check and is allowed to spend that time
+        # failing honestly; this catches a play that stops making progress at
+        # all — an unreachable daemon, a registry pull that never returns.
+        timeout-minutes: 10
         working-directory: ansible
         # No build step here, deliberately. This deploys ${{ github.sha }} — the
         # exact image the job above tested, scanned and pushed. Rebuilding would
