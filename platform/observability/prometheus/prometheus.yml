@@ -1,0 +1,57 @@
+# Prometheus scrape configuration.
+#
+# Three targets, one per question the brief asks. The application exports what
+# it does; cAdvisor exports what its container costs; node_exporter exports what
+# the host has left. A dashboard built on only the first cannot distinguish "the
+# app got slower" from "the laptop ran out of memory", and that distinction is
+# most of what an incident is.
+#
+# Everything here reaches its target by container name on the projecta-platform
+# network. `localhost` inside this container is Prometheus itself — the same
+# confusion that bit the smoke test in Sprint 2 (risk B4).
+
+global:
+  # 15s, matching the default, and stated rather than inherited so the number is
+  # a decision. It bounds how sharp a spike can look: a burst shorter than one
+  # interval may be invisible, which is why the load generator in
+  # scripts/loadgen.sh runs for longer than that by default.
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+  external_labels:
+    # Present so a future second environment does not produce two series that
+    # look identical in a query result. One environment today; the label costs
+    # nothing and its absence would cost a migration.
+    environment: local
+
+scrape_configs:
+  # The application. This is the only job whose metrics the app itself defines,
+  # and the only one whose cardinality this project controls — see ADR-0007.
+  - job_name: projecta-flask
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["projecta-flask:8000"]
+        labels:
+          service: projecta-flask
+
+  # Per-container CPU, memory, network and filesystem. Reads the Docker
+  # daemon's cgroup data directly, so it sees every container on the host
+  # including Gitea and the runner — useful, because "the pipeline is slow" and
+  # "the app is slow" are answered from the same graph.
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["projecta-cadvisor:8080"]
+
+  # Host CPU, load, memory and disk. First to be dropped if the laptop is
+  # constrained — PLAN.md §5 says so explicitly, and the host dashboard
+  # degrades to the cAdvisor panels rather than breaking.
+  - job_name: node-exporter
+    static_configs:
+      - targets: ["projecta-node-exporter:9100"]
+
+  # Prometheus scraping itself. Not vanity: if the app job stops reporting, this
+  # is what distinguishes "the app is down" from "Prometheus is down", and it is
+  # free.
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

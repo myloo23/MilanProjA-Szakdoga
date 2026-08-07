@@ -1,0 +1,63 @@
+# Loki, single-binary, filesystem-backed.
+#
+# This is the small end of Loki's range on purpose. The scalable deployment
+# wants object storage, a ring and several processes; none of that earns its
+# keep for one application on one laptop, and running it would mean
+# demonstrating an architecture rather than a capability. See ADR-0006 for why
+# Loki at all rather than Elasticsearch.
+
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+  # Loki's own logs are noisy at info and this stack has no one to read them.
+  log_level: warn
+
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2024-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+limits_config:
+  # The demo fires a burst of malformed requests at /echo and each one produces
+  # two log lines. The defaults are generous enough, but a rejected write during
+  # the one moment the demo depends on would be indistinguishable from the
+  # application not logging — so the burst headroom is explicit.
+  ingestion_rate_mb: 8
+  ingestion_burst_size_mb: 16
+  # Rejects log lines whose timestamp is far in the past. Kept short because a
+  # container restarted with an old clock should fail loudly rather than
+  # backfill a graph you are reading.
+  reject_old_samples: true
+  reject_old_samples_max_age: 24h
+  # This is a laptop, and these logs are demo evidence, not an audit trail.
+  # Seven days is longer than the sprint and shorter than the disk.
+  retention_period: 168h
+
+compactor:
+  working_directory: /loki/compactor
+  delete_request_store: filesystem
+  retention_enabled: true
+
+# Off. It phones home with usage statistics, and a project whose whole argument
+# is that every line is explainable should not ship a default nobody chose.
+analytics:
+  reporting_enabled: false

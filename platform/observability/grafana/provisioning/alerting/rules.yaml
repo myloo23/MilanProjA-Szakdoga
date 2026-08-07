@@ -1,0 +1,115 @@
+# One alert rule, provisioned. Not a suite — one rule that fires on the
+# incident from the brief, so it can be demonstrated end to end rather than
+# listed.
+#
+# **Grafana's alerting engine rather than Prometheus + Alertmanager.** Two
+# components already running versus four, for a single rule. Alertmanager earns
+# its place when routing, silencing and deduplication across teams matter; here
+# it would be an architecture diagram with nobody on the other end of it. If
+# routing is ever needed the rule moves — the expression is the part that took
+# thought, and it is portable.
+#
+# **Routing is deliberately absent.** PLAN.md carries "alert routing" under P2
+# and it stays there. This rule reaches the Alerting page and stops; nothing is
+# emailed, and no contact point is provisioned. Claiming a notification path
+# that has never delivered a notification would be exactly the unproven claim
+# §6 forbids. The demo reads the rule going Pending → Firing in the UI, which
+# is a thing that actually happens.
+
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: projecta-app
+    folder: Project A
+    # Evaluated every 30s against a 15s scrape interval — often enough that the
+    # demo does not stall waiting for a tick, not so often that it evaluates
+    # the same scrape twice.
+    interval: 30s
+
+    rules:
+      - uid: projecta-echo-error-rate
+        title: /echo is rejecting requests
+        condition: THRESHOLD
+
+        # Pending before Firing. `for: 1m` means a single malformed request
+        # from a curious tester does not page anyone, while the demo's sustained
+        # burst does. It also gives the demo a visible Pending state to point at,
+        # which explains the mechanism better than an instant red light.
+        for: 1m
+
+        # NoData is not an error here. Outside a demo this app serves no
+        # traffic, and a rule that goes red every night because nobody used the
+        # application is a rule people learn to ignore.
+        noDataState: NoData
+        execErrState: Error
+
+        annotations:
+          summary: >-
+            More than 10% of requests to /echo returned 4xx or 5xx over the
+            last 5 minutes.
+          description: >-
+            This is the signal the Sprint 3 demo produces on purpose, by firing
+            malformed JSON at /echo with scripts/loadgen.sh. To find the cause:
+            open "Project A — Application golden signals", click the error-rate
+            panel's data link into Loki, and read the request_id off the failing
+            line.
+          runbook_url: https://github.com/tcsdevopsintern/Milan-ProjectA/blob/main/docs/RUNBOOK.md
+
+        labels:
+          severity: warning
+          service: projecta-flask
+
+        data:
+          - refId: ERROR_RATIO
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: projecta-prometheus
+            model:
+              refId: ERROR_RATIO
+              editorMode: code
+              instant: true
+              # Scoped to /echo rather than the whole app. A ratio over every
+              # endpoint would be diluted by health checks and scrapes into
+              # never firing — the exact failure mode of an alert that looks
+              # sensible and has never once been true.
+              #
+              # **No clamp on the denominator, and the first version had one.**
+              # `clamp_min(denominator, 0.001)` was there to keep the ratio
+              # defined when nothing is calling /echo. It does that by inventing
+              # a number: with no traffic the expression evaluates to 0, the
+              # rule reads Normal, and Normal is indistinguishable from "we are
+              # watching and everything is fine" — when in fact there is nothing
+              # to watch. It also makes the ratio unbounded, because dividing a
+              # real rate by 0.001 can exceed 1 by a factor of a hundred. The
+              # same mistake put a 10000% axis on the dashboard panel.
+              #
+              # Without it, no traffic means an empty vector, which Grafana
+              # reports as NoData, which `noDataState: NoData` handles above.
+              # That is the honest answer to "what is the error rate of an
+              # endpoint nobody is calling".
+              expr: >-
+                sum(rate(http_requests_total{job="projecta-flask",
+                endpoint="/echo", status=~"4..|5.."}[5m]))
+                /
+                sum(rate(http_requests_total{job="projecta-flask",
+                endpoint="/echo"}[5m]))
+
+          - refId: THRESHOLD
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              refId: THRESHOLD
+              type: threshold
+              # 10%. Argued rather than round: the app's error rate at rest is
+              # 0, and a single malformed request in a quiet minute should not
+              # trip it, but the demo's burst pushes /echo well past half. Ten
+              # percent sits clear of both.
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0.1]
+              expression: ERROR_RATIO

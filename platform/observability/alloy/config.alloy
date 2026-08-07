@@ -1,0 +1,106 @@
+// Grafana Alloy — collect container stdout, ship it to Loki.
+//
+// Alloy rather than Promtail because Promtail reached end of life in early 2026
+// and its own documentation points here. Same job, and the pipeline stages
+// below are close enough to Promtail's that the migration is readable.
+//
+// The application writes JSON to stdout and knows nothing about this file. That
+// is the twelve-factor contract: if this whole stack is stopped, the app keeps
+// running and keeps logging, and `docker logs` still works.
+
+// ---------------------------------------------------------------------------
+// Discovery
+// ---------------------------------------------------------------------------
+
+// Every container on the host, from the daemon itself. Discovery rather than a
+// static list, so a redeployed container with a new id is picked up without
+// editing this file — which matters, because CD replaces the app container on
+// every merge.
+discovery.docker "containers" {
+  host             = "unix:///var/run/docker.sock"
+  refresh_interval = "10s"
+}
+
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  // Docker reports the name with a leading slash. Strip it, or every Loki
+  // label reads "/projecta-flask" and every query needs the slash too.
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  // Compose's own labels, promoted so a query can select "the app" without
+  // knowing the container name.
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Collection
+// ---------------------------------------------------------------------------
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.containers.output
+  labels     = {platform = "projecta"}
+  forward_to = [loki.process.app_json.receiver]
+}
+
+// ---------------------------------------------------------------------------
+// Processing
+// ---------------------------------------------------------------------------
+
+loki.process "app_json" {
+  // Parse the JSON line into extracted fields. Non-JSON lines — Gitea's,
+  // Prometheus's, the registry's — fail this stage and pass through unchanged
+  // with their container label intact. That is deliberate: a mixed stream is
+  // better than a stage that drops everything it does not recognise.
+  stage.json {
+    expressions = {
+      level      = "level",
+      status     = "status",
+      endpoint   = "endpoint",
+      request_id = "request_id",
+      timestamp  = "timestamp",
+    }
+  }
+
+  // Use the application's own timestamp rather than the moment Alloy read the
+  // line. Without this, a backlog after a restart lands every log entry at the
+  // same instant and the metric-to-log time correlation the demo depends on
+  // stops working.
+  stage.timestamp {
+    source = "timestamp"
+    format = "RFC3339"
+  }
+
+  // Only `level` becomes a Loki label. Loki labels are the same cardinality
+  // problem as Prometheus labels — every distinct combination is a new stream —
+  // and `level` has five values while `request_id` has one per request. The
+  // request_id stays in the line body, where `| json | request_id="..."` finds
+  // it at query time without creating a stream per request. ADR-0007.
+  //
+  // `status` and `endpoint` are deliberately left out too, even though both are
+  // bounded. They are already Prometheus labels; duplicating them here buys a
+  // marginally faster query and doubles the number of streams.
+  stage.labels {
+    values = {level = ""}
+  }
+
+  forward_to = [loki.write.default.receiver]
+}
+
+// ---------------------------------------------------------------------------
+// Shipping
+// ---------------------------------------------------------------------------
+
+loki.write "default" {
+  endpoint {
+    url = "http://projecta-loki:3100/loki/api/v1/push"
+  }
+}

@@ -1,0 +1,25 @@
+# Code owners — reviewers requested automatically on every pull request.
+#
+# GitHub reads this file from the BASE branch of a pull request, not from the
+# branch being merged. That is what lets one repository have two different
+# review circles: this copy lives on `main` and names the mentors, while the
+# copy on `release/sprint2` also names the Project A team. Nothing else has to
+# be configured for that to work — the file simply differs per branch.
+#
+# Two things that are easy to get wrong:
+#
+#   * A listed owner without write access to this repository is skipped
+#     SILENTLY. No error, no warning — the review request just never happens.
+#     If reviewers are not being requested, check collaborator access first.
+#
+#   * `*` means these people own every file. It does NOT mean a pull request
+#     needs all of their approvals: branch protection's "require review from
+#     Code Owners" is satisfied by one approval from anyone listed here.
+#
+#   * The repository owner is not listed. GitHub never requests review from
+#     the author of a pull request, so naming yourself here reads as an extra
+#     reviewer while adding none. On this repo that is @myloo23 — the mentor's
+#     Project A list named "myloo", which is this account.
+#
+# Pattern            Owners
+* @repimark @peterzelei @casacco @aidana0804 @molnarg2023

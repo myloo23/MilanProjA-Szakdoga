@@ -87,6 +87,282 @@ services:
     networks:
       - platform
 
+  # --- Observability -------------------------------------------------------
+  #
+  # Added in Sprint 3. Same file as the CI platform rather than a second
+  # compose file, because they share the projecta-platform network and one
+  # `docker compose up -d` is one fewer thing to remember at demo time. The
+  # boundary that would justify splitting is a second host, not a second
+  # concern.
+  #
+  # Every service below is memory-limited. PLAN.md §5 budgets ~3–4 GB for the
+  # whole stack on a laptop that is also running Docker Desktop, Gitea and a
+  # job container; unlimited containers turn that estimate into a discovery
+  # made during a demo. The limits are deliberately tight — if one is hit, the
+  # container is OOM-killed and the "Scrape targets up" panel says so, which is
+  # a better failure than the host swapping.
+
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION}
+    container_name: projecta-prometheus
+    restart: unless-stopped
+
+    command:
+      # The defaults are not passed implicitly — naming a --config.file means
+      # the flags below replace the image's defaults wholesale, so the storage
+      # path and retention have to be stated too.
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      # 7d and 1GB, whichever comes first. This is demo evidence on a laptop,
+      # not a capacity-planning archive, and the size cap is the one that
+      # actually protects the disk — retention by time says nothing about how
+      # much a busy week costs.
+      - --storage.tsdb.retention.time=7d
+      - --storage.tsdb.retention.size=1GB
+      - --web.enable-lifecycle
+
+    ports:
+      - "${PROMETHEUS_HTTP_PORT}:9090"
+
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+    networks:
+      - platform
+
+    mem_limit: 512m
+
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:9090/-/healthy"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:${CADVISOR_VERSION}
+    container_name: projecta-cadvisor
+    restart: unless-stopped
+
+    # Reads the host's cgroup and container state. This is the most privileged
+    # thing in the stack after the runner's Docker socket, and for the same
+    # reason: there is no unprivileged way to ask the kernel what a container
+    # costs. Accepted for a local single-owner host and recorded here rather
+    # than left for a reviewer to notice — same treatment as risk B3.
+    privileged: true
+
+    # **Requires Docker Desktop's containerd image store to be OFF.** This is a
+    # host setting, not a compose one, and it is the difference between this
+    # service working and quietly producing nothing useful.
+    #
+    # With containerd enabled — which is the Docker Desktop default — cAdvisor
+    # connects to the daemon, lists every container, and then fails on each one:
+    #
+    #   Failed to create existing container: /docker/1e65eee…: failed to
+    #   identify the read-write layer ID — open /rootfs/var/lib/docker/image/
+    #   overlayfs/layerdb/mounts/<id>/mount-id: no such file or directory
+    #
+    # cAdvisor looks for the classic graph-driver layout; the containerd image
+    # store does not have one. Every container metric then arrives labelled
+    # `id="/docker/<sha>"` with no `name`, so the panels that filter on
+    # `name=~"projecta-.+"` return nothing at all — and nothing anywhere reports
+    # an error, because the scrape succeeds and the target stays UP.
+    #
+    # Turn it off in Docker Desktop → Settings → General → "Use containerd for
+    # pulling and storing images". Docker Desktop rebuilds its image store, so
+    # every image is re-pulled; named volumes are untouched, which means Gitea,
+    # the registry and the Prometheus/Loki/Grafana data all survive. Verified
+    # 2026-08-06: zero "Failed to create existing container" lines afterwards,
+    # and all ten containers named.
+    #
+    # This is a prerequisite for the clean-machine test in Hardening week, not a
+    # footnote — a fresh Docker Desktop defaults to containerd and would
+    # reproduce the empty panels exactly.
+    command:
+      - -logtostderr
+      # Docker containers only. Without it cAdvisor also reports the cgroup
+      # roll-ups — `id="/"` and `id="/docker"` — which are real but belong to no
+      # container, so any query written without a name filter silently sums the
+      # whole machine into the answer.
+      - --docker_only=true
+      # **Off, and this is ADR-0007 arriving from outside our own code.** By
+      # default cAdvisor turns every Docker label on every container into a
+      # Prometheus label. Compose alone attaches half a dozen, including
+      # `com.docker.compose.config-hash`, which changes whenever the compose
+      # file changes — so editing this file would retire every existing series
+      # and start new ones. The cardinality rule this project argues for is not
+      # only about labels we choose.
+      - --store_container_labels=false
+
+    devices:
+      - /dev/kmsg
+
+    volumes:
+      - /:/rootfs:ro
+      # The socket, named as a file rather than inherited from a directory.
+      # `/var/run:/var/run:ro` is what upstream's example does; Docker Desktop
+      # special-cases the path /var/run/docker.sock and binds it to the VM's
+      # real socket, while /var/run as a *directory* maps the Mac's /var/run,
+      # which contains no socket. Alloy worked throughout because it mounts the
+      # socket by name, and that difference is what pointed here.
+      #
+      # Necessary but not sufficient — see the containerd note above the
+      # command block. Fixing this alone got cAdvisor as far as
+      # "Registration of the docker container factory successfully" and no
+      # further. Both changes are needed; recording only the one that came last
+      # would send the next person down the same two dead ends.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+    networks:
+      - platform
+
+    mem_limit: 384m
+
+  node-exporter:
+    image: prom/node-exporter:${NODE_EXPORTER_VERSION}
+    container_name: projecta-node-exporter
+    restart: unless-stopped
+
+    # **"Host" here means the Docker Desktop Linux VM, not the MacBook.**
+    # Worth knowing before quoting any number off the host dashboard: on macOS
+    # every container runs inside a virtual machine, and this exporter can only
+    # see that machine. "Host memory available" is the VM's allocation — 7.75
+    # GiB, per `docker stats` — not the laptop's 16. Neither the Mac's own CPU
+    # pressure nor anything outside Docker appears here at all.
+    #
+    # It is kept because the VM *is* the resource pool this stack competes for,
+    # so "how much is left" is still the actionable question. But the panel
+    # cannot answer "is the laptop struggling", and saying that first is better
+    # than being asked why the numbers disagree with Activity Monitor.
+    command:
+      - --path.rootfs=/host
+      # Ignore the pseudo-filesystems Docker creates per container. Without
+      # this, the disk panel grows a series every time a container starts and
+      # the "free space" graph becomes unreadable.
+      - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+|host/var/lib/docker/.+)($$|/)
+
+    pid: host
+
+    volumes:
+      # Upstream's example says `/:/host:ro,rslave`, and that fails outright on
+      # Docker Desktop: "path / is mounted on / but it is not a shared or slave
+      # mount". The VM's root has no mount propagation set, so rslave cannot be
+      # honoured — and because compose aborts the whole `up` on the error, it
+      # also stopped Grafana and Alloy from starting. Found 2026-08-06.
+      #
+      # rslave exists so the exporter sees filesystems mounted *after* it
+      # starts. Nothing here mounts anything at runtime, so dropping it costs a
+      # capability this deployment does not use. If this ever runs on a Linux
+      # host, put it back.
+      - /:/host:ro
+
+    networks:
+      - platform
+
+    mem_limit: 128m
+
+  loki:
+    image: grafana/loki:${LOKI_VERSION}
+    container_name: projecta-loki
+    restart: unless-stopped
+
+    command: -config.file=/etc/loki/loki-config.yaml
+
+    ports:
+      - "${LOKI_HTTP_PORT}:3100"
+
+    volumes:
+      - ./observability/loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - loki-data:/loki
+
+    networks:
+      - platform
+
+    mem_limit: 512m
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:3100/ready | grep -q ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  alloy:
+    image: grafana/alloy:${ALLOY_VERSION}
+    container_name: projecta-alloy
+    restart: unless-stopped
+
+    depends_on:
+      loki:
+        condition: service_healthy
+
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+
+    volumes:
+      - ./observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      # Read-only, and read-only matters: this is the same socket the runner
+      # mounts read-write to build images. Alloy needs to list containers and
+      # stream their logs, which are both GETs. Anything that could start a
+      # container from a log collector is a privilege it has no use for.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy-data:/var/lib/alloy/data
+
+    networks:
+      - platform
+
+    mem_limit: 256m
+
+  grafana:
+    image: grafana/grafana:${GRAFANA_VERSION}
+    container_name: projecta-grafana
+    restart: unless-stopped
+
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
+
+    environment:
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
+      # No sign-up, no anonymous access. Trivially bypassable on a laptop, and
+      # still worth setting: the demo screenshots show a login, and a reviewer
+      # asking "is this open to the network?" gets a yes-it-is-configured
+      # rather than a shrug.
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      # Off for the same reason as Loki's analytics: a default nobody chose.
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+
+    ports:
+      - "${GRAFANA_HTTP_PORT}:3000"
+
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+
+    networks:
+      - platform
+
+    mem_limit: 512m
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:3000/api/health | grep -q ok"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
 networks:
   platform:
     name: projecta-platform
@@ -100,3 +376,15 @@ volumes:
 
   registry-data:
     name: projecta-registry-data
+
+  prometheus-data:
+    name: projecta-prometheus-data
+
+  loki-data:
+    name: projecta-loki-data
+
+  alloy-data:
+    name: projecta-alloy-data
+
+  grafana-data:
+    name: projecta-grafana-data
