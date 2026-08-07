@@ -81,6 +81,15 @@ Prometheus (app, cAdvisor, node_exporter), Grafana provisioned as code with two
 dashboards, Alloy → Loki with JSON parsing, a data link from error rate to the
 filtered log query, one alert rule.
 
+**Phase 6 — Pipeline control flow** ⬜
+Conditional stage and job execution, `timeout-minutes`, `continue-on-error`,
+retry on the steps that fail for reasons unrelated to the change, and dynamic
+fan-out to a matrix built at runtime. Added after the Sprint 2 review on
+2026-08-05 at the mentor's request; the pipeline currently runs every step
+unconditionally except the ref gate, which is a defensible default and not a
+demonstration of knowing the alternatives. Bounded by what `act_runner`
+actually supports — see Sprint 3, workstream B.
+
 ---
 
 ## 3. Milestones
@@ -176,17 +185,83 @@ repositories on this plan. Configured, documented, unenforced — see
    and saying so first is stronger than being asked. Repeat with
    `scripts/rollback-drill.sh`.
 
-### Sprint 3 — "See What's Happening" ⬜ *Next*
+### Sprint 3 — "See What's Happening, and Control What Runs" ⬜ *Next*
+
+Two workstreams, deliberately named separately. **A** is the observability work
+this roadmap always planned. **B** came from the Sprint 2 review with
+G. Kovalcsik on 2026-08-05 and is unrelated to it — folding B into A would make
+the sprint goal describe half of what the sprint contains.
+
+**A — Observability**
 
 Prometheus, Grafana as code, Alloy → Loki, the metric-to-log data link, one
 alert rule, a load-generation script, ADRs for Loki-over-ELK and for metric
-cardinality.
+cardinality. Depends on the two open Phase 1 items: structured JSON logging with
+`request_id`, and `/metrics`.
 
-**Review demo** — the incident from the brief: fire malformed requests at
-`/echo`, watch the error rate spike and the alert fire, click through to the
-filtered logs, read out the failing payload and its `request_id`. No SSH, no
-grep. Then explain why `request_id` is a log field and not a Prometheus label —
-that sentence about cardinality is worth more than another dashboard.
+**B — Pipeline control flow**
+
+The mentor's framing: the point is to *try* the conditional mechanisms, not to
+need them. A pipeline whose behaviour is obvious from reading it is the goal;
+these are the tools that make it non-obvious if used without cause.
+
+- ⬜ **Conditional stage and job execution.** Deliberate experiments with
+  `if:`, job-level conditions and reusable outputs, on branches that are
+  allowed to fail. What passes goes in `ci.yml`; what does not goes in the ADR
+- ⬜ **`timeout-minutes`** on the steps that can hang. Today nothing bounds the
+  Trivy download, the health wait or the deploy — a hung step holds a runner
+  with capacity 1 until someone notices
+- ⬜ **`continue-on-error`** where a failure should be reported and passed over
+  rather than stopping the run. Every gate in this pipeline currently fails
+  hard, by the rule in §6. Anything given this treatment has to be argued for
+  in the same commit — the rule stays, the exception gets a name
+- ⬜ **Retry** on the steps that fail for reasons unrelated to the change:
+  registry pulls, the Galaxy collection install, the Trivy DB fetch. Actions
+  has no native step retry, so this is an action dependency or a shell loop
+- ⬜ **Dynamic fan-out to N parallel jobs** — a matrix built from a previous
+  job's output via `fromJSON()`. The least likely of the five to work here;
+  see the spike below
+- ⬜ **ADR — when a second workflow beats a nested conditional.** Kovalcsik's
+  actual warning: developers over-complicate a single file with `if`/`else`/`and`
+  until nobody can say why a stage was skipped, and at that point two plain YAML
+  files are the simpler artefact. Write the threshold down before the pipeline
+  reaches it
+
+**Already satisfied, do not rebuild.** He also said feature branches should not
+push containers. `ci.yml` has done this since `fbc1254`: the `ref_gate` step
+computes `ships` once from `github.ref` and both the push step and the `deploy`
+job consume it, so only `main` and `release/*` reach the registry. Show him the
+step rather than writing a new one.
+
+**Spike first — `act_runner` capability.** Timeboxed to half a day, before any
+of B is planned in detail. Retry, `timeout-minutes`, `continue-on-error` and a
+`fromJSON()` matrix each get a throwaway branch and a recorded result. The
+precedent is in `ci.yml` itself: the ref gate is a shell `case` rather than
+`startsWith()` because expression support under `act_runner` was not worth
+betting a release gate on. Kovalcsik explicitly said it is fine if the tool
+does not support these. So a documented limitation is a deliverable here, not
+a miss — and by §6, an unproven claim is worse than a missing one.
+
+**Review demo** — the deck, not the pipeline. Kovalcsik reviewed the Sprint 2
+demo and said the HTML worked as it was, that there is rarely time for a live
+pipeline run and it carries risk anyway, and that a recorded-and-sped-up run is
+worse than a screenshot. He is not a fan of live demos even after a hundred
+rehearsals.
+
+So the incident from the brief gets *captured*, not performed: malformed
+requests fired at `/echo`, the error rate spiking, the alert firing, the click
+through to the filtered logs, and the failing payload with its `request_id` —
+each a still, in the `PROJECT-GUIDE.html` format that worked last time, with the
+environment left warm in case someone asks to see it live.
+
+This reverses what this section said until 2026-08-05, and the reversal is the
+point: the live walkthrough was planned against an assumption about what
+reviewers want, and the reviewer has now said otherwise. Recorded rather than
+quietly edited, because the next sprint will face the same temptation.
+
+The sentence that still has to be said out loud: why `request_id` is a log
+field and not a Prometheus label. That one is worth more than another
+dashboard, and it does not need a live pipeline to land.
 
 ### Hardening week ⬜
 
@@ -216,6 +291,11 @@ today's warm-host rollback number into a defensible one.
 - [ ] Grafana provisioned as code, cAdvisor and node_exporter
 - [x] Runbook — `docs/RUNBOOK.md`, Deploy and Rollback sections
 - [ ] Remaining ADRs
+- [ ] **`timeout-minutes` on the steps that can hang.** Nothing bounds the Trivy
+      download, the health wait or the deploy today. On a runner with capacity
+      1, one hung step is an outage of the whole pipeline
+- [ ] **Conditional execution, tried on purpose** — `if:`, job conditions,
+      `continue-on-error`, retry. Mentor request, 2026-08-05
 
 **P2 — only after P0 and P1**
 
@@ -223,6 +303,10 @@ today's warm-host rollback number into a defensible one.
       and committed, so it goes stale by design; the staleness guard in its
       README is the compensating control, and it has fired once already
 - [ ] Alert routing, zero-downtime swap, auto-changelog
+- [ ] **Dynamic fan-out to N parallel jobs** — a matrix built from a previous
+      job's output. P2 because this pipeline has nothing to parallelise: one
+      image, one target. Carried as a capability to demonstrate rather than a
+      problem to solve, and honest about which it is
 - [ ] **Automated dependency updates.** Dependabot alerts are being acted on by
       hand (two closed in #29). Nothing regenerates the SBOM or opens the bump
       automatically — a `schedule:` job in `ci.yml` is the obvious next step and
@@ -256,9 +340,12 @@ outstanding:
       restatement of it
 
 **Deliberate divergence.** The training recommends `main` + `dev`. This project
-runs `main` + `release/sprint2` because the sprint checkpoint *is* the thing
-demonstrated to mentors, and a long-lived `dev` alongside it would be a third
-branch with no distinct job. Documented in
+runs `main` + a per-sprint `release/*` branch — `release/sprint3` today, and
+`release/sprint2` before it, now retired to the `sprint-2` tag — because the
+sprint checkpoint *is* the thing demonstrated to mentors, and a long-lived
+`dev` alongside it would be a third branch with no distinct job. The branch is
+short-lived by design, which is the substantive difference from `dev`, not just
+a naming one. Documented in
 [`BRANCHING.md`](BRANCHING.md) and [ADR-0004](adr/0004-github-for-review-gitea-for-execution.md).
 Expect this to be asked about; the answer is that the strategy was chosen, not
 inherited.
@@ -312,11 +399,27 @@ inherited.
 
 ## 7. Next actions
 
-1. Merge both Sprint 2 branches, then `release/sprint2` → `main` once the
-   mentors validate the sprint.
-2. Start the logging and `/metrics` work — Sprint 3 depends on both.
+1. Structured JSON logging with `request_id`, then `/metrics`. Sprint 3
+   workstream A depends on both and cannot start without them.
+2. The `act_runner` capability spike — half a day, four throwaway branches,
+   one recorded result each. It decides how much of workstream B is buildable
+   and should happen before B is planned in detail.
 3. Pre-commit hooks with `gitleaks`, from the mentors' training. The only
    outstanding item whose failure mode is hard to undo.
 4. `/version` endpoint via `--build-arg` — the demo currently proves the running
    SHA with the container's `version` label, which works; the endpoint would
    make it provable without Docker access.
+
+**Done since the last revision (2026-08-05).** Sprint 2 closed and merged to
+`main` as PR #31; `release/sprint2` deleted from both forges and preserved as
+the annotated tag `sprint-2`; `release/sprint3` cut from `main`; the Sprint 2
+demo evidence committed under `docs/demo-assets-sprint2/`.
+
+One thing to carry rather than bury: **PR #31 was squash-merged.** §6 and
+[`BRANCHING.md`](BRANCHING.md) rule 7 both say `release/*` → `main` takes a
+merge commit, and the rule states the exact consequence that followed — `main`
+and `release/sprint2` ended with identical trees and no shared history. The
+damage is bounded, because Sprint 3 branches from `main` and the sprint2 branch
+is now a tag. The cause was the merge button remembering the previous choice,
+which is squash for every `feature/*`. Worth naming out loud at the next
+review: the rule was written, correct, and clicked past anyway.

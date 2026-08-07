@@ -18,9 +18,10 @@ Automates the path from a Git commit to a running, verified container.
 push → CI (lint · test · build · scan · push) → CD (Ansible deploy) → observe
 ```
 
-CI and CD work today. A merge into `release/sprint2` or `main` deploys the exact
-image the pipeline built and verifies it, with zero manual steps. Observability
-is the remaining phase — see [`docs/PLAN.md`](docs/PLAN.md).
+CI and CD work today. A merge into the current `release/*` branch or `main`
+deploys the exact image the pipeline built and verifies it, with zero manual
+steps. Observability and pipeline control flow are the remaining phases — see
+[`docs/PLAN.md`](docs/PLAN.md).
 
 **Review lives on GitHub, the pipeline runs on a self-hosted Gitea.** Neither
 forge can do both: Gitea is on `localhost` and unreachable to reviewers, GitHub
@@ -71,7 +72,7 @@ flowchart LR
 |---|---|:--:|
 | **1 · Foundation & App** | Repo, production-grade Flask app, hardened container | ✅ Done |
 | **2 · Pipeline** | Gitea Actions CI + Ansible CD, immutable SHA-tagged artifact | ✅ Done |
-| **3 · Observability & Demo** | Prometheus + Grafana + Loki, live incident demo | ⬜ Planned |
+| **3 · Observability & Pipeline Control Flow** | Prometheus + Grafana + Loki; conditional stages, timeouts, retry | ⬜ Planned |
 
 | Area | State |
 |---|:--:|
@@ -91,6 +92,8 @@ flowchart LR
 | Zero-downtime swap — a bad deploy is live for ~27s before the smoke test fails it | ⬜ |
 | Structured JSON logging · `/metrics` endpoint | ⬜ |
 | Prometheus / Grafana / Loki · demo script | ⬜ |
+| Feature branches build and scan but never push an image — `ref_gate` in `ci.yml` | ✅ |
+| Conditional stages, `timeout-minutes`, `continue-on-error`, retry | ⬜ |
 
 ## Stack
 
