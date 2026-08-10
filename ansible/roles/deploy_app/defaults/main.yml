@@ -5,6 +5,24 @@ deploy_app_restart_policy: unless-stopped
 deploy_app_memory: "256m"
 deploy_app_cpus: 0.5
 
+# The interface the container's port is published on. Docker's default is
+# 0.0.0.0 — every interface the host has — which put the application, and with
+# it an unauthenticated /metrics, on whatever network this laptop had joined.
+# F4 in docs/security-review-2026-08-10.md; platform/compose.yaml makes the same
+# change for the rest of the stack and carries the long form of the argument.
+#
+# A variable rather than a literal in the task, because this is the one value in
+# the role that a real second host would have to change: a deploy to a machine
+# reached over SSH publishes for other machines to reach, which is exactly the
+# case 127.0.0.1 exists to prevent here. Overriding it in group_vars is then a
+# deliberate line in an inventory rather than an edit to a shared task.
+#
+# Nothing in the pipeline reads this port. CD smoke-tests over the container
+# network (deploy_app_smoke_vantage), Prometheus scrapes projecta-flask:8000 by
+# name, and Alloy reads logs from the Docker socket. It is here for the browser
+# and for scripts/smoke.sh, both of which run on this host.
+deploy_app_publish_address: "127.0.0.1"
+
 # json-file is what Alloy tails in Sprint 3, so the log driver is set now rather
 # than retrofitted. Rotation is capped so a chatty container cannot fill the disk.
 deploy_app_log_driver: json-file

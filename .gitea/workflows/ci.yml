@@ -323,10 +323,27 @@ jobs:
         #
         # `always()` so a failed scan or a failed push still cleans up, and
         # `|| true` so cleanup can never be the thing that fails the build.
+        #
+        # **`docker image prune --force` used to follow this line and has been
+        # removed.** It takes no filter, so it deleted every dangling image on
+        # the host — not the ones this run produced. On a single-owner laptop
+        # that is invisible; on the TCS machine, which risk B1 leaves an open
+        # question, it is CI throwing away somebody else's build cache. A step
+        # that reaches outside the job to do it is worse than a step that
+        # leaves a little disk behind. F9 in
+        # docs/security-review-2026-08-10.md.
+        #
+        # The `docker rmi` above is what actually reclaimed the space: it drops
+        # this run's tag and, with it, every layer no other image references.
+        # The prune was only ever catching intermediate layers on top of that,
+        # and it is not this job's business to decide they are nobody's.
+        #
+        # The honest cost: if the runner's disk does creep, nothing here now
+        # stops it, and `docker builder prune` on the host is the answer — run
+        # by a human who knows whose machine it is.
         if: always()
         run: |
           docker rmi localhost:5001/projecta-flask:${{ github.sha }} || true
-          docker image prune --force || true
 
   deploy:
     # Runs only after the artifact exists, and only for refs that published one.

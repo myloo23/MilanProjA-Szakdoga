@@ -50,7 +50,7 @@
         networks:
           - name: "{{ app_network }}"
         published_ports:
-          - "{{ app_host_port }}:{{ app_container_port }}"
+          - "{{ deploy_app_publish_address }}:{{ app_host_port }}:{{ app_container_port }}"
         memory: "{{ deploy_app_memory }}"
         cpus: "{{ deploy_app_cpus }}"
         log_driver: "{{ deploy_app_log_driver }}"

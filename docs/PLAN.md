@@ -296,6 +296,22 @@ today's warm-host rollback number into a defensible one.
       1, one hung step is an outage of the whole pipeline
 - [ ] **Conditional execution, tried on purpose** — `if:`, job conditions,
       `continue-on-error`, retry. Mentor request, 2026-08-05
+- [x] **Nothing in the stack listens beyond this host.** Every published port
+      bound `0.0.0.0`, so the registry — which has no authentication and which
+      CD deploys from by tag — was reachable by anyone on whatever network the
+      laptop had joined, as were Prometheus's lifecycle endpoint and Loki. Now
+      `127.0.0.1`, in `compose.yaml` and in the deploy role, at no cost to the
+      pipeline: containers address each other by name and never through a
+      published port. F4 in
+      [`security-review-2026-08-10.md`](security-review-2026-08-10.md)
+- [x] **The build context carries only what the Dockerfile copies.**
+      `.dockerignore` was a deny-list whose `.env` entry matched the context
+      root and therefore not `platform/.env`, which was sent to the daemon on
+      every build. Inverted to an allow-list, so the next secret to land in
+      this repository is excluded by default rather than by memory. F5, same
+      document. Also F9: `docker image prune --force` took no filter and
+      deleted every dangling image on the host, which is only harmless while
+      the host is certainly yours — and risk B1 has not answered that
 
 **P2 — only after P0 and P1**
 

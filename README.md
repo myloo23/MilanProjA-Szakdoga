@@ -127,7 +127,7 @@ pip install -r requirements-dev.txt
 pytest && ruff check .
 
 docker build -t flaskapp:dev .
-docker run -p 8000:8000 flaskapp:dev
+docker run -p 127.0.0.1:8000:8000 flaskapp:dev
 curl localhost:8000/health
 ```
 

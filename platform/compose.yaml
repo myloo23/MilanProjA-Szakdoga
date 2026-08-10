@@ -1,5 +1,31 @@
 name: projecta
 
+# **Every published port below binds 127.0.0.1, not 0.0.0.0.** Compose's short
+# form defaults to all interfaces, which put the whole stack on whatever network
+# this laptop had joined — and three of these services have no authentication at
+# all. The registry is the one that matters: anyone who could reach port 5001
+# could push to it, and CD deploys what that registry holds by tag, so the
+# "immutable artifact" this project is built on was one hostile network away
+# from being someone else's to overwrite. Prometheus publishes a control
+# endpoint (`--web.enable-lifecycle`) and Loki runs `auth_enabled: false`; both
+# are milder and neither belongs on a shared network either. F4 in
+# docs/security-review-2026-08-10.md.
+#
+# **This costs the pipeline nothing, and the reason is worth understanding.**
+# Nothing here reaches anything else through a published port. Containers talk
+# over the projecta-platform network by name — that is why act_runner sets
+# `GITEA_INSTANCE_URL: http://gitea:3000` and why deploy_app_smoke_vantage
+# exists. The published ports serve exactly two callers, and both are on this
+# host: a browser, and the shell. `docker push localhost:5001/...` keeps working
+# because the client only hands the request to the daemon; it is the daemon, on
+# the host, that opens the connection to loopback.
+#
+# What it does cost: the stack can no longer be reached from a phone or a second
+# machine. That is the whole of the tradeoff, and nothing in this project does
+# it. If a demo ever needs it, change the address here deliberately and put it
+# back afterwards — rather than leaving it open permanently for a case that has
+# not happened yet.
+
 services:
   gitea:
     image: docker.gitea.com/gitea:${GITEA_VERSION}
@@ -14,8 +40,8 @@ services:
       GITEA__actions__ENABLED: "true"
 
     ports:
-      - "${GITEA_HTTP_PORT}:3000"
-      - "${GITEA_SSH_PORT}:22"
+      - "127.0.0.1:${GITEA_HTTP_PORT}:3000"
+      - "127.0.0.1:${GITEA_SSH_PORT}:22"
 
     volumes:
       - gitea-data:/data
@@ -43,7 +69,7 @@ services:
     restart: unless-stopped
 
     ports:
-      - "${REGISTRY_HTTP_PORT}:5000"
+      - "127.0.0.1:${REGISTRY_HTTP_PORT}:5000"
 
     volumes:
       - registry-data:/var/lib/registry
@@ -122,7 +148,7 @@ services:
       - --web.enable-lifecycle
 
     ports:
-      - "${PROMETHEUS_HTTP_PORT}:9090"
+      - "127.0.0.1:${PROMETHEUS_HTTP_PORT}:9090"
 
     volumes:
       - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -272,7 +298,7 @@ services:
     command: -config.file=/etc/loki/loki-config.yaml
 
     ports:
-      - "${LOKI_HTTP_PORT}:3100"
+      - "127.0.0.1:${LOKI_HTTP_PORT}:3100"
 
     volumes:
       - ./observability/loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
@@ -344,7 +370,7 @@ services:
       GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
 
     ports:
-      - "${GRAFANA_HTTP_PORT}:3000"
+      - "127.0.0.1:${GRAFANA_HTTP_PORT}:3000"
 
     volumes:
       - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro

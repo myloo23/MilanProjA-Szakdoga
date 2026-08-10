@@ -17,7 +17,7 @@ pytest && ruff check .
 
 flask --app app/app.py run          # dev server, :5000
 # or the production container:
-docker build -t flaskapp:dev . && docker run -p 8000:8000 flaskapp:dev
+docker build -t flaskapp:dev . && docker run -p 127.0.0.1:8000:8000 flaskapp:dev
 curl localhost:8000/health
 ```
 
@@ -91,7 +91,7 @@ That last one is the deliberate error path the observability demo needs.
 
 ```bash
 docker build -t flaskapp:dev .
-docker run -d --name flaskapp -p 8000:8000 flaskapp:dev
+docker run -d --name flaskapp -p 127.0.0.1:8000:8000 flaskapp:dev
 docker logs -f flaskapp
 docker stop flaskapp && docker rm flaskapp
 docker image prune                    # multi-stage builds leave dangling images
@@ -116,6 +116,19 @@ the import path is `app.app:app` — a package path, not a file path. Pointing
 containers: `gitea:3000`, `registry:5000`. From the host: `localhost:3000`,
 `localhost:5001`. Inside a container `localhost` is *that container* — the single
 most common source of confusing failures here.
+
+**Every published port binds `127.0.0.1`, so this host and nothing else can
+reach the stack.** The registry has no authentication and Prometheus and Loki
+have none either; on the default `0.0.0.0` binding they were available to
+whoever else was on the network. The reasoning is in `platform/compose.yaml`
+above the `services:` block. Nothing in the pipeline notices, because containers
+address each other by name over `projecta-platform` and never through a
+published port — including `docker push localhost:5001/...`, where the client
+only hands the request to the daemon and the daemon dials loopback on this host.
+
+The symptom if you forget: reaching any of these from a second machine now
+fails, and it is meant to. Change the address deliberately for a demo that needs
+it, and change it back.
 
 ```bash
 cp platform/.env.example platform/.env

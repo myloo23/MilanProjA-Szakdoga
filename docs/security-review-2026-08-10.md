@@ -32,6 +32,18 @@ configuration read plus two reproductions.
 | F8 | Everything is pinned, so nothing is ever patched between pushes | Low | **HW** |
 | F9 | `docker image prune --force` is host-wide | Low | **S3** |
 
+### Status
+
+Updated as findings close, so this table and the repository do not drift apart.
+A finding is only marked closed once the change is merged — the standard §6 sets
+for everything else applies to this document too.
+
+| # | Status |
+|---|---|
+| F1, F2 | Fixed, in review. Two corrections recorded against F1 below |
+| F4, F5, F9 | Fixed, in review |
+| F3, F6, F7, F8 | Open, Hardening week |
+
 ---
 
 ## F1 — `/echo` returns 500 on deeply nested JSON [S3]
