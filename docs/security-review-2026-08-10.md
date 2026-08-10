@@ -82,22 +82,48 @@ so a bored scanner can drive the error rate on the golden-signals dashboard from
 outside, and the one alert rule Sprint 3 is building fires on someone else's
 schedule.
 
-**Fix.** Widen the catch and add the case to the suite:
+**Fix.** Catch `RecursionError` in its own clause with its own reason —
+grouping it with the two Werkzeug exceptions would hide that it arrives from a
+different direction. The regression test is the deliverable: this is exactly the
+kind of claim §6 says must be demonstrable.
 
-```python
-except (BadRequest, UnsupportedMediaType, RecursionError):
-```
+### Correction, same day
 
-`RecursionError` is not in the same family as the other two and grouping it in
-one tuple hides that; a separate `except` with its own one-line reason is the
-honest version. Either way the regression test is the deliverable — this is
-exactly the kind of claim §6 says must be demonstrable, and a test in
-`tests/test_app.py` is what makes it so.
+Two things in the paragraphs above were wrong, and both were found by running
+the fix on the interpreter the image actually uses rather than the one the
+review was written on. Recorded here as a correction rather than edited away,
+because the way they were wrong is the more useful part.
 
-**Verified on Python 3.10; the image runs 3.12.** The default recursion limit is
-1000 on both and the failure mode does not change, but the number of brackets
-needed differs slightly. Re-run it inside the container before quoting a payload
-size at a review.
+**The recursion depth is not a constant.** The reproduction above was done on
+CPython 3.10, where C-level recursion is bounded by `sys.getrecursionlimit()`
+and a thousand levels is the answer everywhere. CPython 3.12 replaced that with
+a check against the real C stack, so the depth at which a parser gives way now
+moves with the platform, the interpreter build and how much stack the thread
+was given — and gunicorn serves this on worker threads, not the main one.
+Measured on 3.12.13 on macOS: 8,000 levels parses, 16,000 raises. A first
+attempt at a regression test asserted 400 at 5,000 levels and failed on 3.12
+with a 200, which is the test being wrong rather than the application.
+
+The consequence is that **nothing in this repository asserts that a particular
+depth fails.** The tests and `smoke.yml` assert the contract — no body inside
+the size limit produces a 5xx — and leave the depth at which the interpreter
+agrees to the interpreter. A test pinned to a depth would go green for the wrong
+reason the first time a runner had more stack, which is the failure mode §6
+cares about most.
+
+**The response path recurses too, and the first fix did not cover it.** `/echo`
+reflects its input, so a deep document is walked twice: once by `json.loads` on
+the way in and once by `jsonify` on the way out. The decoder and the encoder do
+not give way at the same depth, so a body can parse successfully and then raise
+`RecursionError` during serialisation — after the `try` block that was guarding
+only the parse, and therefore straight into the 500 this finding is about.
+Guarding the parse alone would have left the finding open against very nearly
+the payload it was written for. The parse and the response are now inside one
+`try`.
+
+Neither correction changes the severity or the conclusion. F1 is real, it is
+reachable inside the 64 KiB limit on 3.12 — 16,000 levels is 32,000 bytes,
+half the ceiling — and F2 does not subsume it.
 
 ---
 

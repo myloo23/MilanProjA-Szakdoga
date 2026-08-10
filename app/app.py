@@ -2,7 +2,11 @@
 import time
 
 from flask import Flask, Response, g, jsonify, request
-from werkzeug.exceptions import BadRequest, UnsupportedMediaType
+from werkzeug.exceptions import (
+    BadRequest,
+    RequestEntityTooLarge,
+    UnsupportedMediaType,
+)
 
 from app import metrics
 from app.logging_config import (
@@ -14,6 +18,24 @@ from app.logging_config import (
 configure_logging()
 
 app = Flask(__name__)
+
+# The largest request body this application will read. Flask's default is no
+# limit at all, and `/echo` returns what it was sent — so one request costs
+# roughly three copies of itself: the buffered body, the parsed structure and
+# the serialised response. The deploy role gives this container 256 MB
+# (`deploy_app_memory`) and gunicorn runs two workers of four threads, so eight
+# concurrent multi-megabyte posts is an out-of-memory kill, not a slow request.
+#
+# 64 KiB is chosen from both ends. The largest body anything in this project
+# sends is `smoke.yml`'s `{"smoke": "<40-char sha>"}`, so the limit is three
+# orders of magnitude above legitimate traffic; and a body this size cannot
+# exhaust the container no matter how many arrive at once, because the memory
+# limit bounds the workers before the bodies do.
+#
+# Werkzeug enforces this when the body is read and raises 413. The handler
+# below is what stops that arriving as an HTML error page from a JSON API.
+MAX_REQUEST_BODY_BYTES = 64 * 1024
+app.config["MAX_CONTENT_LENGTH"] = MAX_REQUEST_BODY_BYTES
 
 # Endpoints whose successful traffic is machinery, not usage: Docker's
 # HEALTHCHECK hits /health every 10s and Prometheus scrapes /metrics every 15s.
@@ -96,10 +118,82 @@ def prometheus_metrics():
     return Response(body, mimetype=content_type)
 
 
+@app.errorhandler(RequestEntityTooLarge)
+def _payload_too_large(_error: RequestEntityTooLarge) -> tuple[Response, int]:
+    """Return the 413 as JSON rather than as Werkzeug's HTML page.
+
+    Registered application-wide rather than on `/echo`, because the limit is a
+    property of the server and a future endpoint that reads a body should not
+    have to remember to opt in.
+
+    The rejected body is not logged, for the same reason `/echo` does not log
+    an invalid payload: it is attacker-controlled and, by definition, large.
+    `content_length` is the useful field and it is one integer. Logged at
+    warning because a client that sends this is doing something wrong, and
+    because a burst of them is a signal worth alerting on later.
+    """
+    app.logger.warning(
+        "request body over the limit",
+        extra={
+            "event": "payload_too_large",
+            "content_length": request.content_length,
+            "limit_bytes": MAX_REQUEST_BODY_BYTES,
+        },
+    )
+    return jsonify(error="Request body too large"), 413
+
+
 @app.route("/echo", methods=["POST"])
 def echo():
+    # The parse and the response are inside one `try` on purpose, and it is not
+    # a stylistic choice. `/echo` reflects what it was sent, so a document deep
+    # enough to exhaust the C stack does it once on the way in, in
+    # `json.loads`, and again on the way out, in `jsonify`. The decoder and the
+    # encoder do not fail at the same depth — a body can parse and then blow up
+    # being serialised — and which one gives way first depends on the platform,
+    # the interpreter version and how much stack the thread was given. Guarding
+    # only the parse would have left a 500 reachable by exactly the payload the
+    # guard was written for.
     try:
-        data = request.get_json()
+        return jsonify(received=request.get_json())
+    except RecursionError:
+        # Deeply nested JSON — `[[[[...]]]]` — recurses once per level, and
+        # `RecursionError` is not a `ValueError`, so Flask never converts it
+        # into the `BadRequest` the clause below catches. It reached the
+        # generic 500 handler instead.
+        #
+        # Caught separately rather than added to the tuple below. Those two are
+        # Werkzeug's way of saying "the client sent something unusable"; this is
+        # the interpreter saying it ran out of stack, and folding them together
+        # would hide that the fix came from a different direction.
+        #
+        # `MAX_CONTENT_LENGTH` does not subsume this. On CPython 3.12 the
+        # decoder gives way somewhere between 8,000 and 16,000 levels, and
+        # 16,000 levels is 32,000 bytes — half the 64 KiB ceiling. The two
+        # limits guard different things and both are needed.
+        #
+        # **The depth is not a constant and must not be treated as one.** 3.12
+        # replaced the old fixed recursion limit for C-level calls with a check
+        # against the real C stack, so the threshold now moves with the
+        # platform and with the stack the thread was given — and gunicorn
+        # serves this on worker threads, not the main one. That is why nothing
+        # here, in the tests or in `smoke.yml` asserts a particular depth
+        # fails: the contract is that no body inside the size limit produces a
+        # 5xx, and the depth at which the interpreter agrees is its business.
+        #
+        # 400 rather than 413: the body is inside the size limit and
+        # well-formed, it is the shape that is hostile, and `/echo`'s contract
+        # — bad input is a client error, never a server error — is what
+        # `smoke.yml` asserts on every deploy.
+        app.logger.warning(
+            "JSON payload nested too deeply to process",
+            extra={
+                "event": "bad_request",
+                "content_type": request.content_type,
+                "content_length": request.content_length,
+            },
+        )
+        return jsonify(error="Invalid JSON payload"), 400
     except (BadRequest, UnsupportedMediaType):
         # The payload is deliberately not logged. It is attacker-controlled
         # input of arbitrary size, and this is the endpoint the incident demo
@@ -111,5 +205,3 @@ def echo():
             extra={"event": "bad_request", "content_type": request.content_type},
         )
         return jsonify(error="Invalid JSON payload"), 400
-
-    return jsonify(received=data)

@@ -283,6 +283,20 @@ today's warm-host rollback number into a defensible one.
 **P1 — the difference between "works" and "senior"**
 
 - [x] `/echo` 400 handling, coverage gate, Trivy scan, Gunicorn, secrets out of Git
+- [x] **`/echo` answers every hostile body with a client error, not a 500.** The
+      original 400 handling caught the two exceptions Werkzeug raises and missed
+      the one the interpreter does: deeply nested JSON raised `RecursionError`,
+      which is not a `ValueError`, so it reached the generic 500 handler.
+      Unauthenticated, and a 500 moves the error rate the alert rule watches.
+      Fixed alongside `MAX_CONTENT_LENGTH`, which was unset — a 5 MB body was
+      read and reflected in full. F1 and F2 in
+      [`security-review-2026-08-10.md`](security-review-2026-08-10.md); both
+      reproduced before the fix and guarded by pytest and by `smoke.yml`
+      afterwards. Two corrections are recorded against F1 in that document: the
+      recursion depth is a property of the host rather than a constant since
+      CPython 3.12, so nothing asserts a depth — only that no body inside the
+      size limit yields a 5xx; and `/echo` reflects its input, so the response
+      path recurses as well and the first fix guarded only half of it
 - [x] Post-deploy smoke test that fails the deploy
 - [x] `hadolint` in CI
 - [x] `ansible-lint` in CI — `production` profile, gated in `build-test-push`

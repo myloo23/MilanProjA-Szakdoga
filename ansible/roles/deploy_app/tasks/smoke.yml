@@ -55,3 +55,49 @@
       Content-Type: text/plain
     status_code: 400
   changed_when: false
+
+- name: Assert deeply nested JSON never returns 5xx
+  # The same contract as the task above, reached by a different route: this
+  # body is valid JSON and the parser may still be unable to finish it, because
+  # json.loads recurses once per level and RecursionError is not the ValueError
+  # Flask converts into a 400. It returned 500 until the review of 2026-08-10,
+  # which means anyone could move the error rate on the golden-signals
+  # dashboard — and, once the alert rule lands, fire it.
+  #
+  # 200 and 400 are both correct answers and the reason is in
+  # defaults/main.yml: since CPython 3.12 the depth at which a parser runs out
+  # of stack depends on the host rather than on a constant, so pinning this to
+  # 400 would be pinning it to whichever machine happened to run it. What is
+  # not allowed to happen is a 5xx, and that is the whole claim.
+  #
+  # Verified here as well as in pytest because the two prove different things.
+  # The unit test proves the handler is correct; this proves the artifact that
+  # was actually deployed contains it, on the interpreter it actually ships.
+  ansible.builtin.uri:
+    url: "{{ deploy_app_smoke_base }}/echo"
+    method: POST
+    body: >-
+      {{ '[' * deploy_app_smoke_nesting_depth
+         ~ ']' * deploy_app_smoke_nesting_depth }}
+    headers:
+      Content-Type: application/json
+    status_code: [200, 400]
+  changed_when: false
+
+- name: Assert an oversized body is refused with 413, not absorbed
+  # MAX_CONTENT_LENGTH. Without it /echo reads and reflects a body of any size,
+  # so one request costs three copies of itself against the 256 MB this
+  # container is given — an out-of-memory kill, which also wipes the
+  # multiprocess metric directory and takes the evidence with it.
+  #
+  # A ceiling is only half the claim; the task above it in pytest checks that a
+  # body just under the limit still succeeds. Asserting only the rejection
+  # would pass just as happily against a limit set to zero.
+  ansible.builtin.uri:
+    url: "{{ deploy_app_smoke_base }}/echo"
+    method: POST
+    body: '{"pad": "{{ "x" * deploy_app_smoke_oversized_bytes }}"}'
+    headers:
+      Content-Type: application/json
+    status_code: 413
+  changed_when: false
