@@ -119,6 +119,71 @@ jobs:
         timeout-minutes: 2
         run: ruff check .
 
+      - name: Scan the working tree for secrets
+        # Closes F6 from docs/security-review-2026-08-10.md. The pre-commit
+        # gitleaks hook lands the same check on the author's machine seconds
+        # after the mistake, but it is client-side and `--no-verify` skips it.
+        # Non-negotiable #4 says a check that cannot fail the build is a log
+        # line, so the hook is the convenience and this step is the gate.
+        #
+        # Placed here, immediately after Ruff, on the pipeline's fail-fast cost
+        # order: it needs no build and no image, and a leaked credential is the
+        # one finding whose cost keeps growing while the rest of the pipeline
+        # runs.
+        #
+        # Trivy rather than gitleaks-in-CI so the pipeline has one scanner
+        # rather than two, already pinned at the version docs/sbom/README.md
+        # records. `fs` scans the checkout; the `image` step later scans what
+        # was built from it.
+        #
+        # `--scanners secret` only, deliberately. The review also recommends
+        # `misconfig`, which reads the compose file and the Dockerfile and is
+        # expected to come back red on first run. That triage is real work and
+        # it is not secret scanning, so it is tracked separately in PLAN.md
+        # rather than bundled in here and half-done.
+        #
+        # No bind mount, and that is the whole reason this step looks odd.
+        # `-v "$PWD:/src"` fails here: the job runs in a container, the Docker
+        # socket is the *host* daemon's, so the daemon resolves $PWD against the
+        # host filesystem where /workspace/... does not exist. On Docker Desktop
+        # it surfaces as "mounts denied: path is not shared from the host",
+        # which reads like a Docker Desktop preference and is not one — sharing
+        # that path would not help, because the path is not the host's.
+        #
+        # Same family as the smoke-test `localhost` bug, and the other two
+        # container steps already dodge it: hadolint takes the Dockerfile on
+        # stdin, and the Trivy image scan mounts only the socket. This one ships
+        # the tree in instead of mounting it.
+        #
+        # `git archive HEAD` rather than `docker cp .`: it emits exactly the
+        # tracked tree at the commit under test, so .git and any untracked local
+        # clutter stay out without an exclude list to keep in sync.
+        #
+        # The file count is not decoration. Trivy exits 0 both when it finds no
+        # secrets and when it is handed an empty directory, and the first draft
+        # of this step piped `git archive` straight into `docker cp` — where a
+        # failed archive is masked by the exit status of the last command in the
+        # pipeline and the scan quietly succeeds over nothing. Same failure mode
+        # the hadolint step guards with `test -s Dockerfile`, and the same fix:
+        # assert there is input, and print what was scanned so a green log says
+        # something rather than merely saying nothing.
+        timeout-minutes: 5
+        run: |
+          git archive --format=tar --prefix=src/ HEAD > /tmp/tree.tar
+          files=$(tar -tf /tmp/tree.tar | grep -cv '/$')
+          test "$files" -gt 0 || { echo "git archive produced an empty tree"; exit 1; }
+          echo "trivy 0.72.0: scanning $files tracked files for secrets"
+
+          cid=$(docker create aquasec/trivy:0.72.0 fs \
+            --exit-code 1 \
+            --scanners secret \
+            /src)
+          docker cp - "$cid:/" < /tmp/tree.tar
+          rc=0
+          docker start --attach "$cid" || rc=$?
+          docker rm --force "$cid" >/dev/null 2>&1 || true
+          exit $rc
+
       - name: Lint the Dockerfile
         timeout-minutes: 3
         # A step inside this job rather than a job of its own. A separate job

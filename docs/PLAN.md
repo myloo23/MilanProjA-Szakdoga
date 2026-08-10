@@ -358,16 +358,52 @@ commits, squash for `feature/*` and a merge commit for `release/* → main` are
 all configured and reasoned about in [`BRANCHING.md`](BRANCHING.md). Genuinely
 outstanding:
 
-- [ ] Pre-commit hooks with `gitleaks` — the one gap with a failure mode that is
-      hard to undo. Nothing stops a secret reaching history today
-- [ ] Rehearse the leaked-secret drill: commit a fake credential, watch the hook
-      block it, practise removal from history. Same standard as the rollback —
-      unrehearsed is unclaimable
-- [ ] Release tags and `CHANGELOG.md`. Deploys are traceable by SHA but not by
-      release. The training's separate `DEPLOYMENTS.md` folds into the changelog
-      rather than becoming a second file to keep true
-- [ ] `CONTRIBUTING.md` — thin entry point pointing at `BRANCHING.md`, not a
-      restatement of it
+- [x] Pre-commit hooks with `gitleaks`, pinned at v8.30.1 in
+      `.pre-commit-config.yaml`. The review's point in F6 stands and is now
+      acted on: a hook is client-side and `--no-verify` skips it, so the
+      enforcing check is a Trivy `fs --scanners secret` step in `ci.yml`, placed
+      immediately after Ruff on the fail-fast cost order. The hook is the
+      two-second warning, the CI step is the gate. **Both halves proven on
+      2026-08-10** — the hook blocked a commit locally, and the CI step failed a
+      build on a branch that used `--no-verify` to get past the hook. Evidence
+      in [`RUNBOOK.md`](RUNBOOK.md)
+- [x] Watched the hook block a commit, 2026-08-10. Output recorded in
+      [`RUNBOOK.md`](RUNBOOK.md). It fired as `generic-api-key` on entropy 3.55
+      rather than as `aws-access-token` on format, and reported `0 commits
+      scanned` — so what is proven is that the hook stops *this* secret in the
+      staged diff, not that it recognises credential formats or looks at
+      history. History is the CI step's job
+- [x] Rehearse the leaked-secret drill. Done 2026-08-10 against a throwaway
+      clone at 50 commits, all three cases, written up in
+      [`RUNBOOK.md`](RUNBOOK.md). The finding worth carrying: **`git revert -m 1`
+      does not remove a secret** — the working tree is clean afterwards and the
+      credential is still readable by SHA. It looks like it worked, which is
+      what makes it dangerous. `filter-repo` cleared 74 commits in 500ms
+- [x] Release tags and `CHANGELOG.md`. Seeded from the `sprint-2` tag, with the
+      training's `DEPLOYMENTS.md` folded in rather than kept as a second file.
+      Pre-`sprint-2` sprints are deliberately not backfilled — a record
+      reconstructed from `git log` afterwards is written to look tidy rather
+      than kept as things happened
+- [x] `CONTRIBUTING.md` — thin entry point pointing at `BRANCHING.md`,
+      `DEVELOPMENT.md` and the Definition of Done, not a restatement of them
+
+Opened by this work rather than closed by it:
+
+- [ ] Nothing scans git *history* for secrets. Both new checks read the working
+      tree: the hook sees the staged diff, Trivy `fs` sees the checkout. A
+      secret committed and later deleted is invisible to both. `gitleaks detect`
+      over the full history would cover it, and the honest reason it is not
+      wired in yet is that it needs a decision about what to do on a hit —
+      a red pipeline on a commit nobody can change is a gate that gets disabled
+- [ ] Trivy `fs --scanners misconfig` over the compose file and the Dockerfile.
+      The security review recommends it alongside the secret scanner and expects
+      it red on first run. Kept out of the same change on purpose: triaging IaC
+      misconfiguration is real work and is not secret scanning, and bundling it
+      would have meant landing both half-done
+- [ ] `BRANCHING.md` still says `release/sprint2` throughout, including in rules
+      1, 2, 5, 6 and 7 and the everyday loop. The rules are right; the branch
+      name is one sprint out of date — cheap to fix, and worth fixing before it
+      reads as an instruction to branch off a retired branch
 
 **Deliberate divergence.** The training recommends `main` + `dev`. This project
 runs `main` + a per-sprint `release/*` branch — `release/sprint3` today, and
@@ -434,8 +470,9 @@ inherited.
 2. The `act_runner` capability spike — half a day, four throwaway branches,
    one recorded result each. It decides how much of workstream B is buildable
    and should happen before B is planned in detail.
-3. Pre-commit hooks with `gitleaks`, from the mentors' training. The only
-   outstanding item whose failure mode is hard to undo.
+3. Trivy `fs --scanners misconfig` over the compose file and the Dockerfile —
+   the half of F6 this change deliberately left open. Expect it red on the
+   first run; the triage is the work.
 4. `/version` endpoint via `--build-arg` — the demo currently proves the running
    SHA with the container's `version` label, which works; the endpoint would
    make it provable without Docker access.

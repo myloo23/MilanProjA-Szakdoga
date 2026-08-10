@@ -42,7 +42,8 @@ for everything else applies to this document too.
 |---|---|
 | F1, F2 | Fixed, in review. Two corrections recorded against F1 below |
 | F4, F5, F9 | Fixed, in review |
-| F3, F6, F7, F8 | Open, Hardening week |
+| F6 | Fixed, in review. Trivy `fs --scanners secret` after Ruff in `ci.yml`, plus the pinned `gitleaks` pre-commit hook. The `misconfig` scanner this section also recommends is *not* included and stays open in `PLAN.md` — the finding was secret scanning, and IaC triage is a separate piece of work |
+| F3, F7, F8 | Open, Hardening week |
 
 ---
 
