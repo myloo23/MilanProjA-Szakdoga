@@ -791,10 +791,86 @@ git push gitea feature/sprint-3-observability
 
 | Check | Passed when | Result |
 |---|---|:--:|
-| 8.1 Pipeline green on the feature branch | All gates pass; no image pushed, because `ships=false` | ⬜ |
-| 8.2 No step hit a timeout | Check against the values in the other PR once both are merged | ⬜ |
-| 8.3 Deploy still smoke-tests clean | After merge to `release/sprint3`, CD runs and the smoke test passes | ⬜ |
-| 8.4 Idempotence holds | Second deploy of the same SHA → `changed=0` | ⬜ |
+| 8.1 Pipeline green on the feature branch | All gates pass; no image pushed, because `ships=false` | ✅ |
+| 8.2 No step hit a timeout | Every step finishes well inside the bound `ci.yml` gives it | ✅ |
+| 8.3 Deploy still smoke-tests clean | After merge to `release/sprint3`, CD runs and the smoke test passes | ✅ |
+| 8.4 Idempotence holds | Second deploy of the same SHA → `changed=0` | ✅ |
+
+**Run 2026-08-08, Gitea run #74** — `Merge pull request #38`, `release/sprint3`,
+both jobs green in 1m46s total.
+
+**8.2 — the bounds are not close to binding.** `ci.yml` carries twenty
+step-level `timeout-minutes` and no job-level one, the tightest being 2m. The
+whole `build-test-push` job took **1m17s** and `deploy` **26s** — each job
+finished in less wall-clock time than the smallest single-step budget it
+contains, so no individual step came near its limit. That is the honest reading
+of a green run, and it is also the uninteresting one: these timeouts are not
+tuned to the work, they are there to stop a hung step occupying a capacity-1
+runner forever. The number worth watching is Trivy's 10m, because it is the step
+whose duration depends on something outside this repository.
+
+Run #73 on the same branch — the observability merge, before `timeout-minutes`
+existed — took 38s and 24s against #74's 1m17s and 26s. The build job took twice
+as long, and it is worth being clear that `timeout-minutes` cannot be the cause:
+a bound kills a step, it does not slow one down. The difference is more likely
+Docker layer cache state or a Trivy database refresh between the two runs. Not
+investigated, and recorded here as unexplained rather than waved away, because a
+build that doubles for reasons nobody checked is how a capacity-1 runner becomes
+a bottleneck later.
+
+**8.3 — CD deployed what CI built.** The `deploy` job in run #74 completed in
+26s. `projecta-flask` reports:
+
+```bash
+docker inspect projecta-flask --format '{{index .Config.Labels "version"}}'
+ed19d737d704ed01b4526955a56b396c9a7ba734
+```
+
+That is `release/sprint3`'s tip exactly — the artefact running is the one the
+pipeline tested, not a rebuild. Ansible's own pre-flight play agrees:
+`ok=9 changed=0 failed=0`, network `projecta-platform` present, Docker 29.6.1
+with 11 containers.
+
+**8.4 — the second deploy changed nothing.**
+
+```
+ansible-playbook playbooks/deploy.yml -e app_version=ed19d737d704ed01b4526955a56b396c9a7ba734
+
+PLAY RECAP
+docker-host : ok=11  changed=0  unreachable=0  failed=0
+```
+
+Eleven tasks, **zero changed**. The image pull, the container run and all five
+smoke tasks — health, readiness, a valid echo, the payload assertion, and the
+wrong-`Content-Type`-returns-400 assertion — each reported `ok` without
+modifying anything. Re-running the deploy of a version already deployed is a
+no-op, which is the property that makes the rollback drill safe to rehearse.
+
+**8.1 — the ref gate, shown as a difference rather than asserted.** A
+release-branch run cannot demonstrate this, because there `ships` is true and
+pushing the image is the expected behaviour. The evidence has to come from a
+feature branch. Gitea run **#75**, `feature/sprint-3-section-8-evidence`,
+2026-08-08:
+
+| Run | Branch | `build-test-push` | `deploy` |
+|---|---|---|---|
+| #74 | `release/sprint3` | 1m17s ✅ | 26s ✅ |
+| #75 | `feature/sprint-3-section-8-evidence` | 40s ✅ | **0s, skipped** |
+
+Every gate ran on the feature branch — Ruff, hadolint, pytest at the coverage
+threshold, ansible-lint, the image build, the container health wait, the network
+check, Trivy — and then the pipeline declined to deploy. The `deploy` job is
+gated on `needs.build-test-push.outputs.ships == 'true'`, so a skip at 0s is
+direct evidence that `ships` evaluated false. **Push Docker image** is gated on
+the same `steps.ref_gate.outputs.ships`, so it cannot have run either; that step
+was not opened individually, and the claim rests on the two sharing one output
+rather than on having watched both.
+
+This is the ref gate ADR-0005 describes, and the reason it is a POSIX shell
+`case` rather than a `startsWith()` expression: the spike found `act_runner`'s
+expression support unreliable, and a gate that silently evaluates true would
+push an untested image from a feature branch without anything reporting an
+error.
 
 ---
 
