@@ -883,8 +883,13 @@ Only then update the status tables. The rows to change:
 - ✅ `PLAN.md` §3 — milestone **M3**
 - ✅ `PLAN.md` §4 — the two P0 rows
 - ✅ `README.md` — the Sprint 3 row and the ⬜ observability rows
-- ⬜ `docs/adr/0006` and `0007` — delete the "unproven at the time of writing"
-  paragraphs, once they are no longer true
+- ✅ `docs/adr/0006` and `0007` — **checked, nothing to delete.** This line
+  anticipated provisional paragraphs that would stop being true. They do not
+  exist. What 0006 actually carries is narrower and still accurate: the
+  single-UI claim is verified in §7, and what remains unmeasured is Loki's
+  *query latency under load*, which this sprint never measured and should not
+  now pretend to have. 0007's "a rule that will be tested" is a statement about
+  the next endpoint someone adds, not about this sprint. Both stand as written
 
 Those edits were deliberately **not** in the observability commit. The branch
 ships the capability; the status changes when the capability has been seen to
