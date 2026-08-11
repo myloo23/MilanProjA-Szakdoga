@@ -40,8 +40,46 @@ authority. This is the human-readable index over it.
 - Trivy `fs --scanners misconfig` is deliberately **not** included and stays
   open in [`PLAN.md`](docs/PLAN.md), as is secret scanning of git *history* —
   both new checks read the working tree, not the commit log
-- Sprint 3 workstreams A (observability) and B (pipeline control flow) are in
-  progress — see [`PLAN.md`](docs/PLAN.md)
+- Sprint 3 workstream A (observability) is **complete and verified**; workstream
+  B (pipeline control flow) is partial — `timeout-minutes` shipped and the
+  `act_runner` spike is done, but conditional execution, `continue-on-error`
+  and retry are proven rather than applied, and `fromJSON()` fan-out closes as
+  an unsupported-tool limitation. See [`PLAN.md`](docs/PLAN.md)
+
+### Fixed
+
+- Error-rate panel drew green across a 96% spike. Its colour came from the
+  classic palette instead of its thresholds, no threshold line was rendered,
+  and its red step sat at `0.2` while the alert rule fires at `0.1` — so the
+  dashboard and the alert disagreed about what counts as bad. `color.mode`,
+  `gradientMode` and the threshold steps corrected in
+  `app-golden-signals.json`; reasoning kept in the panel description
+
+### Corrected
+
+- **The rollback drill's numbers moved on its third run.** 2026-07-31 and
+  2026-08-04 both measured 27s to detect and 7s to recover, a 34s outage.
+  2026-08-11 measured 29s and 8s, a 37s outage. Documentation described the
+  drill as reproducing identical numbers, which held for two runs and no longer
+  does. It reproduces to within a few seconds, and **37s** is the figure now
+  quoted — the worst of the three, from the freshest transcript
+- **Status tables corrected on 2026-08-11.** JSON logging, `/metrics`,
+  Prometheus, Grafana, Loki, the metric-to-log link and the alert rule were all
+  shipped and verified between 2026-08-08 and 2026-08-10 but left marked ⬜, so
+  `README.md` and `PLAN.md` understated the project for three days. The
+  capability commit and the status commit are deliberately separate; the
+  failure was that the second one did not follow
+
+### Process
+
+- **Five merges reached `origin` and never reached `gitea`**, 2026-08-08 to
+  2026-08-11. CI ran on the feature branches, CD did not run at all, and the
+  deployed container stayed at `ed19d73` for three days while every branch
+  showed green. Reconciled 2026-08-11: run #87 green on `release/sprint3`,
+  deploy verified against the container's `version` label. Recorded in
+  [`BRANCHING.md`](docs/BRANCHING.md) alongside the PR #31 squash — the same
+  failure shape twice, and the argument for the branch protection this plan
+  cannot enable
 
 ## [sprint-2] — 2026-08-03
 

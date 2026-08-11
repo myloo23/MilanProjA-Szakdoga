@@ -72,7 +72,7 @@ flowchart LR
 |---|---|:--:|
 | **1 · Foundation & App** | Repo, production-grade Flask app, hardened container | ✅ Done |
 | **2 · Pipeline** | Gitea Actions CI + Ansible CD, immutable SHA-tagged artifact | ✅ Done |
-| **3 · Observability & Pipeline Control Flow** | Prometheus + Grafana + Loki; conditional stages, timeouts, retry | ⬜ Planned |
+| **3 · Observability & Pipeline Control Flow** | Prometheus + Grafana + Loki; conditional stages, timeouts, retry | 🟡 A done, B partial |
 
 | Area | State |
 |---|:--:|
@@ -81,19 +81,22 @@ flowchart LR
 | Hardened Dockerfile: multi-stage, non-root, digest-pinned, healthcheck | ✅ |
 | Dependency locking (pip-tools, hashes) · Gunicorn runtime | ✅ |
 | Platform stack: Gitea + act_runner + registry via compose | ✅ |
-| CI: ruff → hadolint → tests → ansible-lint → build → health gate → trivy → push | ✅ |
+| CI: ruff → secret scan → hadolint → tests → ansible-lint → build → health gate → trivy → push | ✅ |
 | Every CI tool pinned exactly — Trivy included | ✅ |
 | Software inventory / SBOM — 621 components, [`docs/sbom/`](docs/sbom/) | ✅ |
 | CD: Ansible deploys that SHA, smoke test gates it | ✅ |
 | Reviewed pull requests on GitHub, CODEOWNERS, protection rules configured | ✅ |
 | Protection *enforced* — needs a public repository on this plan | ⬜ |
 | `ansible-lint` in CI, at the `production` profile | ✅ |
-| Rehearsed rollback to a previous SHA — ~34s outage window, [`RUNBOOK.md`](docs/RUNBOOK.md) | ✅ |
-| Zero-downtime swap — a bad deploy is live for ~27s before the smoke test fails it | ⬜ |
-| Structured JSON logging · `/metrics` endpoint | ⬜ |
-| Prometheus / Grafana / Loki · demo script | ⬜ |
+| Rehearsed rollback to a previous SHA — ~37s outage window, twice, [`RUNBOOK.md`](docs/RUNBOOK.md) | ✅ |
+| Zero-downtime swap — a bad deploy is live for ~29s before the smoke test fails it | ⬜ |
+| Structured JSON logging with `request_id` · `/metrics` endpoint | ✅ |
+| Prometheus / Grafana / Loki, provisioned as code · `scripts/loadgen.sh` | ✅ |
+| Error-rate → Loki data link · one alert rule, fired by real traffic | ✅ |
 | Feature branches build and scan but never push an image — `ref_gate` in `ci.yml` | ✅ |
-| Conditional stages, `timeout-minutes`, `continue-on-error`, retry | ⬜ |
+| `timeout-minutes` on every step that can hang | ✅ |
+| Conditional execution, `continue-on-error`, retry — proven in a spike, not yet applied | 🟡 |
+| Dynamic fan-out via `fromJSON()` — unsupported by `act_runner` v0.2.12, [ADR-0005](docs/adr/) | ⬜ |
 
 ## Stack
 
