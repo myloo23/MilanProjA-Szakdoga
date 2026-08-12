@@ -106,7 +106,7 @@ unconditionally except the ref gate, which is a defensible default and not a
 demonstration of knowing the alternatives.
 
 Where it stands after the spike (run #62, `act_runner` v0.2.12): `timeout-minutes`
-is shipped, twenty of them in `ci.yml`. Conditional execution,
+is shipped, twenty-one of them in `ci.yml`. Conditional execution,
 `continue-on-error` and both retry approaches are proven to work on this runner
 but are **not yet applied** to `ci.yml` — the spike answered *can it*, not
 *should it*. `fromJSON()` fan-out does not work and closes as a documented
@@ -252,7 +252,7 @@ these are the tools that make it non-obvious if used without cause.
   correctly on `act_runner` v0.2.12. **Proven, not applied** — nothing in
   `ci.yml` uses them yet beyond the existing ref gate, because "the runner
   supports it" is not the same as "this pipeline needs it" 
-- ✅ **`timeout-minutes`** on the steps that can hang. Twenty of them in
+- ✅ **`timeout-minutes`** on the steps that can hang. Twenty-one of them in
   `ci.yml`. Previously nothing bounded the Trivy download, the health wait or
   the deploy — a hung step holds a runner with capacity 1 until someone
   notices
@@ -355,13 +355,14 @@ today's warm-host rollback number into a defensible one.
 - [x] `hadolint` in CI
 - [x] `ansible-lint` in CI — `production` profile, gated in `build-test-push`
 - [x] **Rollback rehearsed**, not just documented — 7s, `docs/RUNBOOK.md`
-- [ ] Structured JSON logging with `request_id`
-- [ ] Grafana provisioned as code, cAdvisor and node_exporter
+- [x] Structured JSON logging with `request_id`
+- [x] Grafana provisioned as code, cAdvisor and node_exporter
 - [x] Runbook — `docs/RUNBOOK.md`, Deploy and Rollback sections
 - [ ] Remaining ADRs
-- [ ] **`timeout-minutes` on the steps that can hang.** Nothing bounds the Trivy
-      download, the health wait or the deploy today. On a runner with capacity
-      1, one hung step is an outage of the whole pipeline
+- [x] **`timeout-minutes` on the steps that can hang.** Twenty-one step-level
+      bounds in `ci.yml`, Trivy at 10m, the health wait at 2m, the deploy at
+      10m. On a runner with capacity 1, one hung step is an outage of the whole
+      pipeline
 - [ ] **Conditional execution, tried on purpose** — `if:`, job conditions,
       `continue-on-error`, retry. Mentor request, 2026-08-05
 - [x] **Nothing in the stack listens beyond this host.** Every published port
@@ -385,7 +386,13 @@ today's warm-host rollback number into a defensible one.
 
 - [x] **SBOM** — six CycloneDX files, 621 components, `docs/sbom/`. Point-in-time
       and committed, so it goes stale by design; the staleness guard in its
-      README is the compensating control, and it has fired once already
+      README is the compensating control, and it has now fired **twice** —
+      2026-08-06, and again on 2026-08-11 when the observability work changed
+      `Dockerfile`, `requirements.txt`, `.dockerignore` and three files under
+      `app/`. The 621-component count is therefore accurate as of `a6a4d33` and
+      not as of today. A rescan is queued rather than rushed before the review;
+      a guard that fires and gets ignored would be worse than no guard, so this
+      is written down with a date rather than quietly reset
 - [ ] Alert routing, zero-downtime swap, auto-changelog
 - [ ] **Dynamic fan-out to N parallel jobs** — a matrix built from a previous
       job's output. P2 because this pipeline has nothing to parallelise: one
@@ -454,10 +461,10 @@ Opened by this work rather than closed by it:
       it red on first run. Kept out of the same change on purpose: triaging IaC
       misconfiguration is real work and is not secret scanning, and bundling it
       would have meant landing both half-done
-- [ ] `BRANCHING.md` still says `release/sprint2` throughout, including in rules
-      1, 2, 5, 6 and 7 and the everyday loop. The rules are right; the branch
-      name is one sprint out of date — cheap to fix, and worth fixing before it
-      reads as an instruction to branch off a retired branch
+- [x] `BRANCHING.md` said `release/sprint2` throughout, including in rules 1, 2,
+      5, 6 and 7 and the everyday loop. Corrected 2026-08-11, along with
+      `DEVELOPMENT.md` section 9, which carried the same stale branch name in the
+      commands people actually copy
 
 **Deliberate divergence.** The training recommends `main` + `dev`. This project
 runs `main` + a per-sprint `release/*` branch — `release/sprint3` today, and
@@ -556,7 +563,7 @@ and one alert rule all closed on the evidence in
 [`sprint3-verification.md`](sprint3-verification.md) §4–7; the 2026-08-10
 security review closed F1, F2, F4, F5 and F9; the secret-scanning gate shipped
 and was proven by making it fail; the `act_runner` spike ran and ADR-0005 was
-written; `timeout-minutes` shipped. The final-review deck and its eleven stills
+written; `timeout-minutes` shipped. The final-review deck and its twelve stills
 were built on 2026-08-11 under
 [`demo-assets-sprint3/`](demo-assets-sprint3/).
 

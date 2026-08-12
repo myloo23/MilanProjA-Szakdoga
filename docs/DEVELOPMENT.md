@@ -159,17 +159,19 @@ live on GitHub, so that event would never fire here.
 1. Checkout, then decide whether this ref ships an artifact
 2. Python 3.12 with a pip cache, deps with `--require-hashes`
 3. `ruff check .`
-4. `hadolint` on the Dockerfile
-5. `pytest` with coverage, failing under 80%
-6. `ansible-lint` at the `production` profile, over the playbooks and the role
-7. Build `localhost:5001/projecta-flask:<git-sha>`
-8. Wait for the container's own `HEALTHCHECK` to report healthy, bounded at 30s
-9. `curl` the app across `projecta-platform` — proves it is *reachable*, which a
-   healthcheck probing its own localhost cannot
-10. Trivy, failing on HIGH or CRITICAL
-11. Push to the registry — **only if this ref ships**
+4. Trivy `fs --scanners secret` over the tracked tree — the gate the pre-commit
+   hook is not, since `--no-verify` skips a hook and skips nothing here
+5. `hadolint` on the Dockerfile
+6. `pytest` with coverage, failing under 80%
+7. `ansible-lint` at the `production` profile, over the playbooks and the role
+8. Build `localhost:5001/projecta-flask:<git-sha>`
+9. Wait for the container's own `HEALTHCHECK` to report healthy, bounded at 30s
+10. `curl` the app across `projecta-platform` — proves it is *reachable*, which a
+    healthcheck probing its own localhost cannot
+11. Trivy on the image, failing on HIGH or CRITICAL
+12. Push to the registry — **only if this ref ships**
 
-Steps 1–5 run against dependencies the job already has; step 6 is the first that
+Steps 1–6 run against dependencies the job already has; step 7 is the first that
 pays for a download, which is why it sits there rather than beside `ruff`. It
 still precedes the build, because a playbook that cannot lint cannot deploy the
 image the later steps produce.
@@ -386,9 +388,12 @@ Why Loki and not ELK: [ADR-0006](adr/0006-loki-over-elk.md). Why `request_id` is
 a log field and never a Prometheus label: [ADR-0007](adr/0007-metric-cardinality.md).
 That second one is the sentence to be able to say out loud.
 
-**Status: unproven.** The stack is written and has not yet been run end to end.
-[`sprint3-verification.md`](sprint3-verification.md) is the list of checks that
-changes that, and no status table moves until they have results and dates.
+**Status: verified 2026-08-11.** Every check in
+[`sprint3-verification.md`](sprint3-verification.md) sections 3 through 7 has a
+result and a date, and the status tables moved only after that. One correction
+came out of it: the error-rate panel was colouring from the palette rather than
+its thresholds, so it drew green across a 96% spike, and its red step disagreed
+with the value the alert rule fires at.
 
 ---
 

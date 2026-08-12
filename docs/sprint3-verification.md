@@ -1,8 +1,16 @@
 # Sprint 3 — verification checklist
 
-Everything in the observability branch is **written and unproven**. This file is
-the list of things that have to be run before any of it can be marked ✅
-anywhere else, and the place the results get recorded.
+**Closed 2026-08-11.** Sections 0 through 8 all carry results and dates, and the
+status tables elsewhere moved only after that. Two things came out of the
+closing pass and are recorded rather than smoothed over: the error-rate panel
+was colouring from the palette instead of its thresholds, and the rollback
+drill's third run drifted from 34s to 37s.
+
+This file was written when everything in the observability branch was **written
+and unproven**, as the list of things that had to be run before any of it could
+be marked ✅ anywhere else, and the place the results get recorded. It is kept
+in that form on purpose — a checklist rewritten after the fact to look like it
+always passed is not evidence of anything.
 
 The standard is [`PLAN.md`](PLAN.md) §6: a claim that cannot be demonstrated is
 marked ⬜, and a status changes only when it has been run and the result written
@@ -777,7 +785,13 @@ ADR-0005: the dangerous failures are the ones that report success.
 
 Time the run and record it: from the first malformed request to reading the
 `request_id` off the screen took `______` seconds. That number is the Sprint 3
-equivalent of the 34-second outage window — a measurement, not an estimate.
+equivalent of the ~37-second outage window — a measurement, not an estimate.
+
+Still blank as of 2026-08-11, and left blank rather than filled in from memory.
+The pivot itself is verified in §7; what is unmeasured is how long it takes a
+person to walk it. ADR-0006 says the same thing about Loki's query latency: this
+stack is cheap and the pivot works, both as numbers, and *fast* is not a number
+yet.
 
 ---
 

@@ -20,8 +20,8 @@ push → CI (lint · test · build · scan · push) → CD (Ansible deploy) → 
 
 CI and CD work today. A merge into the current `release/*` branch or `main`
 deploys the exact image the pipeline built and verifies it, with zero manual
-steps. Observability and pipeline control flow are the remaining phases — see
-[`docs/PLAN.md`](docs/PLAN.md).
+steps. Observability landed and was verified on 2026-08-11; pipeline control flow is
+partial on purpose — see [`docs/PLAN.md`](docs/PLAN.md).
 
 **Review lives on GitHub, the pipeline runs on a self-hosted Gitea.** Neither
 forge can do both: Gitea is on `localhost` and unreachable to reviewers, GitHub
@@ -45,7 +45,8 @@ flowchart LR
     Loki -.-> Graf
 ```
 
-Solid lines are built. Dashed lines are planned.
+Solid lines are built. Dashed lines were planned when this diagram was drawn —
+all six services run today, see `platform/compose.yaml`.
 
 ## Pipeline flow
 
@@ -88,7 +89,7 @@ flowchart LR
 | Reviewed pull requests on GitHub, CODEOWNERS, protection rules configured | ✅ |
 | Protection *enforced* — needs a public repository on this plan | ⬜ |
 | `ansible-lint` in CI, at the `production` profile | ✅ |
-| Rehearsed rollback to a previous SHA — ~37s outage window, twice, [`RUNBOOK.md`](docs/RUNBOOK.md) | ✅ |
+| Rehearsed rollback to a previous SHA — ~37s outage window, three times, [`RUNBOOK.md`](docs/RUNBOOK.md) | ✅ |
 | Zero-downtime swap — a bad deploy is live for ~29s before the smoke test fails it | ⬜ |
 | Structured JSON logging with `request_id` · `/metrics` endpoint | ✅ |
 | Prometheus / Grafana / Loki, provisioned as code · `scripts/loadgen.sh` | ✅ |
@@ -96,7 +97,7 @@ flowchart LR
 | Feature branches build and scan but never push an image — `ref_gate` in `ci.yml` | ✅ |
 | `timeout-minutes` on every step that can hang | ✅ |
 | Conditional execution, `continue-on-error`, retry — proven in a spike, not yet applied | 🟡 |
-| Dynamic fan-out via `fromJSON()` — unsupported by `act_runner` v0.2.12, [ADR-0005](docs/adr/) | ⬜ |
+| Dynamic fan-out via `fromJSON()` — unsupported by `act_runner` v0.2.12, [ADR-0005](docs/adr/) | ❌ |
 
 ## Stack
 
@@ -109,7 +110,7 @@ flowchart LR
 | Scanning | hadolint v2.14.0 (Dockerfile) · Trivy 0.72.0 (image, fails on HIGH/CRITICAL) |
 | Inventory | CycloneDX SBOMs via Trivy 0.72.0 — [`docs/sbom/`](docs/sbom/) |
 | Deploy | Ansible + `community.docker`, inventory-driven |
-| Observability | Prometheus · Loki · Grafana *(planned)* |
+| Observability | Prometheus · Loki · Grafana · Alloy, provisioned as code |
 
 ## Endpoints
 
@@ -119,7 +120,7 @@ flowchart LR
 | `/health` | GET | Liveness — `{"status":"UP"}` |
 | `/ready` | GET | Readiness — `{"status":"READY"}` |
 | `/echo` | POST | Echo JSON back · `400` on an invalid payload |
-| `/metrics` | GET | Prometheus metrics *(planned)* |
+| `/metrics` | GET | Prometheus metrics — counters and a latency histogram |
 
 ## Quick start
 

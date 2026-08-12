@@ -26,14 +26,14 @@ right-hand column is the claim. **[deck]** means it is on a slide; **[backup]**
 means it is held for a question rather than shown, which is why some of the
 strongest images are not in the running order.
 
-All eleven were captured on 2026-08-11 against `c916924`.
+All twelve were captured on 2026-08-11 against `c916924`.
 
 ## The pipeline
 
 | File | Shows | Proves |
 |---|---|---|
 | `12-run-release-green.png` **[deck]** | Run #87 on `release/sprint3`, `build-test-push` 47s and `deploy` 27s, both green, 1m16s total | CD deploys what CI tested. This is the run that reconciled the forges after the three-day divergence |
-| `13-secret-gate-red.png` **[deck]** | Run #84, Failure at 9s on **Scan the working tree for secrets** — `trivy 0.72.0: scanning 91 tracked files`, `CRITICAL: AWS (aws-access-key-id)`, `exitcode '1'` | The gate can fail. A green pipeline proves a gate ran, not that it can stop anything — this is the only still that proves the second claim. `scanning 91 tracked files` matters as much as the finding: it is the guard against a scanner that silently receives nothing |
+| `13-secret-gate-red.png` **[deck]** | Run #84, an 11s run whose `build-test-push` job failed at 9s on **Scan the working tree for secrets** — `trivy 0.72.0: scanning 91 tracked files`, `CRITICAL: AWS (aws-access-key-id)`, `exitcode '1'` | The gate can fail. A green pipeline proves a gate ran, not that it can stop anything — this is the only still that proves the second claim. `scanning 91 tracked files` matters as much as the finding: it is the guard against a scanner that silently receives nothing |
 | `14-ref-gate-skipped.png` **[backup]** | Run #86 on a since-deleted `feature/**` branch: `build-test-push` green at 37s, `deploy` **skipped at 0s**, "50% success" | The ref gate, demonstrated as a *difference* rather than asserted. Pairs with `12` — same workflow, same file, different ref. Note when answering: run #84 could not prove this, because a red build would have skipped `deploy` anyway. Two mechanisms, one empty box. `14` beside `12` separates them |
 
 ## The incident, end to end
@@ -43,7 +43,8 @@ JSON at `/echo`.
 
 | File | Shows | Proves |
 |---|---|---|
-| `15-dashboard-overview.png` **[backup]** | All four panels over six hours: request rate, error rate, latency percentiles, responses by status | The dashboard exists as a whole, provisioned from code. Captured over a wide window, so the bursts are visible rather than a quiet baseline — useful if someone asks to simply see the dashboard |
+| `15-dashboard-overview.png` **[deck]** | The application dashboard, all five panels over six hours | Shown beside `23` on the "two dashboards" slide. Captured over a wide window, so the bursts are visible rather than a quiet baseline |
+| `23-host-dashboard.png` **[deck]** | The host dashboard, all six panels: four scrape targets **UP**, container CPU and memory, host CPU and memory, root filesystem | The other half of the same slide. **`Root filesystem free` reads "No data"** and that is left visible on purpose — `node-exporter` runs in a container and cannot see the host's root filesystem on Docker Desktop. A named limitation beats a cropped screenshot |
 | `16-error-rate-spiking.png` **[deck]** | The error-rate panel across one burst: flat green at 0%, rising through the dashed 10% threshold, red to a 96.4% peak, then back to green | The app is observable under load, the signal moves when it misbehaves, and the colour changes at exactly the value the alert evaluates |
 | `17-alert-firing.png` **[deck]** | `/echo is rejecting requests` — **Firing for 18s**, `Pending period 1m`, labels, summary and runbook URL | One provisioned rule, fired by real traffic. The `Pending period 1m` is visible in frame, which is the detail worth saying out loud: a single bad second does not page anyone |
 | `18-loki-from-the-panel.png` **[deck]** | Loki Explore reached by clicking the error-rate panel: the query `{container="projecta-flask"} \| json \| status >= 400` in the box, and six matching lines below it, each with `status: 400` and a `request_id` | The metric-to-log link. The point is that the query is *there without having been typed* — a dashboard and a log viewer that do not join are two tools, not observability |
@@ -59,13 +60,21 @@ JSON at `/echo`.
 
 ## The numbers moved, and that is in the deck
 
-The drill has now run three times, all three transcripts committed:
+The drill has now run three times:
 
-| Run | Detect | Recover | Outage | Transcript |
+| Run | Detect | Recover | Outage | Where the result lives |
 |---|---|---|---|---|
-| 2026-07-31 | 27s | 7s | **34s** | commit `eac8fe5`, tabled in `RUNBOOK.md` |
-| 2026-08-04 | 27s | 7s | **34s** | `docs/rollback-drill-20260804-110322.log` |
-| 2026-08-11 | 29s | 8s | **37s** | `docs/rollback-drill-20260811-132122.log` |
+| 2026-07-31 | 27s | 7s | **34s** | `RUNBOOK.md`, plus the full transcript in commit `eac8fe5` |
+| 2026-08-04 | 27s | 7s | **34s** | `RUNBOOK.md` §Repeats |
+| 2026-08-11 | 29s | 8s | **37s** | `RUNBOOK.md` §Repeats |
+
+**The raw logs are not committed, and that is a decision rather than an
+oversight.** `.gitignore` excludes `docs/rollback-drill-*.log` because every run
+writes one and they are point-in-time noise; what survives is the summary in
+`RUNBOOK.md` — date, target SHA, both numbers. The consequence is worth stating
+plainly: the ~37s the deck quotes has no committed transcript behind it, only a
+committed summary and a script anyone can re-run. If that trade is ever wrong,
+the fix is to commit the summary line automatically, not to keep the logs.
 
 The deck quotes **37s**: when measurements disagree the honest single figure is
 the worst one, and it is also the freshest. Two identical runs and then three
@@ -94,6 +103,14 @@ None of this was found by reading the dashboard. It was found by going to
 photograph a thing that had already been marked done — which is the concrete
 version of the claim on the "what I learned" slide, and worth saying in those
 words if it comes up.
+
+## Also in this folder
+
+`SPEAKING-SCRIPT.md` — the deck's speaker notes flattened into one readable
+document, one sentence per line. Generated from `PROJECT-GUIDE.html` rather than
+written separately, so the two cannot drift apart. It exists because the
+presenter is reading English rather than improvising it, and a script that
+disagrees with the slides is worse than no script.
 
 ## Not captured, deliberately
 

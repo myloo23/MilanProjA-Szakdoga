@@ -3,7 +3,6 @@
 Read it. That is fine. Look up at the end of each slide, not during.
 
 One sentence per line. Pause where the line breaks.
-**Bold** = slow down. Do not rush these.
 
 ---
 
@@ -126,7 +125,6 @@ So mine is a script.
 It breaks the app on purpose, deploys the broken one, lets the checks catch it, undoes it, and times it.
 
 I have run it three times over eleven days.
-All three logs are in the repo.
 The first two gave exactly the same numbers, twenty seven seconds to notice and seven to fix.
 This morning it was twenty nine and eight.
 
@@ -375,6 +373,7 @@ Do not say these unless asked. They are here so you are not surprised.
 **13. 37 seconds down, not 8**
 
 - If asked: the eight seconds does not include downloading the image, because the old one was already on the machine. On a fresh machine, add that.
+- If asked where the raw logs are: they are not committed, on purpose. Every run writes one and they are point-in-time noise, so gitignore excludes them and the runbook carries the result — date, commit, both numbers. If you want a transcript I can run the drill for you.
 - Then pause. You will want to fill the silence. Do not.
 
 **15. Numbers on top, words underneath**

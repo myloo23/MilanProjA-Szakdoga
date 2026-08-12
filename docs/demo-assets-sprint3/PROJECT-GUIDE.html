@@ -570,7 +570,7 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
     <div class="card after">
       <div class="tag">● Now</div>
       <div class="big">The same deploy, older commit</div>
-      <div class="det">One code path, used on every ordinary deploy.<br><span class="mono">Rehearsed three times over eleven days. All transcripts committed.</span></div>
+      <div class="det">One code path, used on every ordinary deploy.<br><span class="mono">Rehearsed three times over eleven days. Every run timed.</span></div>
     </div>
   </div>
 </section>
@@ -579,7 +579,7 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
 <section class="slide viz"
   data-notes="<p>Lead with twice and with the drift. Do not overclaim here.</p>
   <p class='say'>A rollback plan nobody has run is just a paragraph. So mine is a script. It breaks the app on purpose, deploys the broken one, lets the checks catch it, undoes it, and times it.</p>
-  <p class='say'>I have run it three times over eleven days. All three logs are in the repo. The first two gave exactly the same numbers, twenty seven seconds to notice and seven to fix. This morning it was twenty nine and eight.</p>
+  <p class='say'>I have run it three times over eleven days. The first two gave exactly the same numbers, twenty seven seconds to notice and seven to fix. This morning it was twenty nine and eight.</p>
   <p class='say'>So it repeats, but to within a few seconds, not exactly. I would rather tell you that than round all three to one nice number.</p>">
   <div class="kicker r pop">The rehearsal</div>
   <h2 class="pop">Three runs, eleven days —<br>and the number moved once</h2>
@@ -611,7 +611,7 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
     <text class="bs" x="640" y="274" style="fill:var(--amb)">the third run drifted by 3 seconds</text>
   </svg>
   </div>
-  <p class="tiny pop">Repeatable to a few seconds — not exact, and I'm not going to pretend otherwise. All three transcripts are in the repo.</p>
+  <p class="tiny pop">Repeatable to a few seconds — not exact, and I'm not going to pretend otherwise. Every run is timed and recorded in the runbook.</p>
 </section>
 
 <!-- 12 ────────────────────────────────────────── -->
@@ -634,6 +634,7 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
   <p class='say'>The real fix is checking the new one before it takes traffic. I know how; it did not fit in the time. And I did not lower the retry count to make the number look better.</p>
   <p class='say'>One more thing. Back then I only knew this happened because I was watching the screen. In a few minutes I will show you the part that means I get told instead.</p>
   <p class='warn'>If asked: the eight seconds does not include downloading the image, because the old one was already on the machine. On a fresh machine, add that.</p>
+  <p class='warn'>If asked where the raw logs are: they are not committed, on purpose. Every run writes one and they are point-in-time noise, so gitignore excludes them and the runbook carries the result — date, commit, both numbers. If you want a transcript I can run the drill for you.</p>
   <p><em>Then pause. You will want to fill the silence. Do not.</em></p>">
   <div class="kicker r pop">The number I didn't flatter</div>
   <h2 class="pop" style="margin-bottom:1.4vh">37 seconds down, not 8</h2>
