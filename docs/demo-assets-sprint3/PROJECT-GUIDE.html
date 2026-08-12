@@ -284,6 +284,68 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
 .lrn .c.w h4{color:var(--amb)} .lrn .c.p h4{color:var(--pur)} .lrn .c.g h4{color:var(--grn)}
 .lrn .c p{font-size:clamp(.72rem,1.2vw,1rem); color:var(--fg2); line-height:1.52}
 
+/* ─────────── flow diagram ─────────── */
+.diag{width:100%; max-width:1180px; flex:0 1 auto; min-height:0; margin-top:.6vh}
+.diag svg{width:100%; height:auto; max-height:62vh; display:block}
+.diag .db rect{
+  fill:url(#none); fill:rgba(22,32,43,.9); stroke:var(--line); stroke-width:1.4;
+  filter:drop-shadow(0 8px 20px rgba(0,0,0,.35));
+}
+.diag .db-m rect{stroke:var(--accdim)}
+.diag .db-l rect{stroke:rgba(157,139,255,.55)}
+.diag .db-app rect{stroke:rgba(74,222,128,.55)}
+.diag .db-g rect{stroke:rgba(251,191,76,.6); stroke-width:2}
+.diag .db-out rect{stroke:var(--line); fill:rgba(15,22,32,.85)}
+.diag .db-alert rect{stroke:rgba(255,107,107,.45); fill:rgba(15,22,32,.85)}
+.diag .dt{fill:var(--fg); font-size:19px; font-weight:700; text-anchor:middle; letter-spacing:-.01em}
+.diag .dt-g{fill:var(--amb); font-size:22px}
+.diag .dt-s{font-size:16px}
+.diag .ds{fill:var(--fg3); font-size:12.5px; text-anchor:middle}
+.diag .dl{font-size:11px; font-weight:800; letter-spacing:.2em; fill:var(--fg3)}
+.diag .dl-m{fill:var(--acc)} .diag .dl-l{fill:var(--pur)} .diag .dl-a{fill:var(--amb)}
+.diag .ln{fill:none; stroke:var(--fg3); stroke-width:1.6; marker-end:url(#ah)}
+.diag .ln-m{stroke:var(--acc); marker-end:url(#ahm)}
+.diag .ln-l{stroke:var(--pur); marker-end:url(#ahl)}
+.diag .ln-a{stroke:var(--amb); marker-end:url(#aha); stroke-width:2}
+
+/* ─────────── two screenshots side by side ─────────── */
+.shots2{
+  width:100%; flex:1; min-height:0; display:flex; gap:clamp(.7rem,1.8vw,1.6rem);
+  align-items:center; justify-content:center; margin:1.2vh 0;
+}
+.shots2 figure{display:flex; flex-direction:column; align-items:center; gap:.8vh; min-width:0; max-height:100%}
+.shots2 img{
+  max-width:100%; max-height:52vh; object-fit:contain;
+  border-radius:14px; border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 18px 44px rgba(0,0,0,.48);
+}
+.shots2 figcaption{font-size:clamp(.66rem,1.16vw,.94rem); color:var(--fg2); font-weight:600}
+.shots2 figcaption span{color:var(--fg3); font-weight:400}
+
+/* slides whose point is the picture: small title, big picture */
+.slide.viz{padding:4vh 4vw 5vh}
+.slide.viz .kicker{margin-bottom:1.6vh}
+.slide.viz h2{font-size:clamp(1.35rem,3.3vw,2.6rem); max-width:34ch; margin-bottom:1.4vh}
+.slide.viz .tiny{margin-top:1.8vh; max-width:70ch}
+
+/* ─────────── bar charts ─────────── */
+.chart{width:100%; max-width:1120px; flex:0 1 auto; min-height:0; margin-top:.4vh}
+.chart svg{width:100%; height:auto; max-height:58vh; display:block}
+.chart .bt{fill:var(--fg); font-size:15px; font-weight:700}
+.chart .bs{fill:var(--fg3); font-size:12px}
+.chart .bn{fill:var(--fg2); font-size:13px; font-weight:600}
+.chart .bnum{fill:var(--fg); font-size:19px; font-weight:780; font-variant-numeric:tabular-nums}
+.chart .cheap{fill:rgba(47,216,196,.32); stroke:var(--acc); stroke-width:1.4}
+.chart .mid{fill:rgba(251,191,76,.28); stroke:var(--amb); stroke-width:1.4}
+.chart .dear{fill:rgba(157,139,255,.30); stroke:var(--pur); stroke-width:1.4}
+.chart .bad{fill:rgba(255,107,107,.42); stroke:var(--red); stroke-width:1.4}
+.chart .good{fill:rgba(74,222,128,.40); stroke:var(--grn); stroke-width:1.4}
+.chart .axis{stroke:var(--line); stroke-width:1.4}
+.chart .tick{stroke:var(--line); stroke-width:1; stroke-dasharray:3 4}
+.chart .call{fill:var(--amb); font-size:13px; font-weight:700}
+.chart .callr{fill:var(--red); font-size:13px; font-weight:700}
+.chart .callg{fill:var(--grn); font-size:13px; font-weight:700}
+
 /* ─────────── sprint chip in the rail ─────────── */
 #rail .chip{
   pointer-events:none; display:inline-flex; gap:.42em; align-items:center;
@@ -365,7 +427,7 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
 </section>
 
 <!-- 5 ─────────────────────────────────────────── -->
-<section class="slide"
+<section class="slide viz"
   data-notes="<p>This is a speed argument, not a tool list. Nobody needs a tour of ruff.</p>
   <p class='say'>The question I built this around is not what does it check. It is how fast can it tell me I am wrong.</p>
   <p class='say'>So they run cheapest first. Style takes seconds, a build takes minutes. If my mistake is a cheap one, I want to know in seconds.</p>
@@ -373,24 +435,59 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
   <p><em>All of them are pinned to exact versions. A tool that changes its rules overnight turns a build red that nobody touched, and then people stop trusting red.</em></p>">
   <div class="kicker pop">The pipeline</div>
   <h2 class="pop">How fast can it tell me I'm wrong?</h2>
-  <div class="row pop" style="margin-bottom:2.2vh; gap:clamp(1rem,3vw,3rem)">
-    <div><div class="stat g" style="font-size:clamp(1.6rem,4.6vw,3.2rem)">11<small>s</small></div><p class="tiny" style="margin-top:.3vh">fastest "no" so far</p></div>
-    <div><div class="stat" style="font-size:clamp(1.6rem,4.6vw,3.2rem); color:var(--fg2)">&lt;2<small>min</small></div><p class="tiny" style="margin-top:.3vh">slowest "yes"</p></div>
+  <div class="chart pop">
+  <svg viewBox="0 0 1120 392" xmlns="http://www.w3.org/2000/svg" role="img"
+       aria-label="The eleven checks ordered by what they cost to run, cheapest first">
+    <rect class="cheap" x="42" y="296" width="86" height="34" rx="7"/>
+    <text class="bn" x="85" y="356" text-anchor="middle">ruff</text>
+    <text class="bs" x="85" y="373" text-anchor="middle">style</text>
+    <rect class="cheap" x="136" y="288" width="86" height="42" rx="7"/>
+    <text class="bn" x="179" y="356" text-anchor="middle">secrets</text>
+    <text class="bs" x="179" y="373" text-anchor="middle">passwords</text>
+    <rect class="cheap" x="230" y="282" width="86" height="48" rx="7"/>
+    <text class="bn" x="273" y="356" text-anchor="middle">hadolint</text>
+    <text class="bs" x="273" y="373" text-anchor="middle">dockerfile</text>
+    <rect class="cheap" x="324" y="260" width="86" height="70" rx="7"/>
+    <text class="bn" x="367" y="356" text-anchor="middle">pytest</text>
+    <text class="bs" x="367" y="373" text-anchor="middle">80% floor</text>
+    <rect class="cheap" x="418" y="247" width="86" height="83" rx="7"/>
+    <text class="bn" x="461" y="356" text-anchor="middle">ansible-lint</text>
+    <text class="bs" x="461" y="373" text-anchor="middle">the deploy</text>
+    <rect class="mid" x="512" y="189" width="86" height="141" rx="7"/>
+    <text class="bn" x="555" y="356" text-anchor="middle">build</text>
+    <text class="bs" x="555" y="373" text-anchor="middle">name = commit</text>
+    <rect class="mid" x="606" y="178" width="86" height="152" rx="7"/>
+    <text class="bn" x="649" y="356" text-anchor="middle">health</text>
+    <text class="bs" x="649" y="373" text-anchor="middle">is it alive?</text>
+    <rect class="mid" x="700" y="172" width="86" height="158" rx="7"/>
+    <text class="bn" x="743" y="356" text-anchor="middle">network</text>
+    <text class="bs" x="743" y="373" text-anchor="middle">reachable?</text>
+    <rect class="mid" x="794" y="152" width="86" height="178" rx="7"/>
+    <text class="bn" x="837" y="356" text-anchor="middle">trivy</text>
+    <text class="bs" x="837" y="373" text-anchor="middle">known bugs</text>
+    <rect class="dear" x="888" y="130" width="86" height="200" rx="7"/>
+    <text class="bn" x="931" y="356" text-anchor="middle">push</text>
+    <text class="bs" x="931" y="373" text-anchor="middle">some branches</text>
+    <rect class="dear" x="982" y="104" width="86" height="226" rx="7"/>
+    <text class="bn" x="1025" y="356" text-anchor="middle">deploy</text>
+    <text class="bs" x="1025" y="373" text-anchor="middle">+ check it</text>
+    <line class="axis" x1="30" y1="330" x2="1090" y2="330"/>
+    <text class="bs" x="30" y="18">cheap · seconds</text>
+    <text class="bs" x="1090" y="18" text-anchor="end">expensive · minutes</text>
+    <line class="tick" x1="30" y1="28" x2="1090" y2="28"/>
+
+    <text class="call" x="179" y="196" text-anchor="middle">fastest no — 11s</text>
+    <text class="bs" x="179" y="213" text-anchor="middle">the password check, run #84</text>
+    <path d="M179,222 L179,280" stroke="var(--amb)" stroke-width="1.6" fill="none"/>
+    <circle cx="179" cy="284" r="3" fill="var(--amb)"/>
+
+    <text class="callg" x="1078" y="58" text-anchor="end">slowest yes — 1m16s</text>
+    <text class="bs" x="1078" y="75" text-anchor="end">the whole pipeline, run #87</text>
+    <path d="M1025,84 L1025,96" stroke="var(--grn)" stroke-width="1.6" fill="none"/>
+    <circle cx="1025" cy="100" r="3" fill="var(--grn)"/>
+  </svg>
   </div>
-  <div class="gates pop" style="margin-top:2.4vh">
-    <div class="gate b">ruff<span>style</span></div>
-    <div class="gate y">secrets<span>passwords</span></div>
-    <div class="gate b">hadolint<span>dockerfile</span></div>
-    <div class="gate b">pytest<span>80% floor</span></div>
-    <div class="gate y">ansible-lint<span>the deploy</span></div>
-    <div class="gate">build<span>name = commit</span></div>
-    <div class="gate">health<span>is it alive?</span></div>
-    <div class="gate">network<span>can I reach it?</span></div>
-    <div class="gate y">trivy<span>known bugs</span></div>
-    <div class="gate p">push<span>only some branches</span></div>
-    <div class="gate p">deploy<span>+ check it works</span></div>
-  </div>
-  <p class="tiny pop">Cheap opinions first. Expensive ones only if it survives them.</p>
+  <p class="tiny pop">Bar height is cost order, not measured seconds. Both numbers are real runs.</p>
 </section>
 
 <!-- 6 ─────────────────────────────────────────── -->
@@ -479,24 +576,42 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
 </section>
 
 <!-- 11 ────────────────────────────────────────── -->
-<section class="slide"
+<section class="slide viz"
   data-notes="<p>Lead with twice and with the drift. Do not overclaim here.</p>
   <p class='say'>A rollback plan nobody has run is just a paragraph. So mine is a script. It breaks the app on purpose, deploys the broken one, lets the checks catch it, undoes it, and times it.</p>
   <p class='say'>I have run it three times over eleven days. All three logs are in the repo. The first two gave exactly the same numbers, twenty seven seconds to notice and seven to fix. This morning it was twenty nine and eight.</p>
   <p class='say'>So it repeats, but to within a few seconds, not exactly. I would rather tell you that than round all three to one nice number.</p>">
   <div class="kicker r pop">The rehearsal</div>
   <h2 class="pop">Three runs, eleven days —<br>and the number moved once</h2>
-  <div class="row pop" style="margin-top:2vh">
-    <div class="box"><div class="l">break it</div><div class="s">on purpose</div></div>
-    <div class="ar">→</div>
-    <div class="box red"><div class="l">deadbee</div><div class="s">the bad one</div></div>
-    <div class="ar">→</div>
-    <div class="box"><div class="l">deploy it</div><div class="s">expect failure</div></div>
-    <div class="ar">→</div>
-    <div class="box grn"><div class="l">undo</div><div class="s">and time it</div></div>
+  <div class="chart pop">
+  <svg viewBox="0 0 1000 300" xmlns="http://www.w3.org/2000/svg" role="img"
+       aria-label="Three rollback drills: 34 seconds, 34 seconds, then 37 seconds">
+    <text class="bt" x="150" y="79" text-anchor="end">31 Jul</text>
+    <rect class="bad" x="180" y="52" width="513" height="38" rx="6" opacity=".62"/>
+    <rect class="good" x="693" y="52" width="133" height="38" rx="6" opacity=".62"/>
+    <text class="bs" x="436" y="76" text-anchor="middle" style="fill:var(--fg)">27s</text>
+    <text class="bs" x="760" y="76" text-anchor="middle" style="fill:var(--fg)">7s</text>
+    <text class="bnum" x="842" y="79" style="fill:var(--fg2)">34s</text>
+    <text class="bt" x="150" y="157" text-anchor="end">4 Aug</text>
+    <rect class="bad" x="180" y="130" width="513" height="38" rx="6" opacity=".62"/>
+    <rect class="good" x="693" y="130" width="133" height="38" rx="6" opacity=".62"/>
+    <text class="bs" x="436" y="154" text-anchor="middle" style="fill:var(--fg)">27s</text>
+    <text class="bs" x="760" y="154" text-anchor="middle" style="fill:var(--fg)">7s</text>
+    <text class="bnum" x="842" y="157" style="fill:var(--fg2)">34s</text>
+    <text class="bt" x="150" y="235" text-anchor="end">11 Aug</text>
+    <rect class="bad" x="180" y="208" width="551" height="38" rx="6" opacity="1"/>
+    <rect class="good" x="731" y="208" width="152" height="38" rx="6" opacity="1"/>
+    <text class="bs" x="456" y="232" text-anchor="middle" style="fill:var(--fg)">29s</text>
+    <text class="bs" x="807" y="232" text-anchor="middle" style="fill:var(--fg)">8s</text>
+    <text class="bnum" x="899" y="235" style="fill:var(--red)">37s</text>
+    <rect class="bad" x="180" y="262" width="16" height="14" rx="3"/>
+    <text class="bs" x="204" y="274">time to notice</text>
+    <rect class="good" x="330" y="262" width="16" height="14" rx="3"/>
+    <text class="bs" x="354" y="274">time to undo</text>
+    <text class="bs" x="640" y="274" style="fill:var(--amb)">the third run drifted by 3 seconds</text>
+  </svg>
   </div>
-  <p class="sub w pop" style="margin-top:2.5vh">27s + 7s. Then 27s + 7s again. <b>Then 29s + 8s this morning.</b> Repeatable to a few seconds — not exact, and I'm not going to pretend otherwise.</p>
-  <p class="tiny pop">A rollback plan nobody has run is a paragraph. This one is a script, and all three transcripts are in the repo.</p>
+  <p class="tiny pop">Repeatable to a few seconds — not exact, and I'm not going to pretend otherwise. All three transcripts are in the repo.</p>
 </section>
 
 <!-- 12 ────────────────────────────────────────── -->
@@ -512,23 +627,44 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
 </section>
 
 <!-- 13 ────────────────────────────────────────── -->
-<section class="slide"
+<section class="slide viz"
   data-notes="<p>Most important slide. Say it, then stop talking.</p>
-  <p class='say'>Here is the number I could have made look nicer, and did not. Eight seconds to recover. But thirty seven seconds actually down.</p>
-  <p class='say'>My deploy swaps the container before it checks it. So the broken one was serving errors for the twenty nine seconds the checks spent retrying. The checks limit the damage. They do not stop it.</p>
-  <p class='say'>The real fix is checking the new one before it takes traffic. I know how, it did not fit in the time. And I did not lower the retry count to make the number look better.</p>
-  <p class='say'>One more thing. Back then, the only reason I knew those thirty seven seconds happened is that I was watching the screen. In ten minutes I will show you the part that means I would get told instead.</p>
+  <p class='say'>Here is the number I could have made look nicer, and did not. Eight seconds to recover. Thirty seven seconds actually down.</p>
+  <p class='say'>My deploy swaps the container before it checks it. So the broken one served errors for the whole twenty nine seconds the checks spent retrying. The checks limit the damage. They do not stop it.</p>
+  <p class='say'>The real fix is checking the new one before it takes traffic. I know how; it did not fit in the time. And I did not lower the retry count to make the number look better.</p>
+  <p class='say'>One more thing. Back then I only knew this happened because I was watching the screen. In a few minutes I will show you the part that means I get told instead.</p>
   <p class='warn'>If asked: the eight seconds does not include downloading the image, because the old one was already on the machine. On a fresh machine, add that.</p>
   <p><em>Then pause. You will want to fill the silence. Do not.</em></p>">
   <div class="kicker r pop">The number I didn't flatter</div>
-  <div class="row pop" style="gap:clamp(1.5rem,5vw,5rem); align-items:baseline; margin-bottom:2vh">
-    <div><div class="stat" style="color:var(--fg3); opacity:.3">8<small>s</small></div>
-      <p class="tiny" style="margin-top:.5vh">to recover</p></div>
-    <div><div class="stat r">37<small>s</small></div>
-      <p class="tiny" style="margin-top:.5vh">actually down</p></div>
+  <h2 class="pop" style="margin-bottom:1.4vh">37 seconds down, not 8</h2>
+  <div class="chart pop">
+  <svg viewBox="0 0 1080 268" xmlns="http://www.w3.org/2000/svg" role="img"
+       aria-label="Outage timeline: the container is swapped at zero seconds, the checks give up at 29 seconds, service returns at 37 seconds">
+    <rect class="bad" x="60" y="96" width="737" height="56" rx="8"/>
+    <rect class="good" x="797" y="96" width="203" height="56" rx="8"/>
+    <text class="bt" x="428" y="130" text-anchor="middle">broken container is serving traffic</text>
+    <text class="bt" x="898" y="130" text-anchor="middle" style="font-size:13px">rolling back</text>
+
+    <line class="axis" x1="60" y1="86" x2="60" y2="62"/>
+    <text class="callr" x="60" y="52" text-anchor="middle">0s</text>
+    <text class="bs" x="60" y="34" text-anchor="middle">swapped</text>
+
+    <line class="axis" x1="797" y1="86" x2="797" y2="62"/>
+    <text class="callr" x="797" y="52" text-anchor="middle">29s</text>
+    <text class="bs" x="797" y="34" text-anchor="middle">checks give up</text>
+
+    <line class="axis" x1="1000" y1="86" x2="1000" y2="62"/>
+    <text class="callg" x="1000" y="52" text-anchor="middle">37s</text>
+    <text class="bs" x="1000" y="34" text-anchor="middle">service back</text>
+
+    <path d="M60,168 L60,182 L1000,182 L1000,168" fill="none" stroke="var(--red)" stroke-width="1.6"/>
+    <text class="callr" x="530" y="206" text-anchor="middle" style="font-size:17px">37s with no working service</text>
+
+    <path d="M797,168 L797,232 L1000,232 L1000,168" fill="none" stroke="var(--fg3)" stroke-width="1.2" stroke-dasharray="4 4"/>
+    <text class="bs" x="898" y="252" text-anchor="middle">the 8s everyone quotes</text>
+  </svg>
   </div>
-  <p class="sub w pop">The container gets <b>swapped before it gets checked</b> — so the broken one served traffic for the 29&nbsp;seconds the checks spent retrying.</p>
-  <p class="tiny pop">And back then, the only reason I knew it happened is that I was watching. <b>That gap is why the last sprint exists.</b></p>
+  <p class="tiny pop">The container is swapped <b>before</b> it is checked. The checks limit the damage; they do not stop it.</p>
 </section>
 
 <!-- 14 ────────────────────────────────────────── -->
@@ -554,6 +690,109 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
 </section>
 
 <!-- 15 ────────────────────────────────────────── -->
+<section class="slide viz"
+  data-notes="<p>Thirty seconds. Trace it with your finger, do not read every box.</p>
+  <p class='say'>Two paths that meet in one place.</p>
+  <p class='say'>On top, numbers. Prometheus pulls from the app, the containers and the machine, every fifteen seconds.</p>
+  <p class='say'>Underneath, text. The app prints JSON, Alloy picks it up off Docker, Loki keeps it.</p>
+  <p class='say'>Both land in Grafana. Two dashboards, eleven panels, one alert. And the dashed arrow is the bit I care about — one click from a spike to the log lines behind it. Without it, this is two tools sitting next to each other.</p>
+  <p class='warn'>If asked why Alloy instead of the app pushing logs itself: the app writes to standard output and knows nothing about Loki. I can swap the whole log stack out and never touch the application.</p>">
+  <div class="kicker p pop">How it fits together</div>
+  <h2 class="pop">Numbers on top, words underneath</h2>
+  <div class="diag pop">
+  <svg viewBox="0 0 1120 470" xmlns="http://www.w3.org/2000/svg" role="img"
+       aria-label="Observability data flow: metrics into Prometheus, logs into Loki, both into Grafana">
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="var(--fg3)"/>
+      </marker>
+      <marker id="ahm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="var(--acc)"/>
+      </marker>
+      <marker id="ahl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="var(--pur)"/>
+      </marker>
+      <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="var(--amb)"/>
+      </marker>
+    </defs>
+
+    <text x="30" y="24" class="dl dl-m">METRICS</text>
+    <text x="30" y="318" class="dl dl-l">LOGS</text>
+
+    <g class="db db-m"><rect x="30" y="36" width="180" height="58" rx="13"/></g>
+    <text x="120" y="60" class="dt">cAdvisor</text><text x="120" y="80" class="ds">the containers</text>
+
+    <g class="db db-m"><rect x="30" y="108" width="180" height="58" rx="13"/></g>
+    <text x="120" y="132" class="dt">node exporter</text><text x="120" y="152" class="ds">the machine</text>
+
+    <g class="db db-app"><rect x="30" y="210" width="180" height="80" rx="13"/></g>
+    <text x="120" y="240" class="dt">Flask app</text>
+    <text x="120" y="260" class="ds">counts its requests</text>
+    <text x="120" y="277" class="ds">prints JSON logs</text>
+
+    <g class="db db-m"><rect x="290" y="74" width="180" height="72" rx="13"/></g>
+    <text x="380" y="104" class="dt">Prometheus</text><text x="380" y="126" class="ds">pulls every 15s</text>
+
+    <g class="db db-l"><rect x="290" y="326" width="180" height="58" rx="13"/></g>
+    <text x="380" y="350" class="dt">Alloy</text><text x="380" y="370" class="ds">reads Docker logs</text>
+
+    <g class="db db-l"><rect x="550" y="326" width="180" height="58" rx="13"/></g>
+    <text x="640" y="350" class="dt">Loki</text><text x="640" y="370" class="ds">keeps the lines</text>
+
+    <g class="db db-g"><rect x="550" y="148" width="180" height="112" rx="15"/></g>
+    <text x="640" y="188" class="dt dt-g">Grafana</text><text x="640" y="212" class="ds">the only screen</text>
+    <text x="640" y="234" class="ds">I have to look at</text>
+
+    <g class="db db-out"><rect x="830" y="108" width="258" height="50" rx="12"/></g>
+    <text x="959" y="132" class="dt dt-s">App dashboard</text><text x="959" y="149" class="ds">5 panels</text>
+
+    <g class="db db-out"><rect x="830" y="172" width="258" height="50" rx="12"/></g>
+    <text x="959" y="196" class="dt dt-s">Host dashboard</text><text x="959" y="213" class="ds">6 panels</text>
+
+    <g class="db db-alert"><rect x="830" y="236" width="258" height="50" rx="12"/></g>
+    <text x="959" y="260" class="dt dt-s" style="fill:var(--red)">1 alert rule</text><text x="959" y="277" class="ds">/echo is rejecting requests</text>
+
+    <path d="M210,65 L282,92" class="ln ln-m"/>
+    <path d="M210,137 L282,116" class="ln ln-m"/>
+    <path d="M210,232 L282,140" class="ln ln-m"/>
+    <path d="M210,268 L282,347" class="ln ln-l"/>
+    <path d="M470,355 L542,355" class="ln ln-l"/>
+    <path d="M470,118 L542,176" class="ln ln-m"/>
+    <path d="M600,326 L600,268" class="ln ln-l"/>
+    <path d="M730,133 L822,133" class="ln"/>
+    <path d="M730,197 L822,197" class="ln"/>
+    <path d="M730,240 L822,258" class="ln"/>
+    <path d="M684,268 L684,318" class="ln ln-a" stroke-dasharray="7 5"/>
+    <text x="770" y="300" class="dl dl-a">one click</text>
+    <text x="770" y="318" class="ds" style="text-anchor:start">spike → its log lines</text>
+  </svg>
+  </div>
+  <p class="tiny pop">Two paths, one screen. The dashed arrow is what makes it one system instead of two tools.</p>
+</section>
+
+<!-- 16 ────────────────────────────────────────── -->
+<section class="slide media"
+  data-notes="<p>Twenty seconds. Point at each one, do not read the panel names.</p>
+  <p class='say'>Two dashboards, eleven panels. Neither was clicked together by hand — they are JSON files in the repo.</p>
+  <p class='say'>Left is the app. Right is what it runs on.</p>
+  <p class='say'>The panel I would defend is top right: it shows whether the collector can still reach everything. If that goes to zero, every other graph goes quiet — and quiet looks exactly like healthy.</p>">
+  <div class="kicker p">Provisioned, not clicked</div>
+  <h2>Two dashboards, eleven panels</h2>
+  <div class="shots2">
+    <figure>
+      <img src="15-dashboard-overview.png" alt="Application golden signals dashboard">
+      <figcaption>Application golden signals <span>· 5 panels</span></figcaption>
+    </figure>
+    <figure>
+      <img src="23-host-dashboard.png" alt="Host and containers dashboard">
+      <figcaption>Host and containers <span>· 6 panels</span></figcaption>
+    </figure>
+  </div>
+  <p class="shotcap">Both are JSON in the repo. <b>Delete Grafana, start it again, and they come back.</b></p>
+</section>
+
+<!-- 17 ────────────────────────────────────────── -->
 <section class="slide media"
   data-notes="<p>The fun one. Enjoy it.</p>
   <p class='say'>So I attacked my own app. Normal traffic first, flat and boring. Then I send it rubbish, three different kinds of broken, because the app refuses each one differently.</p>
@@ -565,7 +804,7 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
   <p class="shotcap">Flat and boring, until I started sending rubbish. <b>Nobody had to go looking.</b></p>
 </section>
 
-<!-- 16 ────────────────────────────────────────── -->
+<!-- 18 ────────────────────────────────────────── -->
 <section class="slide media"
   data-notes="<p>Say the one minute thing out loud. That detail shows you understand alerts.</p>
   <p class='say'>And then it alerts me. One rule, written in code next to the dashboards.</p>
@@ -578,7 +817,7 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
   <p class="shotcap">One bad second doesn't wake anyone. <b>One bad minute does.</b></p>
 </section>
 
-<!-- 17 ────────────────────────────────────────── -->
+<!-- 19 ────────────────────────────────────────── -->
 <section class="slide media"
   data-notes="<p>One click, and the click is the point.</p>
   <p class='say'>From the red graph I click once, and it opens the actual log lines. Already filtered to the failures, already at the right time. I did not type a search.</p>
@@ -591,7 +830,7 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
   <p class="shotcap">Right lines, right moment, <b>no search typed</b>. Each one tagged with the request that caused it.</p>
 </section>
 
-<!-- 18 ────────────────────────────────────────── -->
+<!-- 20 ────────────────────────────────────────── -->
 <section class="slide"
   data-notes="<p>This one is about judgement, not tools.</p>
   <p class='say'>Yesterday I sat down and attacked my own project on paper. Nobody asked me to. If I trust this thing to deploy for me, it is worth trying to break it first.</p>
@@ -614,7 +853,7 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
   </div>
 </section>
 
-<!-- 19 ────────────────────────────────────────── -->
+<!-- 21 ────────────────────────────────────────── -->
 <section class="slide media"
   data-notes="<p>Strongest picture in the deck. Slow right down.</p>
   <p class='say'>A check that has never failed is not a check. So I proved the pipeline one by beating the one on my laptop, on purpose.</p>
@@ -627,7 +866,7 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
   <p class="shotcap">Skipped the check on my laptop. <b>The pipeline caught it anyway</b> — 11 seconds.</p>
 </section>
 
-<!-- 20 ────────────────────────────────────────── -->
+<!-- 22 ────────────────────────────────────────── -->
 <section class="slide"
   data-notes="<p>Volunteer these. Confident, not sorry. Each one is a decision.</p>
   <p class='say'>What I did not build, and why. None of these are things I forgot.</p>
@@ -645,7 +884,7 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
   </div>
 </section>
 
-<!-- 21 ────────────────────────────────────────── -->
+<!-- 23 ────────────────────────────────────────── -->
 <section class="slide"
   data-notes="<p>Hardest slide to put up and the best one. Do not apologise through it. You found both yourself.</p>
   <p class='say'>Two mistakes, same shape, three days apart. Both were rules I had written down myself, and clicked straight past.</p>
@@ -662,13 +901,13 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
   <p class="tiny pop">Found both myself, wrote both down, fixed the second one this morning.</p>
 </section>
 
-<!-- 22 ────────────────────────────────────────── -->
+<!-- 24 ────────────────────────────────────────── -->
 <section class="slide"
   data-notes="<p>This is about me, not the pipeline. Slow down and mean it.</p>
   <p class='say'>Four things I learned, and none of them are tools.</p>
-  <p class='say'>Sprints changed how I plan. My first sprint had about twice the work it should have. I learned to cut early and say what I am cutting, instead of running out of time quietly.</p>
-  <p class='say'>Second, you have to go and ask what is expected. When my mentor asked for pipeline control flow, the useful thing I did was ask what a good answer looks like. He said a written down limitation counts. That saved me days.</p>
-  <p class='say'>Third, if I have not proved it, it is not done. Half of this deck is me proving things I had already built, and every time I did that, I found something.</p>
+  <p class='say'>Sprints changed how I plan. My first one had twice the work it should have. I learned to cut early and say what I am cutting.</p>
+  <p class='say'>Second, go and ask what is expected. My mentor said a written down limitation counts as an answer. That saved me days.</p>
+  <p class='say'>Third, if I have not proved it, it is not done. Half of this deck is me proving things I had already built, and every time, I found something.</p>
   <p class='say'>Fourth, writing it down as I went is the only reason I can defend any of it now.</p>">
   <div class="kicker p pop">What I learned</div>
   <h2 class="pop">Four things, none of them tools</h2>
@@ -684,7 +923,7 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
   </div>
 </section>
 
-<!-- 23 ────────────────────────────────────────── -->
+<!-- 25 ────────────────────────────────────────── -->
 <section class="slide"
   data-notes="<p>Short and personal. This is where you sound like a colleague, not a student.</p>
   <p class='say'>One thing about presenting, since this is the third time I have stood here.</p>
@@ -697,7 +936,7 @@ code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:now
   <p class="tiny pop">Third time presenting this project. Each time I've cut more, claimed less, and been believed more.</p>
 </section>
 
-<!-- 24 ────────────────────────────────────────── -->
+<!-- 26 ────────────────────────────────────────── -->
 <section class="slide"
   data-notes="<p>Close it out. Relax.</p>
   <p class='say'>The goal was a pipeline where a merge deploys exactly what was tested, checks it works, can be undone in under a minute, and tells me when something is wrong. That is done, and I showed it instead of claiming it.</p>
