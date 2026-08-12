@@ -874,18 +874,43 @@ error.
 
 ---
 
-## Once this is all ✅
+## Once this is all ✅ — done 2026-08-11
 
 Only then update the status tables. The rows to change:
 
-- `PLAN.md` Phase 1 — the two ⬜ items, JSON logging and `/metrics`
-- `PLAN.md` Phase 5 — Observability
-- `PLAN.md` §3 — milestone **M3**
-- `PLAN.md` §4 — the two P0 rows and the Grafana P1 row
-- `README.md` — the Sprint 3 row and the two ⬜ observability rows
-- `docs/adr/0006` and `0007` — delete the "unproven at the time of writing"
-  paragraphs, once they are no longer true
+- ✅ `PLAN.md` Phase 1 — the two ⬜ items, JSON logging and `/metrics`
+- ✅ `PLAN.md` Phase 5 — Observability
+- ✅ `PLAN.md` §3 — milestone **M3**
+- ✅ `PLAN.md` §4 — the two P0 rows
+- ✅ `README.md` — the Sprint 3 row and the ⬜ observability rows
+- ✅ `docs/adr/0006` and `0007` — **checked, nothing to delete.** This line
+  anticipated provisional paragraphs that would stop being true. They do not
+  exist. What 0006 actually carries is narrower and still accurate: the
+  single-UI claim is verified in §7, and what remains unmeasured is Loki's
+  *query latency under load*, which this sprint never measured and should not
+  now pretend to have. 0007's "a rule that will be tested" is a statement about
+  the next endpoint someone adds, not about this sprint. Both stand as written
 
-Those edits are deliberately **not** in the observability commit. The branch
+Those edits were deliberately **not** in the observability commit. The branch
 ships the capability; the status changes when the capability has been seen to
 work. Making both in one commit is how a board starts lying.
+
+**What that separation actually cost, recorded because it is the interesting
+part.** The capability landed on 2026-08-08 and the tables were corrected on
+2026-08-11. For three days the documentation *understated* the project: the
+`README.md` a reader opens first said Sprint 3 was ⬜ Planned while sections 4
+through 7 of this file were already ✅ against real evidence. Separating the
+commits is still right — a status that changes with the code is a status nobody
+can trust — but the second commit has to actually follow, and here it did not
+until a demo forced it. The rule is unchanged; the Definition of Done now has
+to include it rather than assume it.
+
+**One finding came out of the correction pass itself.** The error-rate panel
+was drawing green across a 96% spike — coloured from the classic palette rather
+than its thresholds, no threshold line rendered, and a red step at 0.2 while the
+alert rule fires at 0.1. Section 7 marked the incident ✅ and was right about
+every claim it made; it simply never asserted anything about the panel's
+colour, so nothing was wrong here and nothing had to be withdrawn. It was found
+by photographing the panel for the review. Fixed in
+`platform/observability/grafana/dashboards/app-golden-signals.json` the same
+day, reasoning kept in the panel description.

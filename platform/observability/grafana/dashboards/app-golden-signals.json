@@ -74,7 +74,7 @@
     {
       "type": "timeseries",
       "title": "Error rate",
-      "description": "Errors as a fraction of all requests. Click a point to open the matching Loki query for the same time range. Bounded 0-100% by construction: a ratio that can exceed 1 is a bug in the query, not a bad day. When there is no traffic the panel draws a gap rather than 0% - there is no error rate without requests, and a fabricated zero reads as healthy while the panel is actually blind. Two ways to the same query: the link icon in this panel's header, or clicking any point on the line.",
+      "description": "Errors as a fraction of all requests. Click a point to open the matching Loki query for the same time range. Bounded 0-100% by construction: a ratio that can exceed 1 is a bug in the query, not a bad day. When there is no traffic the panel draws a gap rather than 0% - there is no error rate without requests, and a fabricated zero reads as healthy while the panel is actually blind. Two ways to the same query: the link icon in this panel's header, or clicking any point on the line. The line is coloured by threshold and turns red at 0.1 - the same 10% the alert rule evaluates, deliberately, so the picture and the alert cannot disagree. Until 2026-08-11 they did disagree: the panel was coloured from the classic palette and so drew green at any value, and its red step sat at 0.2 while the rule fired at 0.1. It was found by trying to photograph it for the final review, which is the argument for proving a thing rather than building it and assuming. gradientMode 'scheme' is what makes the colouring follow the value along the line; without it Grafana colours the whole series by its most recent point, which answers 'is it bad right now' rather than 'when was it bad' and renders a flat green line straight across a 100% spike.",
       "datasource": {
         "type": "prometheus",
         "uid": "projecta-prometheus"
@@ -90,10 +90,14 @@
           "custom": {
             "lineWidth": 2,
             "fillOpacity": 8,
-            "showPoints": "never"
+            "showPoints": "never",
+            "gradientMode": "scheme",
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
           },
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "unit": "percentunit",
           "min": 0,
@@ -105,12 +109,8 @@
                 "value": null
               },
               {
-                "color": "orange",
-                "value": 0.05
-              },
-              {
                 "color": "red",
-                "value": 0.2
+                "value": 0.1
               }
             ]
           },

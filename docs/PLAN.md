@@ -31,7 +31,7 @@ Split it when the Ansible roles get shared across projects — not before.
 
 **Phase 0 — Foundation** ✅ Prerequisites, repository, branch strategy.
 
-**Phase 1 — Application hardening** 🟡
+**Phase 1 — Application hardening** ✅
 Make the app production-grade before automating it; automating a bad artifact
 just ships it faster.
 
@@ -39,16 +39,22 @@ just ships it faster.
   controllable error signal
 - ✅ `/health` (liveness) split from `/ready` (readiness)
 - ✅ Gunicorn, pytest suite, ruff
-- ⬜ Structured JSON logging with `request_id`, `path`, `status`, `duration_ms`
-- ⬜ `/metrics` via `prometheus_client`
+- ✅ Structured JSON logging with `request_id`, `path`, `status`, `duration_ms`
+- ✅ `/metrics` via `prometheus_client`
+
+Both landed in `0ce6cc7` on 2026-08-07 and were verified in
+[`sprint3-verification.md`](sprint3-verification.md) sections 4 through 7. They
+stayed marked ⬜ here until 2026-08-11 — four days in which this file
+understated the project, because the capability commit and the status commit are
+deliberately separate and the second one did not follow.
 
 **Phase 2 — Containerization** ✅
 Multi-stage, digest-pinned base, non-root `appuser`, `HEALTHCHECK`.
 ⬜ Remaining: OCI labels (`revision`, `source`, `created`, `version`).
 
 **Phase 3 — CI** ✅
-`ruff → hadolint → pytest (80% gate) → ansible-lint → build → health gate →
-network check → trivy → push → reclaim`. Fail-fast in cost order — `ansible-lint`
+`ruff → trivy fs (secrets) → hadolint → pytest (80% gate) → ansible-lint →
+build → health gate → network check → trivy image → push → reclaim`. Fail-fast in cost order — `ansible-lint`
 sits after the checks that need no installation and before the build. Every tool
 is pinned exactly, Trivy included since `a6a4d33`; a scanner on a floating tag
 turns a build nobody touched red. `reclaim` removes the SHA-tagged image after
@@ -70,25 +76,42 @@ the push, so the runner's disk does not grow by one image per run.
   `docs/RUNBOOK.md`; full transcript in commit `eac8fe5`;
   repeatable via `scripts/rollback-drill.sh`
 - ⬜ **Zero-downtime swap.** The drill measured what replace-then-verify costs:
-  the broken container was live for **27s** before the smoke test gave up, so the
-  real outage window is ~34s, not 7s. Known P2 item, now a number instead of a
-  note
+  the broken container was live for **29s** before the smoke test gave up, so the
+  real outage window is ~**37s**, not 8s. Known P2 item, now a number instead of a
+  note.
+
+  **The number moved on the third run, and that is recorded rather than
+  smoothed.** 2026-07-31 measured 27s + 7s = 34s; 2026-08-04 measured 27s + 7s =
+  34s again; 2026-08-11 measured 29s + 8s = **37s**. Same script, same host,
+  three seconds of drift on the third run after two identical ones. The figure
+  quoted in the final-review deck is 37s: when measurements disagree the honest
+  single number is the worst one, and it is also the run whose transcript is
+  freshest. "Reproducible" is therefore accurate and "identical" is not — it
+  repeats to within a few seconds, and claiming better precision than that would
+  be claiming precision this rig does not have
 - ⬜ `ansible-vault` — deliberately not built. Nothing here is secret yet, and
   vault before a secret is ceremony, not security
 
-**Phase 5 — Observability** ⬜ *Next*
+**Phase 5 — Observability** ✅
 Prometheus (app, cAdvisor, node_exporter), Grafana provisioned as code with two
 dashboards, Alloy → Loki with JSON parsing, a data link from error rate to the
 filtered log query, one alert rule.
 
-**Phase 6 — Pipeline control flow** ⬜
+**Phase 6 — Pipeline control flow** 🟡
 Conditional stage and job execution, `timeout-minutes`, `continue-on-error`,
 retry on the steps that fail for reasons unrelated to the change, and dynamic
 fan-out to a matrix built at runtime. Added after the Sprint 2 review on
-2026-08-05 at the mentor's request; the pipeline currently runs every step
+2026-08-05 at the mentor's request; the pipeline previously ran every step
 unconditionally except the ref gate, which is a defensible default and not a
-demonstration of knowing the alternatives. Bounded by what `act_runner`
-actually supports — see Sprint 3, workstream B.
+demonstration of knowing the alternatives.
+
+Where it stands after the spike (run #62, `act_runner` v0.2.12): `timeout-minutes`
+is shipped, twenty of them in `ci.yml`. Conditional execution,
+`continue-on-error` and both retry approaches are proven to work on this runner
+but are **not yet applied** to `ci.yml` — the spike answered *can it*, not
+*should it*. `fromJSON()` fan-out does not work and closes as a documented
+limitation, which the mentor said explicitly is an acceptable answer. One ADR
+remains unwritten: when a second workflow beats a nested conditional.
 
 ---
 
@@ -98,7 +121,7 @@ actually supports — see Sprint 3, workstream B.
 |---|---|:--:|
 | **M1 — Pipeline Foundation** | A commit triggers lint, test, build, scan, push of an immutably tagged image | ✅ |
 | **M2 — Automated Delivery** | A reviewed merge deploys that exact image, with a smoke test that can fail the deploy | ✅ ¹ |
-| **M3 — Observability** | Metric spike → one click to the matching logs; dashboards as code | ⬜ |
+| **M3 — Observability** | Metric spike → one click to the matching logs; dashboards as code | ✅ ² |
 | **M4 — Production Readiness** | Rollback rehearsed, ADRs written, clean-machine reproducible, demo scripted | 🟡 |
 
 ¹ The deploy, the smoke gate and the rollback are all demonstrated. "Reviewed"
@@ -106,6 +129,24 @@ is followed by hand rather than enforced — rulesets and `CODEOWNERS` do not
 apply to private repositories on this plan. Marked ✅ because the delivery
 mechanism is complete and the gap is a billing tier, not missing work; the
 qualification is stated rather than buried.
+
+² Closed 2026-08-11. The metric-to-log link, the provisioned dashboards, the
+alert rule firing on real traffic and the `request_id` correlation are all
+recorded in [`sprint3-verification.md`](sprint3-verification.md) sections 4–7,
+and captured as stills in [`demo-assets-sprint3/`](demo-assets-sprint3/). It
+was substantially met on 2026-08-08 and stayed ⬜ for three days because the
+capability shipped in one commit and the status table was never revisited —
+the same Definition-of-Done miss recorded against Phase 1.
+
+**One correction found while proving it.** The error-rate panel drew *green
+across a 96% spike*: its colour came from the classic palette rather than from
+its thresholds, no threshold line was rendered, and its red step sat at 0.2
+while the alert rule fires at 0.1 — so the dashboard and the alert disagreed
+about what counts as bad. Fixed the same day in
+`platform/observability/grafana/dashboards/app-golden-signals.json`, with the
+reasoning kept in the panel description. It was found by going to photograph
+something already marked done, which is the argument for §6's rule rather than
+an exception to it.
 
 ### Sprint 1 — "Commit to Artifact" ✅
 
@@ -128,7 +169,8 @@ the work stays private.
 Also delivered: `ansible-lint` at the `production` profile; the rollback
 rehearsal, executed rather than asserted — 7s to recover, with the ~34s total
 outage window measured and recorded rather than quietly averaged away
-(`docs/RUNBOOK.md`).
+(`docs/RUNBOOK.md`). A third run on 2026-08-11 measured 37s; the drill and the
+drift are both in `RUNBOOK.md`.
 
 **After the sprint closed (2026-08-03), a hardening pass.** Recorded here rather
 than folded into the sprint above, because the sprint goal was met at PR #25 and
@@ -179,13 +221,13 @@ repositories on this plan. Configured, documented, unenforced — see
    `fbc1254e`: `ok=11 changed=0`, every smoke check re-run and passing.
    Idempotence shown, not claimed.
 5. Deploy a broken image → the smoke test fails the deploy and prints its own
-   rollback command → roll back with one line. Rehearsed 2026-07-31: 27s to
-   detect, 7s to recover. Quote the ~34s outage window, not the 7s — replace
-   -then-verify means the smoke test bounds downtime rather than preventing it,
-   and saying so first is stronger than being asked. Repeat with
-   `scripts/rollback-drill.sh`.
+   rollback command → roll back with one line. Rehearsed three times: 27s + 7s
+   on 2026-07-31 and again on 2026-08-04, then 29s + 8s on 2026-08-11. Quote
+   the **~37s** outage window, not the 8s — replace-then-verify means the smoke
+   test bounds downtime rather than preventing it, and saying so first is
+   stronger than being asked. Repeat with `scripts/rollback-drill.sh`.
 
-### Sprint 3 — "See What's Happening, and Control What Runs" ⬜ *Next*
+### Sprint 3 — "See What's Happening, and Control What Runs" 🟡 *In progress*
 
 Two workstreams, deliberately named separately. **A** is the observability work
 this roadmap always planned. **B** came from the Sprint 2 review with
@@ -205,22 +247,34 @@ The mentor's framing: the point is to *try* the conditional mechanisms, not to
 need them. A pipeline whose behaviour is obvious from reading it is the goal;
 these are the tools that make it non-obvious if used without cause.
 
-- ⬜ **Conditional stage and job execution.** Deliberate experiments with
-  `if:`, job-level conditions and reusable outputs, on branches that are
-  allowed to fail. What passes goes in `ci.yml`; what does not goes in the ADR
-- ⬜ **`timeout-minutes`** on the steps that can hang. Today nothing bounds the
-  Trivy download, the health wait or the deploy — a hung step holds a runner
-  with capacity 1 until someone notices
-- ⬜ **`continue-on-error`** where a failure should be reported and passed over
-  rather than stopping the run. Every gate in this pipeline currently fails
-  hard, by the rule in §6. Anything given this treatment has to be argued for
-  in the same commit — the rule stays, the exception gets a name
-- ⬜ **Retry** on the steps that fail for reasons unrelated to the change:
+- 🟡 **Conditional stage and job execution.** Spike round 1, run #62, proved
+  `startsWith()`, `contains()`, `success()` and `always()` all evaluate
+  correctly on `act_runner` v0.2.12. **Proven, not applied** — nothing in
+  `ci.yml` uses them yet beyond the existing ref gate, because "the runner
+  supports it" is not the same as "this pipeline needs it" 
+- ✅ **`timeout-minutes`** on the steps that can hang. Twenty of them in
+  `ci.yml`. Previously nothing bounded the Trivy download, the health wait or
+  the deploy — a hung step holds a runner with capacity 1 until someone
+  notices
+- 🟡 **`continue-on-error`** where a failure should be reported and passed over
+  rather than stopping the run. Verified working in the spike. Every gate in
+  this pipeline still fails hard, by the rule in §6, and no exception has been
+  argued for yet — which is the correct outcome so far, not an omission. The
+  rule stays; if an exception is ever taken it gets a name in the same commit
+- 🟡 **Retry** on the steps that fail for reasons unrelated to the change:
   registry pulls, the Galaxy collection install, the Trivy DB fetch. Actions
-  has no native step retry, so this is an action dependency or a shell loop
-- ⬜ **Dynamic fan-out to N parallel jobs** — a matrix built from a previous
-  job's output via `fromJSON()`. The least likely of the five to work here;
-  see the spike below
+  has no native step retry; the spike verified both available approaches, an
+  action dependency and a shell loop. Neither is in `ci.yml` — no step has
+  actually flaked yet, and retrying a step that has never failed hides the
+  first real failure
+- ❌ **Dynamic fan-out to N parallel jobs** — a matrix built from a previous
+  job's output via `fromJSON()`. **Does not work on `act_runner` v0.2.12, and
+  closed as a documented limitation** rather than carried. It failed in the
+  worst available way: it did not error. The workflow degraded silently to a
+  single unnamed job with an empty `matrix.shard` and reported success. A green
+  tick over a job that never ran is worse than a red one, and it is the single
+  most useful thing the spike produced. Kovalcsik said explicitly that an
+  unsupported tool is an acceptable answer — see [ADR-0005](adr/)
 - ⬜ **ADR — when a second workflow beats a nested conditional.** Kovalcsik's
   actual warning: developers over-complicate a single file with `if`/`else`/`and`
   until nobody can say why a stage was skipped, and at that point two plain YAML
@@ -277,8 +331,8 @@ today's warm-host rollback number into a defensible one.
 
 - [x] Platform stack, registry, CI through to push, Ansible deploy, deploy job
 - [x] A README a stranger can follow to a running stack
-- [ ] Prometheus scraping `/metrics`; a dashboard with rate, errors, latency
-- [ ] Alloy → Loki, logs queryable by `level` and `path`
+- [x] Prometheus scraping `/metrics`; a dashboard with rate, errors, latency
+- [x] Alloy → Loki, logs queryable by `level` and `path`
 
 **P1 — the difference between "works" and "senior"**
 
@@ -456,6 +510,10 @@ inherited.
   documentation updated in the same change, and the claim demonstrable live.
 - **Pipeline:** fail fast in cost order; gates fail, they never warn; the
   artifact is immutable and built once.
+- **Status marks:** ✅ demonstrated and dated · 🟡 partly done, with the
+  remainder named · ⬜ not done · ❌ attempted and does not work here, closed as
+  a documented limitation rather than carried as debt. ❌ is not a failure to
+  deliver; it is a result.
 - **Security:** no secrets in Git; the image runs non-root; scans block on
   HIGH/CRITICAL; dependencies are hash-locked.
 - **Documentation:** if a claim in these docs cannot be demonstrated, it is
@@ -465,22 +523,58 @@ inherited.
 
 ## 7. Next actions
 
-1. Structured JSON logging with `request_id`, then `/metrics`. Sprint 3
-   workstream A depends on both and cannot start without them.
-2. The `act_runner` capability spike — half a day, four throwaway branches,
-   one recorded result each. It decides how much of workstream B is buildable
-   and should happen before B is planned in detail.
+1. **ADR — when a second workflow beats a nested conditional.** The last
+   deliverable of workstream B, and the only one the spike did not answer. It
+   deserves better than an hour squeezed before a review, which is why it did
+   not happen on 2026-08-11.
+2. Decide whether conditional execution, `continue-on-error` and retry actually
+   belong in `ci.yml`. The spike proved the runner supports them; that is not
+   the same as this pipeline needing them, and §6's rule says an exception has
+   to be argued for in the same commit.
 3. Trivy `fs --scanners misconfig` over the compose file and the Dockerfile —
-   the half of F6 this change deliberately left open. Expect it red on the
-   first run; the triage is the work.
-4. `/version` endpoint via `--build-arg` — the demo currently proves the running
+   the half of F6 the secret-scanning change deliberately left open. Expect it
+   red on the first run; the triage is the work.
+4. Secret scanning of git *history*, not just the working tree. Blocked on a
+   decision rather than on effort: what happens on a hit. Rotating the
+   credential is the answer; rewriting history is a distant second and needs to
+   be agreed before the scan exists, not after it fires.
+5. `/version` endpoint via `--build-arg` — the demo currently proves the running
    SHA with the container's `version` label, which works; the endpoint would
    make it provable without Docker access.
+6. **F3 — registry immutability.** Nothing mechanically prevents a tag being
+   overwritten. The pipeline never does it, but that is a convention, not a
+   control, and it is the open finding most worth raising unprompted.
 
 **Done since the last revision (2026-08-05).** Sprint 2 closed and merged to
 `main` as PR #31; `release/sprint2` deleted from both forges and preserved as
 the annotated tag `sprint-2`; `release/sprint3` cut from `main`; the Sprint 2
 demo evidence committed under `docs/demo-assets-sprint2/`.
+
+**Done since 2026-08-08.** Structured JSON logging and `/metrics` landed and
+were verified; Prometheus, Grafana, Alloy → Loki, the metric-to-log data link
+and one alert rule all closed on the evidence in
+[`sprint3-verification.md`](sprint3-verification.md) §4–7; the 2026-08-10
+security review closed F1, F2, F4, F5 and F9; the secret-scanning gate shipped
+and was proven by making it fail; the `act_runner` spike ran and ADR-0005 was
+written; `timeout-minutes` shipped. The final-review deck and its eleven stills
+were built on 2026-08-11 under
+[`demo-assets-sprint3/`](demo-assets-sprint3/).
+
+**A second process failure, same shape as PR #31.** Between 2026-08-08 and
+2026-08-11, five merges landed on `origin/release/sprint3` and **none reached
+`gitea`** — so CI ran on the feature branches, CD never ran at all, and the
+container on the host stayed at `ed19d73` for three days while every branch
+showed green. Non-negotiable #2 in [`CLAUDE.md`](../CLAUDE.md) says push to
+`gitea` first and wait for green; it was skipped silently, and nothing in the
+process notices a forge that has simply stopped receiving pushes. Reconciled on
+2026-08-11: `release/sprint3` pushed to `gitea`, run #87 green, `deploy` verified
+against the running container's `version` label, and the deploy re-run to
+confirm `changed=0`.
+
+Both failures are the same category: a rule that exists only in a document, and
+a click that does not consult it. This is the argument for the branch
+protection that cannot be enabled on a private repository on this plan, and it
+is written down here rather than mentioned once and forgotten.
 
 One thing to carry rather than bury: **PR #31 was squash-merged.** §6 and
 [`BRANCHING.md`](BRANCHING.md) rule 7 both say `release/*` → `main` takes a

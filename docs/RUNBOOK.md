@@ -70,10 +70,14 @@ That line, run verbatim, restored service — `ok=11 changed=1 failed=0`, with
 
 ### What the drill exposed
 
-**Quote 34 seconds, not 7.** The role replaces the running container *before* it
-verifies the new one, so the broken image served 500s for the whole 27 seconds
-the smoke test took to give up. The smoke test bounds downtime; it cannot
-prevent it.
+**Quote the outage window, not the recovery time.** The role replaces the
+running container *before* it verifies the new one, so the broken image served
+500s for the whole 27 seconds the smoke test took to give up. The smoke test
+bounds downtime; it cannot prevent it.
+
+> **Superseded figure.** The current number to quote is **~37s**, from the
+> 2026-08-11 run below — not the ~34s this section measured. The reasoning is
+> unchanged; only the measurement moved.
 
 That shape was already known — "zero-downtime swap" sits under P2 in `PLAN.md`.
 What the rehearsal added was the number. Do not tighten
@@ -90,6 +94,33 @@ passing — the app needs about two seconds to accept traffic after start. A fix
 `localhost:5001/projecta-flask:deadbee` is still in the registry, alongside the
 real SHAs. Left deliberately as evidence the rehearsal happened. Drop the local
 copy with `docker rmi localhost:5001/projecta-flask:deadbee`.
+
+### Repeats — 2026-08-04 and 2026-08-11
+
+The drill is a script precisely so it can be re-run rather than believed, so it
+has been. Three runs across eleven days:
+
+| Run | Target SHA | Detect | Roll back | Outage | Transcript |
+|---|---|---|---|:--:|---|
+| 2026-07-31 | `fbc1254e…` | 27s | 7s | ~34s | commit `eac8fe5`, tabled above |
+| 2026-08-04 | `02179047…` | 27s | 7s | ~34s | `rollback-drill-20260804-110322.log` |
+| 2026-08-11 | `c916924e…` | 29s | 8s | **~37s** | `rollback-drill-20260811-132122.log` |
+
+**The third run drifted by three seconds and the claim was narrowed rather than
+the number rounded.** Two identical runs made "reproducible" look like
+"identical", and it is not — this is a laptop under whatever load it happened to
+be under, and 27→29 and 7→8 is what that costs. What the repeats actually prove
+is that the mechanism works every time and the timing repeats to within a few
+seconds. That is the claim now made everywhere, and **~37s** is the figure
+quoted: the worst of the three, from the freshest transcript.
+
+The 2026-08-11 run also re-proved the recovery on the current commit — it ended
+with `now running c916924e…` and `sprint goal MET — under 60s`, and left the
+usual `deadbee` residue behind.
+
+The caveat from the first run still stands and is printed by the script itself:
+the rollback pulls with `pull=not_present` and the previous image was already on
+the host, so these times exclude a registry pull. On a fresh host, add it.
 
 ---
 

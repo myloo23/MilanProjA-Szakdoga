@@ -398,18 +398,18 @@ Two remotes. `origin` is GitHub (review, protection), `gitea` is localhost (the
 pipeline). Full rules in [`BRANCHING.md`](BRANCHING.md).
 
 ```bash
-git checkout release/sprint2 && git pull origin release/sprint2
-git checkout -b feature/sprint-2-short-description
+git checkout release/sprint3 && git pull origin release/sprint3
+git checkout -b feature/sprint-3-short-description
 
 git add <specific files>          # not `git add -A` — review what you stage
 git commit -m "feat(app): add /metrics endpoint"
-git fetch origin && git rebase origin/release/sprint2
+git fetch origin && git rebase origin/release/sprint3
 
-git push gitea feature/sprint-2-short-description     # 1. prove it, wait for green
-git push -u origin feature/sprint-2-short-description # 2. then ask for review
+git push gitea feature/sprint-3-short-description     # 1. prove it, wait for green
+git push -u origin feature/sprint-3-short-description # 2. then ask for review
 ```
 
-Then open the pull request on GitHub into `release/sprint2` and **paste the Gitea
+Then open the pull request on GitHub into `release/sprint3` and **paste the Gitea
 run result into the description** — there are no status checks on GitHub, so that
 is the only evidence a reviewer has.
 
