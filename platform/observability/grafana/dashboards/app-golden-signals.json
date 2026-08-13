@@ -1,0 +1,331 @@
+{
+  "uid": "projecta-app",
+  "title": "Project A \u2014 Application golden signals",
+  "description": "Rate, errors and duration for the Flask app. Built from the two metric families the app exports; nothing here is derived from logs. The error-rate panel carries a data link into the matching Loki query \u2014 that link is the metric-to-log pivot the sprint is for.",
+  "tags": [
+    "projecta",
+    "sprint-3"
+  ],
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "schemaVersion": 39,
+  "editable": false,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Request rate by endpoint",
+      "description": "Health checks and scrapes excluded \u2014 see the panel query.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "projecta-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "never"
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (endpoint) (rate(http_requests_total{job=\"projecta-flask\", endpoint!~\"/health|/ready|/metrics\"}[1m]))",
+          "legendFormat": "{{endpoint}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "projecta-prometheus"
+          },
+          "editorMode": "code",
+          "range": true
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Error rate",
+      "description": "Errors as a fraction of all requests. Click a point to open the matching Loki query for the same time range. Bounded 0-100% by construction: a ratio that can exceed 1 is a bug in the query, not a bad day. When there is no traffic the panel draws a gap rather than 0% - there is no error rate without requests, and a fabricated zero reads as healthy while the panel is actually blind. Two ways to the same query: the link icon in this panel's header, or clicking any point on the line. The line is coloured by threshold and turns red at 0.1 - the same 10% the alert rule evaluates, deliberately, so the picture and the alert cannot disagree. Until 2026-08-11 they did disagree: the panel was coloured from the classic palette and so drew green at any value, and its red step sat at 0.2 while the rule fired at 0.1. It was found by trying to photograph it for the final review, which is the argument for proving a thing rather than building it and assuming. gradientMode 'scheme' is what makes the colouring follow the value along the line; without it Grafana colours the whole series by its most recent point, which answers 'is it bad right now' rather than 'when was it bad' and renders a flat green line straight across a 100% spike.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "projecta-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "gradientMode": "scheme",
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "percentunit",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.1
+              }
+            ]
+          },
+          "links": [
+            {
+              "title": "View the failing requests in Loki",
+              "url": "/explore?orgId=1&schemaVersion=1&panes={\"obs\":{\"datasource\":\"projecta-loki\",\"queries\":[{\"refId\":\"A\",\"datasource\":{\"type\":\"loki\",\"uid\":\"projecta-loki\"},\"editorMode\":\"code\",\"queryType\":\"range\",\"expr\":\"{container=\\\"projecta-flask\\\"} | json | status >= 400\"}],\"range\":{\"from\":\"${__from}\",\"to\":\"${__to}\"}}}",
+              "targetBlank": false
+            }
+          ],
+          "max": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_requests_total{job=\"projecta-flask\", status=~\"4..|5..\"}[1m])) / sum(rate(http_requests_total{job=\"projecta-flask\"}[1m]))",
+          "legendFormat": "errors / all requests",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "projecta-prometheus"
+          },
+          "editorMode": "code",
+          "range": true
+        }
+      ],
+      "links": [
+        {
+          "title": "View the failing requests in Loki",
+          "url": "/explore?orgId=1&schemaVersion=1&panes={\"obs\":{\"datasource\":\"projecta-loki\",\"queries\":[{\"refId\":\"A\",\"datasource\":{\"type\":\"loki\",\"uid\":\"projecta-loki\"},\"editorMode\":\"code\",\"queryType\":\"range\",\"expr\":\"{container=\\\"projecta-flask\\\"} | json | status >= 400\"}],\"range\":{\"from\":\"${__from}\",\"to\":\"${__to}\"}}}",
+          "targetBlank": false
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Latency percentiles",
+      "description": "Quantiles over a 5m window, not 1m: a histogram quantile from a thin window is mostly noise. The buckets stop at 5s, so a p99 pinned at 5s means 'at least 5s', not exactly.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "projecta-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "never"
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"projecta-flask\", endpoint!~\"/health|/ready|/metrics\"}[5m])))",
+          "legendFormat": "p50",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "projecta-prometheus"
+          },
+          "editorMode": "code",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"projecta-flask\", endpoint!~\"/health|/ready|/metrics\"}[5m])))",
+          "legendFormat": "p95",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "projecta-prometheus"
+          },
+          "editorMode": "code",
+          "range": true
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"projecta-flask\", endpoint!~\"/health|/ready|/metrics\"}[5m])))",
+          "legendFormat": "p99",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "projecta-prometheus"
+          },
+          "editorMode": "code",
+          "range": true
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Responses by status",
+      "description": "Unfiltered on purpose \u2014 a health check turning 500 belongs here.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "projecta-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "never"
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (status) (rate(http_requests_total{job=\"projecta-flask\"}[1m]))",
+          "legendFormat": "{{status}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "projecta-prometheus"
+          },
+          "editorMode": "code",
+          "range": true
+        }
+      ]
+    },
+    {
+      "type": "logs",
+      "title": "Application logs \u2014 warnings and errors",
+      "datasource": {
+        "type": "loki",
+        "uid": "projecta-loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "description": "Every line here carries a request_id, rendered as a link by the datasource's derivedFields. Click it to pull every line that one request produced.",
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "projecta-loki"
+          },
+          "queryType": "range",
+          "editorMode": "code",
+          "expr": "{container=\"projecta-flask\"} | json | level =~ \"WARNING|ERROR\""
+        }
+      ]
+    }
+  ]
+}

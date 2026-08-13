@@ -4,3 +4,8 @@ pytest
 pytest-cov
 ruff
 pip-tools
+
+# Runs .pre-commit-config.yaml. Pinned and hash-locked here like every other
+# tool rather than installed globally, so the hook that guards this repository
+# is the same version for anyone who clones it.
+pre-commit

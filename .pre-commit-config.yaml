@@ -1,0 +1,23 @@
+# Client-side secret scanning.
+#
+# This hook is a convenience for the author, not a gate. `--no-verify` skips it,
+# and a hook that can be skipped cannot satisfy non-negotiable #4. The gate is
+# the Trivy `fs` step in `.gitea/workflows/ci.yml`; this exists because it fails
+# in about two seconds instead of about two minutes, which is the difference
+# between amending a commit and rewriting history.
+#
+# Deliberately one hook. Lint and tests already run in CI in a defined order
+# (`pytest && ruff check .`); duplicating them here would mean two places to
+# keep in agreement for no additional coverage.
+#
+# Install once per clone - cloning the repository does not install hooks:
+#     pre-commit install
+#
+# Scan all of history rather than the staged diff:
+#     pre-commit run gitleaks --all-files
+
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks

@@ -70,10 +70,14 @@ That line, run verbatim, restored service — `ok=11 changed=1 failed=0`, with
 
 ### What the drill exposed
 
-**Quote 34 seconds, not 7.** The role replaces the running container *before* it
-verifies the new one, so the broken image served 500s for the whole 27 seconds
-the smoke test took to give up. The smoke test bounds downtime; it cannot
-prevent it.
+**Quote the outage window, not the recovery time.** The role replaces the
+running container *before* it verifies the new one, so the broken image served
+500s for the whole 27 seconds the smoke test took to give up. The smoke test
+bounds downtime; it cannot prevent it.
+
+> **Superseded figure.** The current number to quote is **~37s**, from the
+> 2026-08-11 run below — not the ~34s this section measured. The reasoning is
+> unchanged; only the measurement moved.
 
 That shape was already known — "zero-downtime swap" sits under P2 in `PLAN.md`.
 What the rehearsal added was the number. Do not tighten
@@ -90,3 +94,200 @@ passing — the app needs about two seconds to accept traffic after start. A fix
 `localhost:5001/projecta-flask:deadbee` is still in the registry, alongside the
 real SHAs. Left deliberately as evidence the rehearsal happened. Drop the local
 copy with `docker rmi localhost:5001/projecta-flask:deadbee`.
+
+### Repeats — 2026-08-04 and 2026-08-11
+
+The drill is a script precisely so it can be re-run rather than believed, so it
+has been. Three runs across eleven days:
+
+| Run | Target SHA | Detect | Roll back | Outage | Transcript |
+|---|---|---|---|:--:|---|
+| 2026-07-31 | `fbc1254e…` | 27s | 7s | ~34s | commit `eac8fe5`, tabled above |
+| 2026-08-04 | `02179047…` | 27s | 7s | ~34s | `rollback-drill-20260804-110322.log` |
+| 2026-08-11 | `c916924e…` | 29s | 8s | **~37s** | `rollback-drill-20260811-132122.log` |
+
+**The third run drifted by three seconds and the claim was narrowed rather than
+the number rounded.** Two identical runs made "reproducible" look like
+"identical", and it is not — this is a laptop under whatever load it happened to
+be under, and 27→29 and 7→8 is what that costs. What the repeats actually prove
+is that the mechanism works every time and the timing repeats to within a few
+seconds. That is the claim now made everywhere, and **~37s** is the figure
+quoted: the worst of the three, from the freshest transcript.
+
+The 2026-08-11 run also re-proved the recovery on the current commit — it ended
+with `now running c916924e…` and `sprint goal MET — under 60s`, and left the
+usual `deadbee` residue behind.
+
+The caveat from the first run still stands and is printed by the script itself:
+the rollback pulls with `pull=not_present` and the previous image was already on
+the host, so these times exclude a registry pull. On a fresh host, add it.
+
+---
+
+## A secret reached Git
+
+**Rotate it first.** Everything below is cleanup, not the fix. The moment a
+credential is committed it is compromised — a clone, a CI log, a cached fetch or
+a mirror is enough, and none of them are undone by rewriting your history. Treat
+history surgery as the second task, and never as evidence that the credential is
+safe again.
+
+Only once the credential is dead does it matter which of three shapes the leak
+has:
+
+| Where the secret is | What removes it | What it costs |
+|---|---|---|
+| The last commit, not yet pushed | `git reset --hard HEAD~1` | Nothing. The commit is unreferenced and dies at the next `gc` |
+| Inside a merge that is already on a shared branch | `git revert -m 1 <merge>` | **Does not remove the secret.** See below |
+| Buried in older history | `git filter-repo --invert-paths --path <file>` | Every SHA after the leak changes. Coordinated force-push, and every clone is now wrong |
+
+`filter-branch` is what the mentors' training recommends; Git's own
+documentation has recommended against it for years, on both performance and
+correctness grounds, and points at `filter-repo` instead. This runbook follows
+Git rather than the training, deliberately.
+
+### Rehearsal — 2026-08-10
+
+Run against a throwaway clone of this repository at 50 commits, so the numbers
+come from real history rather than a toy. Fake credentials throughout: an
+AWS-shaped key pair, a Postgres URL, and an OpenSSH private key with
+`DRILLFAKEKEYMATERIALNOTREAL` where the key material goes.
+
+| Case | Fix | Result |
+|---|---|---|
+| Secret in the last commit | `git reset --hard HEAD~1` | File gone, 0 commits contain the string. The dangling commit still resolved via `git cat-file` |
+| Secret inside a merge commit | `git revert -m 1 HEAD` | File gone from the tree, **2 commits still contain the string** |
+| Secret 5 commits back | `git filter-repo --invert-paths` | 0 commits contain the string, **500ms** across 74 commits, `origin` dropped |
+
+### What the drill exposed
+
+**`git revert` does not remove a secret, and it reads as though it did.** After
+the revert, `git status` is clean, the file is gone from the working tree, and
+the branch looks repaired. The credential is still there:
+
+```
+$ git show 9948b49:app/db_config.py
+DATABASE_URL = "postgresql://admin:<drill password, redacted here>@prod-db.internal:5432/app"
+```
+
+The redaction is not squeamishness. This file is inside the checkout that the
+Trivy step scans, so a realistic credential pasted into documentation fails the
+build exactly as a real one would — the scanner cannot tell that a string is an
+example, and a gate that could be talked out of firing would not be a gate.
+
+One SHA and a path, and anyone with the repository has it back. The training
+material lists revert as the "safer" option because it keeps an audit trail, and
+for a bad *change* that is right. For a leaked *credential* it is the wrong
+instrument, and the thing that makes it dangerous is not that it fails — it is
+that it looks like it worked. This is the whole reason the first line of this
+section is about rotation.
+
+**`filter-repo` drops the remote on purpose.** Zero `git remote` entries
+afterwards. That is a safety feature, not a bug: it forces a deliberate re-add
+before anything can be force-pushed over a shared branch.
+
+**The cheap case is only cheap before a push.** `reset --hard` cost nothing here
+because nothing had left the machine. The same leak one `git push` later is the
+third row of the table.
+
+### The hook, verified — 2026-08-10
+
+`pre-commit install`, then a generated AWS-shaped key staged and committed. The
+commit failed, which is the whole claim:
+
+```
+Detect hardcoded secrets.................................................Failed
+- hook id: gitleaks
+- exit code: 1
+Finding:     KEY = "REDACTED"
+RuleID:      generic-api-key
+Entropy:     3.546439
+File:        leak.py
+Line:        1
+4:02PM INF 0 commits scanned.
+4:02PM INF scanned ~29 bytes (29 bytes) in 22.3ms
+4:02PM WRN leaks found: 1
+```
+
+Two things in that output are worth more than the pass itself.
+
+**It fired on entropy, not on format.** The rule was `generic-api-key` at
+entropy 3.55, not `aws-access-token` — the key was random enough to look like a
+secret, and gitleaks never had to recognise it as an AWS key. That is a weaker
+guarantee than it first appears: a credential that is structured and *low*
+entropy — a short password, a predictable token, a URL with `admin:admin` — is a
+different question, and this test does not answer it. Do not present this run as
+proof that the hook catches secrets; it is proof that it catches this one.
+
+**`0 commits scanned`.** The hook reads the staged diff, not history — it stops
+the next mistake and knows nothing about the previous forty-seven commits.
+
+The CI step does not close that gap either, and an earlier draft of this file
+claimed it did. Trivy `fs` scans the *checkout*: every tracked file as it stands
+at the commit under test. A credential added and then deleted three commits
+later is absent from the checkout and present in history, and nothing in this
+pipeline looks there. The only scan of this repository's history is the one the
+2026-08-10 security review did by hand across 47 commits, which found nothing —
+a result with a date on it, not a standing gate. Tracked in `PLAN.md`.
+
+Also visible: `pre-commit` stashed the unstaged work before running and restored
+it afterwards. Expected, but it means a hook failure leaves the tree in a state
+worth checking with `git status` rather than assuming.
+
+### The gate, verified — 2026-08-10
+
+A green pipeline proves a gate ran, not that it can fail; those are different
+claims and only the second one is worth anything. Tested on
+`feature/sprint-3-prove-the-gate`: a generated AWS-shaped key, committed with
+`--no-verify`, pushed.
+
+**Gitea run #84 — Failure, 11s.** Red on **Scan the working tree for secrets**,
+`exitcode '1'`. The branch was deleted afterwards; the run remains.
+
+```
+trivy 0.72.0: scanning 91 tracked files for secrets
+...
+leak.py (secrets)
+Total: 1 (UNKNOWN: 0, LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 1)
+CRITICAL: AWS (aws-access-key-id)
+ leak.py:1 (offset: 7 bytes)
+ 1 [ KEY = "********************"
+```
+
+`scanning 91 tracked files` is the line that matters as much as the finding: it
+is the guard against a scan that silently receives nothing, and 91 is the
+tracked tree rather than a zero the step would have failed on.
+
+**The two checks disagreed about what they had found, and that is worth
+keeping.** gitleaks matched this same shape of key as `generic-api-key` on
+entropy 3.55; Trivy matched it as `aws-access-key-id`, CRITICAL, on format. The
+hook is guessing from randomness, the gate is recognising a credential type.
+Neither is a copy of the other, so the earlier note in `ci.yml` about wanting
+"one scanner rather than two" describes the choice not to add a *second CI*
+scanner — it does not mean the local and CI checks enforce the same rules. They
+do not, and a secret that is structured but low-entropy is the case where that
+gap shows.
+
+Two lines of noise in the log are expected and not findings: a `WARN` that
+`site-packages` could not be found, so license detection was skipped, and
+`requirements.txt` listed with `-` under Secrets, meaning it was analysed as a
+pip manifest rather than secret-scanned as text.
+
+`deploy` did not start, and that proves nothing here: on a `feature/**` branch
+the ref gate skips it anyway, exactly as it did in the green run #83. Two
+mechanisms would have produced the same empty box and this run cannot separate
+them.
+
+The `--no-verify` is the point of the test rather than a way around it. One word
+disables the hook, and CI stopped the commit anyway — which is the argument the
+hook's own config file makes, demonstrated instead of asserted. If one sentence
+has to defend having both checks, it is this run.
+
+**The first attempt produced no run at all**, and that is the more useful half.
+The branch was named `throwaway/prove-the-gate`, and the `on: push` filter in
+`ci.yml` lists only `main`, `release/**`, `feature/**` and `hotfix/**`. The push
+succeeded, Gitea reported nothing, and Actions stayed silent — a pipeline that
+does not run is indistinguishable from a pipeline with nothing to complain
+about. The filter is deliberate and the comment above it says so; the trap is
+that its failure mode is silence. Check that a run *exists* before reading
+anything into its colour.

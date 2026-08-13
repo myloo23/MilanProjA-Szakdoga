@@ -1,0 +1,86 @@
+# Grafana datasources, provisioned from disk.
+#
+# Nothing here is clicked. A datasource added through the UI lives in Grafana's
+# sqlite volume, which means a clean-machine rebuild produces a Grafana whose
+# dashboards all render "datasource not found" — and the failure appears in the
+# demo, not in the rebuild. Provisioning makes the volume disposable.
+
+apiVersion: 1
+
+# Named explicitly so a re-provision replaces rather than duplicates. Without
+# this, editing the file and restarting leaves two Prometheus datasources with
+# different UIDs and the dashboards keep pointing at the old one.
+deleteDatasources:
+  - name: Prometheus
+  - name: Loki
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://projecta-prometheus:9090
+    isDefault: true
+    # Fixed rather than generated. Dashboard JSON in this repository refers to
+    # the datasource by uid, so a uid Grafana invents at start-up would break
+    # every panel on a fresh volume.
+    uid: projecta-prometheus
+    jsonData:
+      # Matches prometheus.yml's scrape_interval. Grafana uses it to pick a
+      # sensible step and to stop offering resolutions the data cannot support.
+      timeInterval: 15s
+
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://projecta-loki:3100
+    uid: projecta-loki
+    jsonData:
+      # This is the metric-to-log pivot, and it is three lines of configuration
+      # rather than a feature.
+      #
+      # Every log line carries a request_id. derivedFields turns that field into
+      # a clickable link inside the log view — and because the target is the
+      # Loki datasource itself, the click runs a new query filtered to that one
+      # request. So: spike on the dashboard → click through to the filtered log
+      # stream → click a request_id → every line that request produced,
+      # including the traceback, with no grep and no SSH.
+      #
+      # matcherType/matcherRegex over the JSON field rather than a regex on the
+      # raw line: the line is already structured, and a regex would break the
+      # first time a message contained something that looked like an id.
+      derivedFields:
+        - name: request_id
+          matcherType: label
+          matcherRegex: request_id
+          urlDisplayLabel: All logs for this request
+          # **An external link, and the first attempt was an internal one.**
+          # With `datasourceUid` set, Grafana treats this as a datasource-to-
+          # datasource jump and hands the *field value* to the target — it does
+          # not use `url` as a LogQL expression. Pointing Loki at Loki that way
+          # opened a split pane with an empty query and "No data", which looks
+          # like a broken datasource and is really a link that was never given
+          # anything to run. Found 2026-08-06.
+          #
+          # So this is a plain URL instead, built on the same Explore `panes`
+          # schema as the error-rate panel's link — the one construct in this
+          # stack already proven against the running Grafana.
+          #
+          # **`$$` and not `$`, and this is the bug that made the link useless.**
+          # Grafana expands `$VAR` and `${VAR}` in provisioning YAML from the
+          # environment before the file is parsed. `${__value.raw}` is not an
+          # environment variable, so it expanded to nothing and the datasource
+          # was stored with `request_id=""` — a link that fired, resolved, and
+          # ran a query matching the empty string. `$$` is the documented escape
+          # for a literal `$`. Confirmed by reading the stored value back from
+          # /api/datasources/uid/projecta-loki rather than by guessing.
+          #
+          # Dashboard JSON is not interpolated this way, which is why the
+          # error-rate panel's `${__from}`/`${__to}` worked untouched. Same
+          # syntax, two different files, two different rules.
+          #
+          # The window is a fixed `now-3h` rather than the pane's own range.
+          # Derived-field links are rendered per log line and have no access to
+          # the surrounding time range, so this is a limitation rather than a
+          # choice: reading logs older than three hours needs the time picker
+          # adjusting after the jump.
+          url: '/explore?orgId=1&schemaVersion=1&panes={"req":{"datasource":"projecta-loki","queries":[{"refId":"A","datasource":{"type":"loki","uid":"projecta-loki"},"editorMode":"code","queryType":"range","expr":"{container=\"projecta-flask\"} | json | request_id=\"$${__value.raw}\""}],"range":{"from":"now-3h","to":"now"}}}'

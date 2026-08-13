@@ -1,0 +1,25 @@
+# Where Grafana finds the dashboard JSON.
+#
+# The dashboards live in the repository and are read-only in the UI. That is the
+# point of provisioning them: a dashboard edited in a browser exists only in one
+# person's Grafana volume, and the version in Git silently stops being the one
+# anybody looks at. If a panel needs changing, the change is a commit.
+
+apiVersion: 1
+
+providers:
+  - name: projecta
+    orgId: 1
+    folder: Project A
+    type: file
+    # Refuse UI deletion of a provisioned dashboard. Grafana would otherwise
+    # remove it and then re-create it on the next restart, which looks like a
+    # bug and is really a lost edit.
+    disableDeletion: true
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards
+      # Mirror the directory layout into folders. One directory today; this
+      # stops the first added subdirectory from silently flattening.
+      foldersFromFilesStructure: false

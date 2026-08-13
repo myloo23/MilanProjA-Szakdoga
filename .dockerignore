@@ -1,14 +1,33 @@
-.venv/
-.git/
-__pycache__/
-docs/
-*.pyc
-.pytest_cache/
-.env
-.env.*
-.gitignore
-.ruff_cache
-tests
-.vscode
-.idea
-README.md
+# Build context — deny everything, then name what the Dockerfile copies.
+#
+# This was a list of things to leave out, and the list was wrong in a way that
+# is hard to see: `.env` in a .dockerignore is matched against the context root,
+# so it excluded a top-level `.env` that does not exist and did nothing about
+# `platform/.env`, which holds the runner registration token and the Grafana
+# password. That file was sent to the daemon on every build. It never reached
+# an image — the Dockerfile copies three things and that is not one of them —
+# so this is about blast radius rather than a leak that happened. F5 in
+# docs/security-review-2026-08-10.md.
+#
+# Inverted rather than patched, because `**/.env` would have fixed this
+# instance and left the shape of the mistake in place. A deny-list is only ever
+# as good as someone's memory of what exists; the next secret to land in this
+# repository would have been outside it too. An allow-list cannot be
+# out-of-date in that direction: a new file is excluded until someone says
+# otherwise, and the only way to get it wrong is to forget something the build
+# needs — which fails loudly at COPY, in CI, on the first run.
+#
+# The three entries below are exactly the Dockerfile's COPY sources. If you add
+# a COPY, add it here in the same commit or the build will tell you.
+
+*
+
+!app/
+!requirements.txt
+!gunicorn.conf.py
+
+# Re-excluded from inside app/, which the line above re-included wholesale.
+# Compiled bytecode from a host interpreter is at best dead weight in the image
+# and at worst a stale .pyc shadowing a source file that was edited.
+app/__pycache__/
+**/*.pyc

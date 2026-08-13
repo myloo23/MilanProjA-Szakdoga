@@ -17,7 +17,7 @@ pytest && ruff check .
 
 flask --app app/app.py run          # dev server, :5000
 # or the production container:
-docker build -t flaskapp:dev . && docker run -p 8000:8000 flaskapp:dev
+docker build -t flaskapp:dev . && docker run -p 127.0.0.1:8000:8000 flaskapp:dev
 curl localhost:8000/health
 ```
 
@@ -91,7 +91,7 @@ That last one is the deliberate error path the observability demo needs.
 
 ```bash
 docker build -t flaskapp:dev .
-docker run -d --name flaskapp -p 8000:8000 flaskapp:dev
+docker run -d --name flaskapp -p 127.0.0.1:8000:8000 flaskapp:dev
 docker logs -f flaskapp
 docker stop flaskapp && docker rm flaskapp
 docker image prune                    # multi-stage builds leave dangling images
@@ -116,6 +116,19 @@ the import path is `app.app:app` — a package path, not a file path. Pointing
 containers: `gitea:3000`, `registry:5000`. From the host: `localhost:3000`,
 `localhost:5001`. Inside a container `localhost` is *that container* — the single
 most common source of confusing failures here.
+
+**Every published port binds `127.0.0.1`, so this host and nothing else can
+reach the stack.** The registry has no authentication and Prometheus and Loki
+have none either; on the default `0.0.0.0` binding they were available to
+whoever else was on the network. The reasoning is in `platform/compose.yaml`
+above the `services:` block. Nothing in the pipeline notices, because containers
+address each other by name over `projecta-platform` and never through a
+published port — including `docker push localhost:5001/...`, where the client
+only hands the request to the daemon and the daemon dials loopback on this host.
+
+The symptom if you forget: reaching any of these from a second machine now
+fails, and it is meant to. Change the address deliberately for a demo that needs
+it, and change it back.
 
 ```bash
 cp platform/.env.example platform/.env
@@ -146,17 +159,19 @@ live on GitHub, so that event would never fire here.
 1. Checkout, then decide whether this ref ships an artifact
 2. Python 3.12 with a pip cache, deps with `--require-hashes`
 3. `ruff check .`
-4. `hadolint` on the Dockerfile
-5. `pytest` with coverage, failing under 80%
-6. `ansible-lint` at the `production` profile, over the playbooks and the role
-7. Build `localhost:5001/projecta-flask:<git-sha>`
-8. Wait for the container's own `HEALTHCHECK` to report healthy, bounded at 30s
-9. `curl` the app across `projecta-platform` — proves it is *reachable*, which a
-   healthcheck probing its own localhost cannot
-10. Trivy, failing on HIGH or CRITICAL
-11. Push to the registry — **only if this ref ships**
+4. Trivy `fs --scanners secret` over the tracked tree — the gate the pre-commit
+   hook is not, since `--no-verify` skips a hook and skips nothing here
+5. `hadolint` on the Dockerfile
+6. `pytest` with coverage, failing under 80%
+7. `ansible-lint` at the `production` profile, over the playbooks and the role
+8. Build `localhost:5001/projecta-flask:<git-sha>`
+9. Wait for the container's own `HEALTHCHECK` to report healthy, bounded at 30s
+10. `curl` the app across `projecta-platform` — proves it is *reachable*, which a
+    healthcheck probing its own localhost cannot
+11. Trivy on the image, failing on HIGH or CRITICAL
+12. Push to the registry — **only if this ref ships**
 
-Steps 1–5 run against dependencies the job already has; step 6 is the first that
+Steps 1–6 run against dependencies the job already has; step 7 is the first that
 pays for a download, which is why it sits there rather than beside `ruff`. It
 still precedes the build, because a playbook that cannot lint cannot deploy the
 image the later steps produce.
@@ -281,24 +296,125 @@ curl -s localhost:5001/v2/projecta-flask/tags/list
 
 ---
 
-## 8. Git workflow
+## 8. Observability
+
+Added in Sprint 3. It rides on the same compose file and the same
+`projecta-platform` network as the CI platform — one `up -d` brings up all nine
+services.
+
+```bash
+cd platform
+docker compose --env-file .env -f compose.yaml up -d
+```
+
+**On Docker Desktop, turn off the containerd image store first.** Settings →
+General → uncheck "Use containerd for pulling and storing images". Without it
+cAdvisor reports every container as `id="/docker/<sha>"` with no `name` label,
+and the two container panels on the host dashboard render nothing while the
+scrape target stays green — a failure with no error message anywhere. Docker
+Desktop rebuilds its image store when you change this, so images are re-pulled;
+named volumes are untouched, so Gitea, the registry and the metric and log data
+all survive. Reasoning and evidence are on the `cadvisor` service in
+`platform/compose.yaml`.
+
+Also worth knowing before quoting a number off the host dashboard: on macOS,
+node_exporter measures the Docker Desktop VM, not the Mac. "Host memory
+available" is the VM's allocation, and pressure from anything outside Docker is
+invisible.
+
+| Service | URL | What it answers |
+|---|---|---|
+| Grafana | http://localhost:3001 | Everything. Dashboards, logs, the alert |
+| Prometheus | http://localhost:9090/targets | "Is the app being scraped at all" |
+| Loki | http://localhost:3100/ready | "Is the log sink alive" |
+
+Grafana is on **3001**, not 3000 — Gitea already owns 3000. Credentials come
+from `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD` in `platform/.env`, which is
+gitignored; copy the keys from `.env.example`.
+
+**Nothing is configured through the UI.** Datasources, both dashboards and the
+alert rule are provisioned from
+`platform/observability/grafana/provisioning/`, and the dashboards are
+`allowUiUpdates: false` on purpose — a panel edited in the browser exists in one
+person's Docker volume and silently stops matching the repository. To change a
+panel, change the JSON and restart Grafana.
+
+### Generating the incident
+
+```bash
+scripts/loadgen.sh                  # 60s of clean traffic, then 90s of bad JSON
+scripts/loadgen.sh --baseline-only  # traffic without an incident
+scripts/loadgen.sh --help
+```
+
+The baseline phase is not padding: an error ratio with no denominator is either
+0/0 or 1.0, and neither makes a graph that demonstrates anything. The alert
+needs a further minute above the threshold before it leaves Pending — that is
+the `for: 1m` clause, and it is visible on purpose.
+
+### From a metric to the line that explains it
+
+1. Grafana → **Project A** → *Application golden signals*.
+2. The error-rate panel carries a data link. Click it — Explore opens on Loki,
+   filtered to `status >= 400`, over the same time range.
+3. Expand a line. `request_id` renders as a link ("All logs for this request").
+4. Click it. Every line that one request produced, including the traceback if
+   there was one.
+
+If that link ever misbehaves, the same jump exists without any configuration:
+expand a line, find `request_id` under **Fields**, and click the magnifying
+glass to filter for that value. It appends `| request_id = "…"` to the running
+query. Slower to demonstrate, impossible to break, and it shows the mechanism
+rather than a shortcut — worth knowing before standing in front of a reviewer.
+
+No SSH and no `grep`. That path is the point of the sprint.
+
+### Where the pieces live
+
+```
+app/logging_config.py        JSON formatter, request_id filter and sanitiser
+app/metrics.py               the two metric families, and the cardinality guard
+gunicorn.conf.py             multiprocess metrics: the hooks a CMD cannot express
+platform/observability/
+  prometheus/prometheus.yml  four scrape jobs
+  loki/loki-config.yaml      single-binary Loki, filesystem storage
+  alloy/config.alloy         Docker log discovery, JSON parsing, one label
+  grafana/provisioning/      datasources, dashboard provider, the alert rule
+  grafana/dashboards/        two dashboards, as JSON, read-only in the UI
+scripts/loadgen.sh           the incident, on demand
+```
+
+Why Loki and not ELK: [ADR-0006](adr/0006-loki-over-elk.md). Why `request_id` is
+a log field and never a Prometheus label: [ADR-0007](adr/0007-metric-cardinality.md).
+That second one is the sentence to be able to say out loud.
+
+**Status: verified 2026-08-11.** Every check in
+[`sprint3-verification.md`](sprint3-verification.md) sections 3 through 7 has a
+result and a date, and the status tables moved only after that. One correction
+came out of it: the error-rate panel was colouring from the palette rather than
+its thresholds, so it drew green across a 96% spike, and its red step disagreed
+with the value the alert rule fires at.
+
+---
+
+## 9. Git workflow
 
 Two remotes. `origin` is GitHub (review, protection), `gitea` is localhost (the
 pipeline). Full rules in [`BRANCHING.md`](BRANCHING.md).
 
 ```bash
-git checkout release/sprint2 && git pull origin release/sprint2
-git checkout -b feature/sprint-2-short-description
+git checkout release/sprint3 && git pull origin release/sprint3
+git checkout -b feature/sprint-3-short-description
 
 git add <specific files>          # not `git add -A` — review what you stage
 git commit -m "feat(app): add /metrics endpoint"
-git fetch origin && git rebase origin/release/sprint2
+git fetch origin && git rebase origin/release/sprint3
 
-git push gitea feature/sprint-2-short-description     # 1. prove it, wait for green
-git push -u origin feature/sprint-2-short-description # 2. then ask for review
+git push gitea feature/sprint-3-short-description     # 1. prove it, wait for green
+git push -u origin feature/sprint-3-short-description # 2. then ask for review
 ```
 
-Then open the pull request on GitHub into `release/sprint2` and **paste the Gitea
+Then open the pull request on GitHub into `release/sprint3` and **paste the Gitea
 run result into the description** — there are no status checks on GitHub, so that
 is the only evidence a reviewer has.
 
@@ -314,5 +430,6 @@ Commit types: `feat`, `fix`, `docs`, `ci`, `build`, `refactor`, `test`, `chore`,
 | [`../README.md`](../README.md) | Overview, architecture, status |
 | [`PLAN.md`](PLAN.md) | Roadmap, sprints, open work, risks |
 | [`BRANCHING.md`](BRANCHING.md) | Branches, merge policy, protection |
+| [`sprint3-verification.md`](sprint3-verification.md) | What has to be run before Sprint 3 can be called done |
 | [`adr/`](adr/) | Why the big decisions were made |
 | [`ProjectA.md`](ProjectA.md) | Original assignment brief |

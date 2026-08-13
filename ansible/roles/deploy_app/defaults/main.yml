@@ -5,6 +5,24 @@ deploy_app_restart_policy: unless-stopped
 deploy_app_memory: "256m"
 deploy_app_cpus: 0.5
 
+# The interface the container's port is published on. Docker's default is
+# 0.0.0.0 — every interface the host has — which put the application, and with
+# it an unauthenticated /metrics, on whatever network this laptop had joined.
+# F4 in docs/security-review-2026-08-10.md; platform/compose.yaml makes the same
+# change for the rest of the stack and carries the long form of the argument.
+#
+# A variable rather than a literal in the task, because this is the one value in
+# the role that a real second host would have to change: a deploy to a machine
+# reached over SSH publishes for other machines to reach, which is exactly the
+# case 127.0.0.1 exists to prevent here. Overriding it in group_vars is then a
+# deliberate line in an inventory rather than an edit to a shared task.
+#
+# Nothing in the pipeline reads this port. CD smoke-tests over the container
+# network (deploy_app_smoke_vantage), Prometheus scrapes projecta-flask:8000 by
+# name, and Alloy reads logs from the Docker socket. It is here for the browser
+# and for scripts/smoke.sh, both of which run on this host.
+deploy_app_publish_address: "127.0.0.1"
+
 # json-file is what Alloy tails in Sprint 3, so the log driver is set now rather
 # than retrofitted. Rotation is capped so a chatty container cannot fill the disk.
 deploy_app_log_driver: json-file
@@ -32,3 +50,28 @@ deploy_app_smoke_base: >-
      else 'http://localhost:' ~ app_host_port }}
 deploy_app_smoke_retries: 10
 deploy_app_smoke_delay: 2
+
+# The two hostile bodies the smoke test sends. Both limits they exercise are
+# small enough to lose by accident — one is a config line, the other an
+# `except` clause — and losing either turns a client error back into a 500 that
+# only shows up as a moved line on the error-rate panel. Sized here rather than
+# inline so the play reads as intent instead of as arithmetic.
+#
+# The nesting depth is the deepest that still fits inside the application's
+# 64 KiB body limit, two bytes per level, with room for the quoting. That puts
+# the two limits against each other on purpose: it is the largest input the
+# size cap will admit, so if the parser is going to run out of stack this is
+# where it happens.
+#
+# **It is not a depth that must fail.** CPython 3.12 stopped bounding C-level
+# recursion with a fixed number and now checks the real stack, so the depth
+# that breaks a parser moves with the host — measured between 8,000 and 16,000
+# on macOS 3.12.13, and the CI runner is a Linux container with its own answer.
+# The play therefore accepts 200 or 400 and fails only on 5xx. Asserting 400
+# would be asserting a property of whichever machine ran it last.
+#
+# The oversized body is just past the ceiling — just past, not wildly past,
+# because the task result is what a failure prints and nobody wants a megabyte
+# of padding in a deploy log.
+deploy_app_smoke_nesting_depth: 32000
+deploy_app_smoke_oversized_bytes: 66000

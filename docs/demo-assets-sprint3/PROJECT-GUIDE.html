@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project A — CI/CD pipeline, end to end</title>
+<style>
+:root{
+  --bg:#070b10; --bg2:#0f1620; --bg3:#16202b;
+  --fg:#eef4f8; --fg2:#8fa3b0; --fg3:#5f7180;
+  --line:#1d2a35;
+  --acc:#2fd8c4; --grn:#4ade80; --amb:#fbbf4c; --red:#ff6b6b; --pur:#9d8bff;
+  --accdim:rgba(47,216,196,.5);
+  --mono:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html,body{height:100%; overflow:hidden}
+body{
+  background:var(--bg); color:var(--fg);
+  font:400 16px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:repeating-linear-gradient(115deg, rgba(255,255,255,.035) 0 1px, transparent 1px 46px);
+  -webkit-mask-image:radial-gradient(ellipse 82% 72% at 50% 46%,#000 25%,transparent 76%);
+  mask-image:radial-gradient(ellipse 82% 72% at 50% 46%,#000 25%,transparent 76%);
+}
+body::after{
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:radial-gradient(ellipse 92% 84% at 50% 45%, transparent 52%, rgba(0,0,0,.38) 100%);
+}
+
+/* ─────────── deck ─────────── */
+.deck{position:relative; width:100vw; height:100vh}
+.slide{
+  position:absolute; inset:0;
+  display:none; flex-direction:column; justify-content:center; align-items:center;
+  padding:6vh 7vw; text-align:center;
+  animation:in .55s cubic-bezier(.2,.9,.25,1.03);
+}
+.slide.on{display:flex}
+@keyframes in{from{opacity:0; transform:translateY(20px) scale(.99)} to{opacity:1; transform:none}}
+.slide>*{position:relative; z-index:2}
+
+/* drifting ambient orbs */
+.slide::before{
+  content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(circle 32vh at 13% 20%, var(--glow,rgba(47,216,196,.11)), transparent 60%),
+    radial-gradient(circle 26vh at 87% 80%, var(--glow,rgba(47,216,196,.11)), transparent 60%);
+  filter:blur(4px); animation:drift 22s ease-in-out infinite alternate;
+}
+@keyframes drift{
+  from{transform:translate3d(0,0,0) scale(1)}
+  to{transform:translate3d(2.5vw,-2vh,0) scale(1.08)}
+}
+.slide::after{
+  content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:radial-gradient(ellipse 64% 50% at 50% 44%, var(--glow,rgba(47,216,196,.09)), transparent 73%);
+}
+.slide[data-t="r"]{--glow:rgba(255,107,107,.12)}
+.slide[data-t="g"]{--glow:rgba(74,222,128,.10)}
+.slide[data-t="w"]{--glow:rgba(251,191,76,.11)}
+.slide[data-t="p"]{--glow:rgba(157,139,255,.12)}
+
+/* things arrive one after another, not all at once */
+.slide.on .pop{animation:pop .5s cubic-bezier(.2,.9,.25,1.12) backwards}
+.slide.on .pop:nth-child(1){animation-delay:.10s}
+.slide.on .pop:nth-child(2){animation-delay:.17s}
+.slide.on .pop:nth-child(3){animation-delay:.24s}
+.slide.on .pop:nth-child(4){animation-delay:.31s}
+.slide.on .pop:nth-child(5){animation-delay:.38s}
+.slide.on .pop:nth-child(6){animation-delay:.45s}
+.slide.on .pop:nth-child(7){animation-delay:.52s}
+@keyframes pop{from{opacity:0; transform:translateY(14px) scale(.94)} to{opacity:1; transform:none}}
+
+/* ─────────── type ─────────── */
+.kicker{
+  font-size:clamp(.68rem,1.2vw,.95rem); letter-spacing:.18em; text-transform:uppercase;
+  color:var(--fg3); font-weight:650; margin-bottom:2.8vh;
+  display:inline-flex; align-items:center; gap:.9em;
+  background:rgba(255,255,255,.04); border:1px solid var(--line);
+  border-radius:999px; padding:.55em 1.4em;
+}
+.kicker.a{color:var(--acc)} .kicker.r{color:var(--red)}
+.kicker.g{color:var(--grn)} .kicker.p{color:var(--pur)} .kicker.w{color:var(--amb)}
+
+h1{
+  font-size:clamp(2.8rem,7.4vw,6.6rem); font-weight:780; line-height:1.02;
+  letter-spacing:-.026em; margin-bottom:2.4vh;
+}
+h2{
+  font-size:clamp(1.9rem,4.9vw,4.1rem); font-weight:700; line-height:1.14;
+  letter-spacing:-.024em; margin-bottom:2.4vh; max-width:21ch;
+  background:linear-gradient(174deg,#ffffff 28%,#9fd8d0);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+h2.wide{max-width:28ch}
+.sub{
+  font-size:clamp(1rem,2.05vw,1.7rem); color:var(--fg2); font-weight:400;
+  max-width:38ch; line-height:1.55;
+}
+.sub.w{max-width:54ch}
+.sub b{color:var(--fg); font-weight:650}
+.tiny{font-size:clamp(.72rem,1.24vw,.98rem); color:var(--fg3); margin-top:2.6vh; max-width:56ch}
+
+.stat{
+  font-size:clamp(5rem,18vw,16rem); font-weight:790; line-height:.9;
+  letter-spacing:-.04em; font-variant-numeric:tabular-nums;
+}
+.stat.r{color:var(--red); text-shadow:0 0 90px rgba(255,107,107,.34)}
+.stat.g{color:var(--grn); text-shadow:0 0 90px rgba(74,222,128,.3)}
+.stat small{font-size:.24em; font-weight:600; letter-spacing:-.01em; color:var(--fg2)}
+
+code{font-family:var(--mono); font-size:.88em; color:var(--acc); white-space:nowrap}
+.mono{font-family:var(--mono)}
+
+/* ─────────── screenshots ─────────── */
+.shot{
+  width:100%; flex:1; min-height:0; padding:0 1vw;
+  display:flex; align-items:center; justify-content:center; margin:1.4vh 0;
+}
+.shot img{
+  max-width:100%; max-height:100%; object-fit:contain;
+  border-radius:18px; border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 24px 64px rgba(0,0,0,.5);
+}
+.shotcap{font-size:clamp(.8rem,1.55vw,1.24rem); color:var(--fg2); max-width:58ch}
+.shotcap b{color:var(--fg)}
+.slide.media{justify-content:flex-start; padding:3.4vh 2.6vw 6.4vh}
+.slide.media h2{font-size:clamp(1.35rem,3.3vw,2.7rem); margin-bottom:.5vh; max-width:34ch}
+
+/* ─────────── diagram bits ─────────── */
+.row{display:flex; align-items:center; justify-content:center; gap:clamp(.35rem,1vw,1.1rem); flex-wrap:wrap; max-width:100%}
+.box{
+  background:linear-gradient(165deg,var(--bg3),var(--bg2));
+  border:1px solid var(--line); border-radius:22px;
+  padding:clamp(.8rem,2vh,1.6rem) clamp(.9rem,1.8vw,1.9rem); min-width:clamp(92px,11vw,172px);
+  box-shadow:0 10px 30px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.055);
+  transition:transform .3s cubic-bezier(.2,.9,.25,1.1), box-shadow .3s;
+}
+.box:hover{transform:translateY(-5px) rotate(-.6deg); box-shadow:0 18px 40px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.08)}
+.box .l{font-size:clamp(.82rem,1.55vw,1.2rem); font-weight:700; margin-bottom:.25em}
+.box .s{font-size:clamp(.6rem,1vw,.82rem); color:var(--fg3); font-family:var(--mono)}
+.box.acc{border-color:var(--accdim)} .box.acc .l{color:var(--acc)}
+.box.grn{border-color:rgba(74,222,128,.5)} .box.grn .l{color:var(--grn)}
+.box.red{border-color:rgba(255,107,107,.5)}  .box.red .l{color:var(--red)}
+.box.pur{border-color:rgba(157,139,255,.5)}.box.pur .l{color:var(--pur)}
+.box.amb{border-color:rgba(251,191,76,.5)} .box.amb .l{color:var(--amb)}
+.ar{color:var(--fg3); font-size:clamp(.9rem,1.7vw,1.5rem); flex:0 0 auto}
+
+.gates{display:flex; gap:.55vw; align-items:stretch; justify-content:center; flex-wrap:wrap; max-width:100%}
+.gate{
+  background:linear-gradient(165deg,var(--bg3),var(--bg2));
+  border:1px solid var(--line); border-top:3px solid var(--grn); border-radius:16px;
+  padding:clamp(.65rem,1.7vh,1.2rem) clamp(.55rem,1.15vw,1.15rem);
+  font-size:clamp(.66rem,1.12vw,1.02rem); font-weight:600; white-space:nowrap;
+  box-shadow:0 8px 22px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.05);
+  transition:transform .3s cubic-bezier(.2,.9,.25,1.1);
+}
+.gate:hover{transform:translateY(-4px)}
+.gate.b{border-top-color:var(--acc)} .gate.y{border-top-color:var(--amb)}
+.gate.p{border-top-color:var(--pur)} .gate.d{border-top-color:var(--fg3); opacity:.4}
+.gate span{display:block; font-size:.72em; color:var(--fg3); font-weight:400; margin-top:.2em}
+
+.vs{display:grid; grid-template-columns:1fr auto 1fr; gap:clamp(1.2rem,4vw,4.5rem); align-items:center; max-width:1280px; width:100%}
+.vs .side{text-align:left}
+.vs .side h3{font-size:clamp(1.05rem,2.1vw,1.75rem); margin-bottom:1.4vh; font-weight:750; letter-spacing:-.02em}
+.vs .side ul{list-style:none}
+.vs .side li{font-size:clamp(.82rem,1.5vw,1.28rem); color:var(--fg2); padding:.5em 0 .5em 1.4em; position:relative}
+.vs .side li:before{content:'—'; position:absolute; left:0; color:var(--fg3)}
+.vs .mid{font-size:clamp(1rem,2.4vw,2rem); color:var(--fg3); font-weight:300}
+.vs .side.a h3{color:var(--acc)} .vs .side.p h3{color:var(--pur)}
+
+.gaps{display:grid; gap:.75vh; width:100%; max-width:1040px; text-align:left}
+.gaps .g{
+  display:flex; align-items:baseline; gap:1.1rem; padding:clamp(.55rem,1.2vh,1rem) 1.3rem;
+  background:linear-gradient(90deg,var(--bg3),var(--bg2) 65%); border-radius:16px;
+  border-left:3px solid var(--fg3); font-size:clamp(.8rem,1.42vw,1.22rem);
+  box-shadow:0 5px 18px rgba(0,0,0,.22); transition:transform .25s;
+}
+.gaps .g:hover{transform:translateX(5px)}
+.gaps .g.next{border-left-color:var(--acc)}
+.gaps .g.warn{border-left-color:var(--amb)}
+.gaps .g b{flex:0 0 auto; font-weight:650}
+.gaps .g i{color:var(--fg3); font-style:normal; margin-left:auto; font-size:.85em; white-space:nowrap}
+
+/* ─────────── chrome ─────────── */
+#bar{position:fixed; top:0; left:0; height:2px; background:linear-gradient(90deg,var(--pur),var(--acc)); z-index:60; transition:width .55s cubic-bezier(.16,.84,.28,1); box-shadow:0 0 16px rgba(47,216,196,.55)}
+#rail{
+  position:fixed; top:0; left:0; right:0; z-index:55; pointer-events:none;
+  display:flex; align-items:center; gap:1.2rem; padding:2.4vh 2.4vw 0;
+  font-size:clamp(.56rem,.92vw,.74rem); letter-spacing:.22em; text-transform:uppercase;
+  color:var(--fg3); font-weight:650;
+}
+#rail .ln{flex:1; height:1px; background:linear-gradient(90deg,var(--line),transparent)}
+#rail .r{opacity:.7; letter-spacing:.18em}
+#num{position:fixed; bottom:1.6vh; right:2vw; font-family:var(--mono); font-size:clamp(.62rem,1vw,.8rem); color:var(--fg3); z-index:60; letter-spacing:.06em}
+#hint{position:fixed; bottom:1.6vh; left:2vw; font-size:clamp(.6rem,.95vw,.76rem); color:var(--fg3); z-index:60; opacity:.5}
+#hint kbd{font-family:var(--mono); background:var(--bg3); border:1px solid var(--line); border-radius:6px; padding:.14em .45em; font-size:.9em; color:var(--fg2)}
+
+#notes{
+  position:fixed; left:0; right:0; bottom:0; max-height:44vh; overflow-y:auto;
+  background:rgba(7,11,16,.97); border-top:2px solid var(--pur);
+  padding:1.6rem 2.4rem 2.2rem; z-index:70; display:none; backdrop-filter:blur(14px);
+}
+#notes.on{display:block}
+#notes .h{font-size:.66rem; letter-spacing:.2em; text-transform:uppercase; color:var(--pur); font-weight:700; margin-bottom:.8rem}
+#notes p{font-size:1.04rem; line-height:1.62; color:#d3dce5; margin-bottom:.7rem; max-width:90ch}
+#notes p:last-child{margin-bottom:0}
+#notes p.say:before{content:'“'} #notes p.say:after{content:'”'}
+#notes p.say{color:#fff; font-weight:450}
+#notes .warn{color:var(--amb)}
+#notes code{color:var(--acc); font-size:.9em}
+#notes em{color:var(--fg2); font-style:normal; font-size:.9em}
+
+#ov{position:fixed; inset:0; background:rgba(7,11,16,.97); z-index:80; display:none; padding:4vh 4vw; overflow-y:auto; backdrop-filter:blur(10px)}
+#ov.on{display:block}
+#ov .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:.9rem}
+#ov .card{background:var(--bg2); border:1px solid var(--line); border-radius:13px; padding:.9rem; cursor:pointer; font-size:.8rem; line-height:1.3; transition:transform .2s}
+#ov .card:hover{border-color:var(--acc); background:var(--bg3); transform:translateY(-3px)}
+#ov .card .n{font-family:var(--mono); font-size:.68rem; color:var(--fg3); display:block; margin-bottom:.35rem}
+#ov .card.cur{border-color:var(--acc); box-shadow:0 0 0 1px var(--acc)}
+#ov h4{color:var(--fg3); font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; margin-bottom:1.2rem}
+
+/* ─────────── before / after ─────────── */
+.ba{
+  display:grid; grid-template-columns:1fr auto 1fr; align-items:stretch;
+  gap:clamp(.8rem,2.2vw,2.4rem); width:100%; max-width:1180px; margin-top:1.2vh;
+}
+.ba .card{
+  text-align:left; border-radius:20px; padding:clamp(1rem,2.4vh,1.9rem) clamp(1rem,2vw,1.8rem);
+  border:1px solid var(--line); background:linear-gradient(165deg,var(--bg3),var(--bg2));
+  box-shadow:0 12px 34px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.05);
+  display:flex; flex-direction:column; gap:.7em;
+}
+.ba .card .tag{
+  font-size:clamp(.56rem,.94vw,.74rem); letter-spacing:.2em; text-transform:uppercase;
+  font-weight:700; display:flex; align-items:center; gap:.6em;
+}
+.ba .card .big{font-size:clamp(1rem,2.05vw,1.62rem); font-weight:680; line-height:1.28; letter-spacing:-.015em}
+.ba .card .det{font-size:clamp(.74rem,1.24vw,1.02rem); color:var(--fg2); line-height:1.5}
+.ba .card .det .mono{color:var(--fg3); font-size:.94em}
+.ba .before{border-left:3px solid var(--red); opacity:.82}
+.ba .before .tag{color:var(--red)}
+.ba .before .big{color:var(--fg2); font-weight:600}
+.ba .after{border-left:3px solid var(--acc)}
+.ba .after .tag{color:var(--acc)}
+.ba .after .big{color:var(--fg)}
+.ba .then{
+  align-self:center; font-size:clamp(1.1rem,2.6vw,2.1rem); color:var(--fg3);
+  font-weight:300; letter-spacing:-.02em;
+}
+.balabel{
+  font-size:clamp(.62rem,1.04vw,.82rem); letter-spacing:.2em; text-transform:uppercase;
+  color:var(--fg3); font-weight:700; margin-bottom:1.4vh;
+}
+
+/* ─────────── the three-sprint arc ─────────── */
+.tl{display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(.7rem,2vw,2rem); width:100%; max-width:1200px; margin-top:1.6vh}
+.tl .s{
+  text-align:left; border-radius:20px; padding:clamp(.95rem,2.2vh,1.7rem) clamp(.95rem,1.8vw,1.6rem);
+  background:linear-gradient(165deg,var(--bg3),var(--bg2)); border:1px solid var(--line);
+  border-top:3px solid var(--fg3); box-shadow:0 12px 32px rgba(0,0,0,.32);
+  transition:transform .3s cubic-bezier(.2,.9,.25,1.1);
+}
+.tl .s:hover{transform:translateY(-5px)}
+.tl .s.one{border-top-color:var(--pur)} .tl .s.two{border-top-color:var(--acc)} .tl .s.three{border-top-color:var(--amb)}
+.tl .s .n{font-family:var(--mono); font-size:clamp(.58rem,.96vw,.76rem); color:var(--fg3); letter-spacing:.16em; text-transform:uppercase}
+.tl .s .t{font-size:clamp(.95rem,1.9vw,1.5rem); font-weight:700; margin:.45em 0 .5em; letter-spacing:-.015em}
+.tl .s.one .t{color:var(--pur)} .tl .s.two .t{color:var(--acc)} .tl .s.three .t{color:var(--amb)}
+.tl .s .d{font-size:clamp(.72rem,1.2vw,.99rem); color:var(--fg2); line-height:1.5}
+
+/* ─────────── what I learned ─────────── */
+.lrn{display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(.6rem,1.4vw,1.2rem); width:100%; max-width:1140px; margin-top:1.4vh; text-align:left}
+.lrn .c{
+  border-radius:18px; padding:clamp(.85rem,1.9vh,1.4rem) clamp(.95rem,1.7vw,1.5rem);
+  background:linear-gradient(150deg,var(--bg3),var(--bg2)); border:1px solid var(--line);
+  box-shadow:0 8px 26px rgba(0,0,0,.28); transition:transform .25s;
+}
+.lrn .c:hover{transform:translateY(-4px)}
+.lrn .c h4{font-size:clamp(.85rem,1.5vw,1.18rem); font-weight:700; margin-bottom:.42em; letter-spacing:-.012em; color:var(--acc)}
+.lrn .c.w h4{color:var(--amb)} .lrn .c.p h4{color:var(--pur)} .lrn .c.g h4{color:var(--grn)}
+.lrn .c p{font-size:clamp(.72rem,1.2vw,1rem); color:var(--fg2); line-height:1.52}
+
+/* ─────────── flow diagram ─────────── */
+.diag{width:100%; max-width:1180px; flex:0 1 auto; min-height:0; margin-top:.6vh}
+.diag svg{width:100%; height:auto; max-height:62vh; display:block}
+.diag .db rect{
+  fill:url(#none); fill:rgba(22,32,43,.9); stroke:var(--line); stroke-width:1.4;
+  filter:drop-shadow(0 8px 20px rgba(0,0,0,.35));
+}
+.diag .db-m rect{stroke:var(--accdim)}
+.diag .db-l rect{stroke:rgba(157,139,255,.55)}
+.diag .db-app rect{stroke:rgba(74,222,128,.55)}
+.diag .db-g rect{stroke:rgba(251,191,76,.6); stroke-width:2}
+.diag .db-out rect{stroke:var(--line); fill:rgba(15,22,32,.85)}
+.diag .db-alert rect{stroke:rgba(255,107,107,.45); fill:rgba(15,22,32,.85)}
+.diag .dt{fill:var(--fg); font-size:19px; font-weight:700; text-anchor:middle; letter-spacing:-.01em}
+.diag .dt-g{fill:var(--amb); font-size:22px}
+.diag .dt-s{font-size:16px}
+.diag .ds{fill:var(--fg3); font-size:12.5px; text-anchor:middle}
+.diag .dl{font-size:11px; font-weight:800; letter-spacing:.2em; fill:var(--fg3)}
+.diag .dl-m{fill:var(--acc)} .diag .dl-l{fill:var(--pur)} .diag .dl-a{fill:var(--amb)}
+.diag .ln{fill:none; stroke:var(--fg3); stroke-width:1.6; marker-end:url(#ah)}
+.diag .ln-m{stroke:var(--acc); marker-end:url(#ahm)}
+.diag .ln-l{stroke:var(--pur); marker-end:url(#ahl)}
+.diag .ln-a{stroke:var(--amb); marker-end:url(#aha); stroke-width:2}
+
+/* ─────────── two screenshots side by side ─────────── */
+.shots2{
+  width:100%; flex:1; min-height:0; display:flex; gap:clamp(.7rem,1.8vw,1.6rem);
+  align-items:center; justify-content:center; margin:1.2vh 0;
+}
+.shots2 figure{display:flex; flex-direction:column; align-items:center; gap:.8vh; min-width:0; max-height:100%}
+.shots2 img{
+  max-width:100%; max-height:52vh; object-fit:contain;
+  border-radius:14px; border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 18px 44px rgba(0,0,0,.48);
+}
+.shots2 figcaption{font-size:clamp(.66rem,1.16vw,.94rem); color:var(--fg2); font-weight:600}
+.shots2 figcaption span{color:var(--fg3); font-weight:400}
+
+/* slides whose point is the picture: small title, big picture */
+.slide.viz{padding:4vh 4vw 5vh}
+.slide.viz .kicker{margin-bottom:1.6vh}
+.slide.viz h2{font-size:clamp(1.35rem,3.3vw,2.6rem); max-width:34ch; margin-bottom:1.4vh}
+.slide.viz .tiny{margin-top:1.8vh; max-width:70ch}
+
+/* ─────────── bar charts ─────────── */
+.chart{width:100%; max-width:1120px; flex:0 1 auto; min-height:0; margin-top:.4vh}
+.chart svg{width:100%; height:auto; max-height:58vh; display:block}
+.chart .bt{fill:var(--fg); font-size:15px; font-weight:700}
+.chart .bs{fill:var(--fg3); font-size:12px}
+.chart .bn{fill:var(--fg2); font-size:13px; font-weight:600}
+.chart .bnum{fill:var(--fg); font-size:19px; font-weight:780; font-variant-numeric:tabular-nums}
+.chart .cheap{fill:rgba(47,216,196,.32); stroke:var(--acc); stroke-width:1.4}
+.chart .mid{fill:rgba(251,191,76,.28); stroke:var(--amb); stroke-width:1.4}
+.chart .dear{fill:rgba(157,139,255,.30); stroke:var(--pur); stroke-width:1.4}
+.chart .bad{fill:rgba(255,107,107,.42); stroke:var(--red); stroke-width:1.4}
+.chart .good{fill:rgba(74,222,128,.40); stroke:var(--grn); stroke-width:1.4}
+.chart .axis{stroke:var(--line); stroke-width:1.4}
+.chart .tick{stroke:var(--line); stroke-width:1; stroke-dasharray:3 4}
+.chart .call{fill:var(--amb); font-size:13px; font-weight:700}
+.chart .callr{fill:var(--red); font-size:13px; font-weight:700}
+.chart .callg{fill:var(--grn); font-size:13px; font-weight:700}
+
+/* ─────────── sprint chip in the rail ─────────── */
+#rail .chip{
+  pointer-events:none; display:inline-flex; gap:.42em; align-items:center;
+  letter-spacing:.1em;
+}
+#rail .chip i{
+  font-style:normal; width:16px; height:3px; border-radius:2px; background:var(--line); display:inline-block;
+}
+#rail .chip i.a{background:var(--pur)} #rail .chip i.b{background:var(--acc)} #rail .chip i.c{background:var(--amb)}
+</style>
+</head>
+<body>
+
+<div id="bar"></div>
+<div id="rail"><span>Project&nbsp;A</span><span class="ln"></span><span class="chip"><i class="a"></i><i class="b"></i><i class="c"></i></span><span class="r">Final review · TCS DevOps</span></div>
+
+<div class="deck" id="deck">
+
+<!-- 1 ─────────────────────────────────────────── -->
+<section class="slide on"
+  data-notes="<p>Keep it light. Say what it is, then move.</p>
+  <p class='say'>This is Project A. Not one sprint, the whole thing. Everything you will see is from real runs on my own machine, most of it this morning.</p>
+  <p class='warn'>Say early that these are screenshots, not a live run. Reason: a live run is slow, it can break, and I would rather spend the time on what it produced. The stack is running behind this if you want to look after.</p>">
+  <div class="kicker a pop">TCS DevOps Internship · Final review</div>
+  <h1 class="pop">Project&nbsp;A</h1>
+  <p class="sub w pop">Three sprints. One question:<br><b>can I trust what's running?</b></p>
+  <p class="tiny pop">Milán Takács · <span class="mono">release/sprint3</span> · captured 2026-08-11</p>
+</section>
+
+<!-- 2 ─────────────────────────────────────────── -->
+<section class="slide"
+  data-notes="<p>Say where I started. Do not skip it, the rest means nothing without it.</p>
+  <p class='say'>On day one this was a small app and a README. To put a change live, I built it on my laptop, copied it over, stopped the old container and started a new one.</p>
+  <p class='say'>It worked. But if you asked me an hour later what was actually running, I could not tell you. Everything after this slide is my answer to that.</p>">
+  <div class="kicker pop">Day one</div>
+  <h2 class="wide pop">It worked. I just couldn't tell you <span style="color:var(--red)">what</span> was running.</h2>
+  <p class="sub w pop">A small app, a README, and a deploy that was me typing commands in the right order and remembering not to make a mistake.</p>
+  <p class="tiny pop">Everything after this slide is an answer to that sentence.</p>
+</section>
+
+<!-- 3 ─────────────────────────────────────────── -->
+<section class="slide"
+  data-notes="<p>The map. Thirty seconds. They need the shape before the detail.</p>
+  <p class='say'>Three sprints, one job each. First, make the thing worth shipping. Second, ship it without me. Third, see what it is doing after.</p>
+  <p><em>If asked why watching came last: you cannot usefully watch something you cannot deploy properly. The order was on purpose.</em></p>">
+  <div class="kicker p pop">The shape of it</div>
+  <h2 class="pop">Three sprints, one arc</h2>
+  <div class="tl pop">
+    <div class="s one"><div class="n">Sprint 1</div><div class="t">Make it worth shipping</div>
+      <div class="d">A locked-down image, real tests, an app that fails politely instead of falling over.</div></div>
+    <div class="s two"><div class="n">Sprint 2</div><div class="t">Ship it without me</div>
+      <div class="d">Eleven checks, one build, deployed automatically — and undoable in under a minute.</div></div>
+    <div class="s three"><div class="n">Sprint 3</div><div class="t">See what it's doing</div>
+      <div class="d">Logs, numbers, one dashboard, one alert — plus a security review I ran on myself.</div></div>
+  </div>
+  <p class="tiny pop">Watching something you can't reliably deploy isn't observability, it's anxiety.</p>
+</section>
+
+<!-- 4 ─────────────────────────────────────────── -->
+<section class="slide"
+  data-notes="<p>First before and after. These are quick. Read left, read right, move.</p>
+  <p class='say'>Putting a change live. Before, that was me. Four commands, in the right order, from memory. It worked because I was paying attention.</p>
+  <p class='say'>Now I merge. That is the whole thing. The rest happens without me, the same way every time.</p>">
+  <div class="balabel pop">Putting a change live</div>
+  <h2 class="pop">From four commands to one merge</h2>
+  <div class="ba pop">
+    <div class="card before">
+      <div class="tag">● Before</div>
+      <div class="big">I did it by hand, carefully</div>
+      <div class="det">Build on my laptop · copy it across · stop the old one · start the new one.<br><span class="mono">Worked because I was concentrating.</span></div>
+    </div>
+    <div class="then">→</div>
+    <div class="card after">
+      <div class="tag">● Now</div>
+      <div class="big">I merge. That's it.</div>
+      <div class="det">Eleven checks, one build, pushed and deployed automatically.<br><span class="mono">Same every time, whether I'm watching or not.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 ─────────────────────────────────────────── -->
+<section class="slide viz"
+  data-notes="<p>This is a speed argument, not a tool list. Nobody needs a tour of ruff.</p>
+  <p class='say'>The question I built this around is not what does it check. It is how fast can it tell me I am wrong.</p>
+  <p class='say'>So they run cheapest first. Style takes seconds, a build takes minutes. If my mistake is a cheap one, I want to know in seconds.</p>
+  <p class='say'>The fastest no I have had is eleven seconds. That was the password check, and I will show you that one later.</p>
+  <p><em>All of them are pinned to exact versions. A tool that changes its rules overnight turns a build red that nobody touched, and then people stop trusting red.</em></p>">
+  <div class="kicker pop">The pipeline</div>
+  <h2 class="pop">How fast can it tell me I'm wrong?</h2>
+  <div class="chart pop">
+  <svg viewBox="0 0 1120 392" xmlns="http://www.w3.org/2000/svg" role="img"
+       aria-label="The eleven checks ordered by what they cost to run, cheapest first">
+    <rect class="cheap" x="42" y="296" width="86" height="34" rx="7"/>
+    <text class="bn" x="85" y="356" text-anchor="middle">ruff</text>
+    <text class="bs" x="85" y="373" text-anchor="middle">style</text>
+    <rect class="cheap" x="136" y="288" width="86" height="42" rx="7"/>
+    <text class="bn" x="179" y="356" text-anchor="middle">secrets</text>
+    <text class="bs" x="179" y="373" text-anchor="middle">passwords</text>
+    <rect class="cheap" x="230" y="282" width="86" height="48" rx="7"/>
+    <text class="bn" x="273" y="356" text-anchor="middle">hadolint</text>
+    <text class="bs" x="273" y="373" text-anchor="middle">dockerfile</text>
+    <rect class="cheap" x="324" y="260" width="86" height="70" rx="7"/>
+    <text class="bn" x="367" y="356" text-anchor="middle">pytest</text>
+    <text class="bs" x="367" y="373" text-anchor="middle">80% floor</text>
+    <rect class="cheap" x="418" y="247" width="86" height="83" rx="7"/>
+    <text class="bn" x="461" y="356" text-anchor="middle">ansible-lint</text>
+    <text class="bs" x="461" y="373" text-anchor="middle">the deploy</text>
+    <rect class="mid" x="512" y="189" width="86" height="141" rx="7"/>
+    <text class="bn" x="555" y="356" text-anchor="middle">build</text>
+    <text class="bs" x="555" y="373" text-anchor="middle">name = commit</text>
+    <rect class="mid" x="606" y="178" width="86" height="152" rx="7"/>
+    <text class="bn" x="649" y="356" text-anchor="middle">health</text>
+    <text class="bs" x="649" y="373" text-anchor="middle">is it alive?</text>
+    <rect class="mid" x="700" y="172" width="86" height="158" rx="7"/>
+    <text class="bn" x="743" y="356" text-anchor="middle">network</text>
+    <text class="bs" x="743" y="373" text-anchor="middle">reachable?</text>
+    <rect class="mid" x="794" y="152" width="86" height="178" rx="7"/>
+    <text class="bn" x="837" y="356" text-anchor="middle">trivy</text>
+    <text class="bs" x="837" y="373" text-anchor="middle">known bugs</text>
+    <rect class="dear" x="888" y="130" width="86" height="200" rx="7"/>
+    <text class="bn" x="931" y="356" text-anchor="middle">push</text>
+    <text class="bs" x="931" y="373" text-anchor="middle">some branches</text>
+    <rect class="dear" x="982" y="104" width="86" height="226" rx="7"/>
+    <text class="bn" x="1025" y="356" text-anchor="middle">deploy</text>
+    <text class="bs" x="1025" y="373" text-anchor="middle">+ check it</text>
+    <line class="axis" x1="30" y1="330" x2="1090" y2="330"/>
+    <text class="bs" x="30" y="18">cheap · seconds</text>
+    <text class="bs" x="1090" y="18" text-anchor="end">expensive · minutes</text>
+    <line class="tick" x1="30" y1="28" x2="1090" y2="28"/>
+
+    <text class="call" x="179" y="196" text-anchor="middle">fastest no — 11s</text>
+    <text class="bs" x="179" y="213" text-anchor="middle">the password check, run #84</text>
+    <path d="M179,222 L179,280" stroke="var(--amb)" stroke-width="1.6" fill="none"/>
+    <circle cx="179" cy="284" r="3" fill="var(--amb)"/>
+
+    <text class="callg" x="1078" y="58" text-anchor="end">slowest yes — 1m16s</text>
+    <text class="bs" x="1078" y="75" text-anchor="end">the whole pipeline, run #87</text>
+    <path d="M1025,84 L1025,96" stroke="var(--grn)" stroke-width="1.6" fill="none"/>
+    <circle cx="1025" cy="100" r="3" fill="var(--grn)"/>
+  </svg>
+  </div>
+  <p class="tiny pop">Bar height is cost order, not measured seconds. Both numbers are real runs.</p>
+</section>
+
+<!-- 6 ─────────────────────────────────────────── -->
+<section class="slide media"
+  data-notes="<p>Let the picture do it. Do not read out every step.</p>
+  <p class='say'>One commit, all the way through. Under two minutes, eleven checks, green from my laptop to a running container.</p>
+  <p class='warn'>This is today's run, not an old one. So the picture and the pipeline file say the same thing. I will come back to why that matters.</p>">
+  <div class="kicker g">Receipts</div>
+  <h2>One commit, all the way through</h2>
+  <div class="shot"><img src="12-run-release-green.png" alt="Green pipeline run on release/sprint3"></div>
+  <p class="shotcap"><b>Green.</b> Style, secrets, tests, scan, build, push, deploy.</p>
+</section>
+
+<!-- 7 ─────────────────────────────────────────── -->
+<section class="slide"
+  data-notes="<p>Ask the question out loud. Let them sit with it for a second before you answer.</p>
+  <p class='say'>Here is something I could not answer on day one. My laptop had an image called latest. The server had an image called latest. Were they the same image? I had no way to know.</p>
+  <p class='say'>Because latest is not a fact. It is a name someone can move. Two machines can both say latest and mean different things.</p>
+  <p class='say'>So now nothing is called latest. Every image is named after the commit it came from, and that name can never move.</p>">
+  <div class="balabel pop">The question I couldn't answer</div>
+  <h2 class="pop">Two machines. Both say <span class="mono" style="color:var(--red)">latest</span>.<br>Same image?</h2>
+  <div class="ba pop">
+    <div class="card before">
+      <div class="tag">● Before</div>
+      <div class="big">"It's probably the newest one"</div>
+      <div class="det">A name that can be moved. Two machines, two different answers.<br><span class="mono">Undo = rebuild and hope.</span></div>
+    </div>
+    <div class="then">→</div>
+    <div class="card after">
+      <div class="tag">● Now</div>
+      <div class="big">Every image is named after its commit</div>
+      <div class="det">One container, one commit, permanently.<br><span class="mono">Undo = start the old one.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 ─────────────────────────────────────────── -->
+<section class="slide media"
+  data-notes="<p>The answer to the last slide. Ten seconds, then move.</p>
+  <p class='say'>And now it takes one command. I ask the container which commit it is, I ask git which commit I pushed, and they match.</p>
+  <p class='warn'>Say the gap yourself: this reads a label off the container, so it needs Docker access. Asking the app over HTTP would be better. It is on the plan, not built.</p>">
+  <div class="kicker g">Receipts</div>
+  <h2>Now I can answer it in one command</h2>
+  <div class="shot"><img src="20-version-match-today.png" alt="Container version label matches the branch tip"></div>
+  <p class="shotcap">What the container says <b>=</b> what I pushed. <b>Captured this morning.</b></p>
+</section>
+
+<!-- 9 ─────────────────────────────────────────── -->
+<section class="slide"
+  data-notes="<p>Start with the mistake, not the tool. Tell it like a story.</p>
+  <p class='say'>Remember my promise at the start, that what runs is what passed the tests? For a while that was not true, and I did not find it by being clever.</p>
+  <p class='say'>The image was shipping one version of the web server. My tests were running on a different one. Every test was green, on software nobody was actually using.</p>
+  <p class='say'>What found it was making the pipeline list every piece of software inside the image, and compare. Six hundred and twenty one of them. I would never have seen it by reading.</p>
+  <p class='warn'>The part I would defend hardest: that list checks if it has gone stale, and it went off within three days. A check that has never fired is a check you are guessing about.</p>">
+  <div class="kicker w pop">The promise, quietly broken</div>
+  <h2 class="wide pop">I tested one thing<br>and shipped another.</h2>
+  <div class="row pop" style="margin-top:2.5vh; gap:clamp(1rem,3vw,2.5rem)">
+    <div class="box red"><div class="l">users got</div><div class="s">gunicorn 23.0.0</div></div>
+    <div class="ar">≠</div>
+    <div class="box red"><div class="l">tests ran on</div><div class="s">gunicorn 26.0.0</div></div>
+  </div>
+  <p class="sub w pop" style="margin-top:2.5vh">Every test was green — against software <b>nobody was actually running</b>. A machine caught it in seconds. I never would have.</p>
+  <p class="tiny pop">Fixed both causes, not just the version. One of them was a mistake in my own documentation.</p>
+</section>
+
+<!-- 10 ────────────────────────────────────────── -->
+<section class="slide"
+  data-notes="<p>Sets up the main part. Slow down from here.</p>
+  <p class='say'>When it goes wrong. Before, I rebuilt the old version and hoped I picked the right one, while the broken one stayed up.</p>
+  <p class='say'>Now, undoing is the same deploy with an older commit. There is no separate undo script on purpose. One path, used every day, so it still works on the day I need it.</p>">
+  <div class="balabel pop">When it goes wrong</div>
+  <h2 class="pop">The safest undo is the one I use every day</h2>
+  <div class="ba pop">
+    <div class="card before">
+      <div class="tag">● Before</div>
+      <div class="big">Rebuild the old one and hope</div>
+      <div class="det">Which commit was good? Rebuild it, redeploy it, and the broken one stays up the whole time.<br><span class="mono">Untimed. Unrehearsed.</span></div>
+    </div>
+    <div class="then">→</div>
+    <div class="card after">
+      <div class="tag">● Now</div>
+      <div class="big">The same deploy, older commit</div>
+      <div class="det">One code path, used on every ordinary deploy.<br><span class="mono">Rehearsed three times over eleven days. Every run timed.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 ────────────────────────────────────────── -->
+<section class="slide viz"
+  data-notes="<p>Lead with twice and with the drift. Do not overclaim here.</p>
+  <p class='say'>A rollback plan nobody has run is just a paragraph. So mine is a script. It breaks the app on purpose, deploys the broken one, lets the checks catch it, undoes it, and times it.</p>
+  <p class='say'>I have run it three times over eleven days. The first two gave exactly the same numbers, twenty seven seconds to notice and seven to fix. This morning it was twenty nine and eight.</p>
+  <p class='say'>So it repeats, but to within a few seconds, not exactly. I would rather tell you that than round all three to one nice number.</p>">
+  <div class="kicker r pop">The rehearsal</div>
+  <h2 class="pop">Three runs, eleven days —<br>and the number moved once</h2>
+  <div class="chart pop">
+  <svg viewBox="0 0 1000 300" xmlns="http://www.w3.org/2000/svg" role="img"
+       aria-label="Three rollback drills: 34 seconds, 34 seconds, then 37 seconds">
+    <text class="bt" x="150" y="79" text-anchor="end">31 Jul</text>
+    <rect class="bad" x="180" y="52" width="513" height="38" rx="6" opacity=".62"/>
+    <rect class="good" x="693" y="52" width="133" height="38" rx="6" opacity=".62"/>
+    <text class="bs" x="436" y="76" text-anchor="middle" style="fill:var(--fg)">27s</text>
+    <text class="bs" x="760" y="76" text-anchor="middle" style="fill:var(--fg)">7s</text>
+    <text class="bnum" x="842" y="79" style="fill:var(--fg2)">34s</text>
+    <text class="bt" x="150" y="157" text-anchor="end">4 Aug</text>
+    <rect class="bad" x="180" y="130" width="513" height="38" rx="6" opacity=".62"/>
+    <rect class="good" x="693" y="130" width="133" height="38" rx="6" opacity=".62"/>
+    <text class="bs" x="436" y="154" text-anchor="middle" style="fill:var(--fg)">27s</text>
+    <text class="bs" x="760" y="154" text-anchor="middle" style="fill:var(--fg)">7s</text>
+    <text class="bnum" x="842" y="157" style="fill:var(--fg2)">34s</text>
+    <text class="bt" x="150" y="235" text-anchor="end">11 Aug</text>
+    <rect class="bad" x="180" y="208" width="551" height="38" rx="6" opacity="1"/>
+    <rect class="good" x="731" y="208" width="152" height="38" rx="6" opacity="1"/>
+    <text class="bs" x="456" y="232" text-anchor="middle" style="fill:var(--fg)">29s</text>
+    <text class="bs" x="807" y="232" text-anchor="middle" style="fill:var(--fg)">8s</text>
+    <text class="bnum" x="899" y="235" style="fill:var(--red)">37s</text>
+    <rect class="bad" x="180" y="262" width="16" height="14" rx="3"/>
+    <text class="bs" x="204" y="274">time to notice</text>
+    <rect class="good" x="330" y="262" width="16" height="14" rx="3"/>
+    <text class="bs" x="354" y="274">time to undo</text>
+    <text class="bs" x="640" y="274" style="fill:var(--amb)">the third run drifted by 3 seconds</text>
+  </svg>
+  </div>
+  <p class="tiny pop">Repeatable to a few seconds — not exact, and I'm not going to pretend otherwise. Every run is timed and recorded in the runbook.</p>
+</section>
+
+<!-- 12 ────────────────────────────────────────── -->
+<section class="slide media"
+  data-notes="<p>Slow right down. Let them read it.</p>
+  <p class='say'>This is the deploy failing. The checks refused it, so the deploy failed. That is the right outcome, not a bug.</p>
+  <p class='say'>And this is the part I care about. It printed the command to undo it, with the old commit already in it. In a real incident nobody should be digging through history for a hash.</p>
+  <p class='warn'>It also left the broken container running on purpose so I can look at it, and said out loud not to treat it as live.</p>">
+  <div class="kicker r">Receipts</div>
+  <h2>Nobody should be looking for a hash at 2am</h2>
+  <div class="shot"><img src="21-rollback-drill-today.png" alt="Failure printing rollback command"></div>
+  <p class="shotcap">It refuses, then hands me <b>the exact command</b> — old commit already filled in. <b>Run again this morning.</b></p>
+</section>
+
+<!-- 13 ────────────────────────────────────────── -->
+<section class="slide viz"
+  data-notes="<p>Most important slide. Say it, then stop talking.</p>
+  <p class='say'>Here is the number I could have made look nicer, and did not. Eight seconds to recover. Thirty seven seconds actually down.</p>
+  <p class='say'>My deploy swaps the container before it checks it. So the broken one served errors for the whole twenty nine seconds the checks spent retrying. The checks limit the damage. They do not stop it.</p>
+  <p class='say'>The real fix is checking the new one before it takes traffic. I know how; it did not fit in the time. And I did not lower the retry count to make the number look better.</p>
+  <p class='say'>One more thing. Back then I only knew this happened because I was watching the screen. In a few minutes I will show you the part that means I get told instead.</p>
+  <p class='warn'>If asked: the eight seconds does not include downloading the image, because the old one was already on the machine. On a fresh machine, add that.</p>
+  <p class='warn'>If asked where the raw logs are: they are not committed, on purpose. Every run writes one and they are point-in-time noise, so gitignore excludes them and the runbook carries the result — date, commit, both numbers. If you want a transcript I can run the drill for you.</p>
+  <p><em>Then pause. You will want to fill the silence. Do not.</em></p>">
+  <div class="kicker r pop">The number I didn't flatter</div>
+  <h2 class="pop" style="margin-bottom:1.4vh">37 seconds down, not 8</h2>
+  <div class="chart pop">
+  <svg viewBox="0 0 1080 268" xmlns="http://www.w3.org/2000/svg" role="img"
+       aria-label="Outage timeline: the container is swapped at zero seconds, the checks give up at 29 seconds, service returns at 37 seconds">
+    <rect class="bad" x="60" y="96" width="737" height="56" rx="8"/>
+    <rect class="good" x="797" y="96" width="203" height="56" rx="8"/>
+    <text class="bt" x="428" y="130" text-anchor="middle">broken container is serving traffic</text>
+    <text class="bt" x="898" y="130" text-anchor="middle" style="font-size:13px">rolling back</text>
+
+    <line class="axis" x1="60" y1="86" x2="60" y2="62"/>
+    <text class="callr" x="60" y="52" text-anchor="middle">0s</text>
+    <text class="bs" x="60" y="34" text-anchor="middle">swapped</text>
+
+    <line class="axis" x1="797" y1="86" x2="797" y2="62"/>
+    <text class="callr" x="797" y="52" text-anchor="middle">29s</text>
+    <text class="bs" x="797" y="34" text-anchor="middle">checks give up</text>
+
+    <line class="axis" x1="1000" y1="86" x2="1000" y2="62"/>
+    <text class="callg" x="1000" y="52" text-anchor="middle">37s</text>
+    <text class="bs" x="1000" y="34" text-anchor="middle">service back</text>
+
+    <path d="M60,168 L60,182 L1000,182 L1000,168" fill="none" stroke="var(--red)" stroke-width="1.6"/>
+    <text class="callr" x="530" y="206" text-anchor="middle" style="font-size:17px">37s with no working service</text>
+
+    <path d="M797,168 L797,232 L1000,232 L1000,168" fill="none" stroke="var(--fg3)" stroke-width="1.2" stroke-dasharray="4 4"/>
+    <text class="bs" x="898" y="252" text-anchor="middle">the 8s everyone quotes</text>
+  </svg>
+  </div>
+  <p class="tiny pop">The container is swapped <b>before</b> it is checked. The checks limit the damage; they do not stop it.</p>
+</section>
+
+<!-- 14 ────────────────────────────────────────── -->
+<section class="slide"
+  data-notes="<p>New chapter. Take a breath first.</p>
+  <p class='say'>Now the part I did not have at all until three weeks ago. Before, once the container started, I was blind. I found out something was wrong by trying the app myself.</p>
+  <p class='say'>Now the app reports its own numbers and writes logs a machine can read. Three tools collect them. And it is all set up in code, so I can delete the whole thing and get it back the same.</p>">
+  <div class="balabel pop">Knowing it's still fine</div>
+  <h2 class="pop">A green deploy tells you it <span style="color:var(--fg3)">started</span></h2>
+  <div class="ba pop">
+    <div class="card before">
+      <div class="tag">● Before</div>
+      <div class="big">I found out by trying it</div>
+      <div class="det">Log lines written for me to read one at a time. No numbers. No history.<br><span class="mono">Blind the moment it started.</span></div>
+    </div>
+    <div class="then">→</div>
+    <div class="card after">
+      <div class="tag">● Now</div>
+      <div class="big">It tells me</div>
+      <div class="det">The app reports its own numbers, logs a machine can read, one dashboard, one alert.<br><span class="mono">Set up in code, not clicked together.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 ────────────────────────────────────────── -->
+<section class="slide viz"
+  data-notes="<p>Thirty seconds. Trace it with your finger, do not read every box.</p>
+  <p class='say'>Two paths that meet in one place.</p>
+  <p class='say'>On top, numbers. Prometheus pulls from the app, the containers and the machine, every fifteen seconds.</p>
+  <p class='say'>Underneath, text. The app prints JSON, Alloy picks it up off Docker, Loki keeps it.</p>
+  <p class='say'>Both land in Grafana. Two dashboards, eleven panels, one alert. And the dashed arrow is the bit I care about — one click from a spike to the log lines behind it. Without it, this is two tools sitting next to each other.</p>
+  <p class='warn'>If asked why Alloy instead of the app pushing logs itself: the app writes to standard output and knows nothing about Loki. I can swap the whole log stack out and never touch the application.</p>">
+  <div class="kicker p pop">How it fits together</div>
+  <h2 class="pop">Numbers on top, words underneath</h2>
+  <div class="diag pop">
+  <svg viewBox="0 0 1120 470" xmlns="http://www.w3.org/2000/svg" role="img"
+       aria-label="Observability data flow: metrics into Prometheus, logs into Loki, both into Grafana">
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="var(--fg3)"/>
+      </marker>
+      <marker id="ahm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="var(--acc)"/>
+      </marker>
+      <marker id="ahl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="var(--pur)"/>
+      </marker>
+      <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="var(--amb)"/>
+      </marker>
+    </defs>
+
+    <text x="30" y="24" class="dl dl-m">METRICS</text>
+    <text x="30" y="318" class="dl dl-l">LOGS</text>
+
+    <g class="db db-m"><rect x="30" y="36" width="180" height="58" rx="13"/></g>
+    <text x="120" y="60" class="dt">cAdvisor</text><text x="120" y="80" class="ds">the containers</text>
+
+    <g class="db db-m"><rect x="30" y="108" width="180" height="58" rx="13"/></g>
+    <text x="120" y="132" class="dt">node exporter</text><text x="120" y="152" class="ds">the machine</text>
+
+    <g class="db db-app"><rect x="30" y="210" width="180" height="80" rx="13"/></g>
+    <text x="120" y="240" class="dt">Flask app</text>
+    <text x="120" y="260" class="ds">counts its requests</text>
+    <text x="120" y="277" class="ds">prints JSON logs</text>
+
+    <g class="db db-m"><rect x="290" y="74" width="180" height="72" rx="13"/></g>
+    <text x="380" y="104" class="dt">Prometheus</text><text x="380" y="126" class="ds">pulls every 15s</text>
+
+    <g class="db db-l"><rect x="290" y="326" width="180" height="58" rx="13"/></g>
+    <text x="380" y="350" class="dt">Alloy</text><text x="380" y="370" class="ds">reads Docker logs</text>
+
+    <g class="db db-l"><rect x="550" y="326" width="180" height="58" rx="13"/></g>
+    <text x="640" y="350" class="dt">Loki</text><text x="640" y="370" class="ds">keeps the lines</text>
+
+    <g class="db db-g"><rect x="550" y="148" width="180" height="112" rx="15"/></g>
+    <text x="640" y="188" class="dt dt-g">Grafana</text><text x="640" y="212" class="ds">the only screen</text>
+    <text x="640" y="234" class="ds">I have to look at</text>
+
+    <g class="db db-out"><rect x="830" y="108" width="258" height="50" rx="12"/></g>
+    <text x="959" y="132" class="dt dt-s">App dashboard</text><text x="959" y="149" class="ds">5 panels</text>
+
+    <g class="db db-out"><rect x="830" y="172" width="258" height="50" rx="12"/></g>
+    <text x="959" y="196" class="dt dt-s">Host dashboard</text><text x="959" y="213" class="ds">6 panels</text>
+
+    <g class="db db-alert"><rect x="830" y="236" width="258" height="50" rx="12"/></g>
+    <text x="959" y="260" class="dt dt-s" style="fill:var(--red)">1 alert rule</text><text x="959" y="277" class="ds">/echo is rejecting requests</text>
+
+    <path d="M210,65 L282,92" class="ln ln-m"/>
+    <path d="M210,137 L282,116" class="ln ln-m"/>
+    <path d="M210,232 L282,140" class="ln ln-m"/>
+    <path d="M210,268 L282,347" class="ln ln-l"/>
+    <path d="M470,355 L542,355" class="ln ln-l"/>
+    <path d="M470,118 L542,176" class="ln ln-m"/>
+    <path d="M600,326 L600,268" class="ln ln-l"/>
+    <path d="M730,133 L822,133" class="ln"/>
+    <path d="M730,197 L822,197" class="ln"/>
+    <path d="M730,240 L822,258" class="ln"/>
+    <path d="M684,268 L684,318" class="ln ln-a" stroke-dasharray="7 5"/>
+    <text x="770" y="300" class="dl dl-a">one click</text>
+    <text x="770" y="318" class="ds" style="text-anchor:start">spike → its log lines</text>
+  </svg>
+  </div>
+  <p class="tiny pop">Two paths, one screen. The dashed arrow is what makes it one system instead of two tools.</p>
+</section>
+
+<!-- 16 ────────────────────────────────────────── -->
+<section class="slide media"
+  data-notes="<p>Twenty seconds. Point at each one, do not read the panel names.</p>
+  <p class='say'>Two dashboards, eleven panels. Neither was clicked together by hand — they are JSON files in the repo.</p>
+  <p class='say'>Left is the app. Right is what it runs on.</p>
+  <p class='say'>The panel I would defend is top right: it shows whether the collector can still reach everything. If that goes to zero, every other graph goes quiet — and quiet looks exactly like healthy.</p>">
+  <div class="kicker p">Provisioned, not clicked</div>
+  <h2>Two dashboards, eleven panels</h2>
+  <div class="shots2">
+    <figure>
+      <img src="15-dashboard-overview.png" alt="Application golden signals dashboard">
+      <figcaption>Application golden signals <span>· 5 panels</span></figcaption>
+    </figure>
+    <figure>
+      <img src="23-host-dashboard.png" alt="Host and containers dashboard">
+      <figcaption>Host and containers <span>· 6 panels</span></figcaption>
+    </figure>
+  </div>
+  <p class="shotcap">Both are JSON in the repo. <b>Delete Grafana, start it again, and they come back.</b></p>
+</section>
+
+<!-- 17 ────────────────────────────────────────── -->
+<section class="slide media"
+  data-notes="<p>The fun one. Enjoy it.</p>
+  <p class='say'>So I attacked my own app. Normal traffic first, flat and boring. Then I send it rubbish, three different kinds of broken, because the app refuses each one differently.</p>
+  <p class='say'>And the graph notices. That is the point. I did not go looking, it told me.</p>
+  <p class='warn'>Be precise: this is the app correctly refusing bad requests, not the app crashing. Telling those two apart on the graph is the next thing I would build.</p>">
+  <div class="kicker r">The incident</div>
+  <h2>I attacked my own app, and it noticed</h2>
+  <div class="shot"><img src="16-error-rate-spiking.png" alt="Error rate spiking above threshold"></div>
+  <p class="shotcap">Flat and boring, until I started sending rubbish. <b>Nobody had to go looking.</b></p>
+</section>
+
+<!-- 18 ────────────────────────────────────────── -->
+<section class="slide media"
+  data-notes="<p>Say the one minute thing out loud. That detail shows you understand alerts.</p>
+  <p class='say'>And then it alerts me. One rule, written in code next to the dashboards.</p>
+  <p class='say'>It waits a full minute first. One bad second should not wake anyone up, so it goes pending, and only becomes a real alert if the problem is still there a minute later.</p>
+  <p class='say'>This is also the answer to the thirty seven seconds. Back then I only knew because I was watching. This is the version of me that gets told.</p>
+  <p class='warn'>There is nowhere for it to go yet, no email, no message. Sending alerts I have not tested is worse than not sending them.</p>">
+  <div class="kicker r">The alert</div>
+  <h2>Now I get told instead of noticing</h2>
+  <div class="shot"><img src="17-alert-firing.png" alt="Alert rule firing"></div>
+  <p class="shotcap">One bad second doesn't wake anyone. <b>One bad minute does.</b></p>
+</section>
+
+<!-- 19 ────────────────────────────────────────── -->
+<section class="slide media"
+  data-notes="<p>One click, and the click is the point.</p>
+  <p class='say'>From the red graph I click once, and it opens the actual log lines. Already filtered to the failures, already at the right time. I did not type a search.</p>
+  <p class='say'>A graph and a log viewer that do not talk to each other are two tools. The link between them is what makes it one thing.</p>
+  <p class='say'>And every line has an ID for the request that made it, so I can pull one failed request out and see everything it did.</p>
+  <p class='warn'>If asked why that ID is not on the graphs too: graphs count things, and a new ID for every request would make a new counter for every request. That fills the disk. IDs go in logs, graphs stay simple. This is the most likely hard question, have it ready.</p>">
+  <div class="kicker p">From graph to cause</div>
+  <h2>One click, and I'm looking at why</h2>
+  <div class="shot"><img src="18-loki-from-the-panel.png" alt="Loki filtered by the panel data link"></div>
+  <p class="shotcap">Right lines, right moment, <b>no search typed</b>. Each one tagged with the request that caused it.</p>
+</section>
+
+<!-- 20 ────────────────────────────────────────── -->
+<section class="slide"
+  data-notes="<p>This one is about judgement, not tools.</p>
+  <p class='say'>Yesterday I sat down and attacked my own project on paper. Nobody asked me to. If I trust this thing to deploy for me, it is worth trying to break it first.</p>
+  <p class='say'>Nine problems. Five fixed, with dates. Four still open, written down with the reason. A problem I decided not to fix yet is still better than one I forgot.</p>
+  <p class='warn'>If asked which one bothers me: nothing actually stops someone overwriting an image in the registry. My pipeline never does it, but that is a habit, not a lock. Say it before they find it.</p>">
+  <div class="balabel pop">Security</div>
+  <h2 class="pop">I attacked it on paper before anyone else could</h2>
+  <div class="ba pop">
+    <div class="card before">
+      <div class="tag">● Before</div>
+      <div class="big">Nothing stopped me committing a password</div>
+      <div class="det">No check on my laptop, none in the pipeline. It simply hadn't come up yet.<br><span class="mono">Nobody had looked on purpose.</span></div>
+    </div>
+    <div class="then">→</div>
+    <div class="card after">
+      <div class="tag">● Now</div>
+      <div class="big">9 problems found. 5 fixed. 4 open, with reasons.</div>
+      <div class="det">A check on my laptop and a check in the pipeline — and I proved the second one properly.<br><span class="mono">Nobody asked me to do this.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 21 ────────────────────────────────────────── -->
+<section class="slide media"
+  data-notes="<p>Strongest picture in the deck. Slow right down.</p>
+  <p class='say'>A check that has never failed is not a check. So I proved the pipeline one by beating the one on my laptop, on purpose.</p>
+  <p class='say'>I made a fake AWS key, used the one flag that skips my local check, and pushed it. The pipeline stopped it in eleven seconds.</p>
+  <p class='warn'>Point at scanning 91 files. That line matters as much as the finding. It proves the scanner actually got something. A scanner pointed at an empty folder is green and useless.</p>
+  <p><em>And the thing I got wrong, worth saying here: undoing that commit does not remove the password. The history looks clean and the key is still there, readable forever. The only real fix is changing the password. It looks like it worked, and that is what makes it dangerous.</em></p>">
+  <div class="kicker r">Proven, not assumed</div>
+  <h2>I defeated my own check to prove the other one</h2>
+  <div class="shot"><img src="13-secret-gate-red.png" alt="Secret scanning gate failing the build"></div>
+  <p class="shotcap">Skipped the check on my laptop. <b>The pipeline caught it anyway</b> — 11 seconds.</p>
+</section>
+
+<!-- 22 ────────────────────────────────────────── -->
+<section class="slide"
+  data-notes="<p>Volunteer these. Confident, not sorry. Each one is a decision.</p>
+  <p class='say'>What I did not build, and why. None of these are things I forgot.</p>
+  <p class='say'>The honest one is the thirty seven seconds. I know exactly how to fix it and it did not fit in the time.</p>
+  <p class='warn'>Careful with branch rules. I follow them, but the repo cannot enforce them on our plan. Do not suggest the button is blocked. Say plainly that I do it by hand.</p>">
+  <div class="kicker pop">Decisions, not oversights</div>
+  <h2 class="pop">Six things I chose not to build</h2>
+  <div class="gaps pop" style="margin-top:2vh">
+    <div class="g"><b>Swapping with no downtime</b> — those 37 seconds <i>I know the fix</i></div>
+    <div class="g warn"><b>Locking images so they can't be replaced</b> <i>a habit, not a lock</i></div>
+    <div class="g"><b>Enforced branch rules</b> — needs a public repo <i>billing tier, not laziness</i></div>
+    <div class="g"><b>Scanning old history for passwords</b> — only new code today <i>needs a policy first</i></div>
+    <div class="g"><b>Alerts that actually reach someone</b> <i>untested paging is worse than none</i></div>
+    <div class="g"><b>Encrypting secrets</b> — nothing's secret yet <i>decoration, not security</i></div>
+  </div>
+</section>
+
+<!-- 23 ────────────────────────────────────────── -->
+<section class="slide"
+  data-notes="<p>Hardest slide to put up and the best one. Do not apologise through it. You found both yourself.</p>
+  <p class='say'>Two mistakes, same shape, three days apart. Both were rules I had written down myself, and clicked straight past.</p>
+  <p class='say'>First, I merged something the wrong way, because the button remembered what I picked last time. Second, for three days my work went to GitHub and never reached the machine that runs the pipeline. Everything looked green, and what was running was three days old.</p>
+  <p class='say'>What I take from it is simple. A rule that only lives in a document depends on me being careful, and I was not. Both of these are what an enforced rule would have caught for me.</p>
+  <p class='warn'>Say you found both yourself, before today, and wrote both down. Then stop.</p>">
+  <div class="kicker r pop">What I got wrong</div>
+  <h2 class="wide pop">Twice, I clicked past<br>my own rule.</h2>
+  <div class="gaps pop" style="margin-top:2vh">
+    <div class="g warn"><b>Merged one the wrong way</b> <i>the button remembered my last choice</i></div>
+    <div class="g warn"><b>Three days of work never reached the pipeline machine</b> <i>green everywhere, stale where it counted</i></div>
+  </div>
+  <p class="sub w pop" style="margin-top:2.5vh">A rule in a document depends on me being careful. <b>These are what an enforced rule would have caught for me.</b></p>
+  <p class="tiny pop">Found both myself, wrote both down, fixed the second one this morning.</p>
+</section>
+
+<!-- 24 ────────────────────────────────────────── -->
+<section class="slide"
+  data-notes="<p>This is about me, not the pipeline. Slow down and mean it.</p>
+  <p class='say'>Four things I learned, and none of them are tools.</p>
+  <p class='say'>Sprints changed how I plan. My first one had twice the work it should have. I learned to cut early and say what I am cutting.</p>
+  <p class='say'>Second, go and ask what is expected. My mentor said a written down limitation counts as an answer. That saved me days.</p>
+  <p class='say'>Third, if I have not proved it, it is not done. Half of this deck is me proving things I had already built, and every time, I found something.</p>
+  <p class='say'>Fourth, writing it down as I went is the only reason I can defend any of it now.</p>">
+  <div class="kicker p pop">What I learned</div>
+  <h2 class="pop">Four things, none of them tools</h2>
+  <div class="lrn pop">
+    <div class="c p"><h4>Sprints made me scope honestly</h4>
+      <p>My first plan had twice the work it should have. I learned to cut early and say out loud what I'm cutting — instead of running out of time quietly and presenting something half-finished.</p></div>
+    <div class="c"><h4>Expectations are collected, not waited for</h4>
+      <p>Asking my mentor what an <i>acceptable answer</i> looked like saved me days. "A documented limitation counts" completely changed how I spent a week.</p></div>
+    <div class="c g"><h4>Unproven isn't finished</h4>
+      <p>I built things and assumed they worked. Every single time I went back to prove one, I found something — including a check that would have passed while scanning nothing at all.</p></div>
+    <div class="c w"><h4>Write it down while it's happening</h4>
+      <p>Every decision here has a reason recorded on the day I made it. That's the only reason I can defend any of this now instead of reconstructing it from memory.</p></div>
+  </div>
+</section>
+
+<!-- 25 ────────────────────────────────────────── -->
+<section class="slide"
+  data-notes="<p>Short and personal. This is where you sound like a colleague, not a student.</p>
+  <p class='say'>One thing about presenting, since this is the third time I have stood here.</p>
+  <p class='say'>After the first review I learned that showing a live run is a bad trade. It is slow, it can fail, and it says less than a screenshot with someone explaining it.</p>
+  <p class='say'>The bigger one. I used to want to show only the parts that worked. What people actually took seriously was the thirty seven seconds, and the two rules I broke.</p>
+  <p class='warn'>Say the last line simply, then stop. Do not add anything after it.</p>">
+  <div class="kicker w pop">And about showing the work</div>
+  <h2 class="wide pop">The unflattering number<br>is the one worth leading with.</h2>
+  <p class="sub w pop">I used to want to present only the parts that worked. What actually got taken seriously was <b>37 seconds</b> — and the two rules I broke.</p>
+  <p class="tiny pop">Third time presenting this project. Each time I've cut more, claimed less, and been believed more.</p>
+</section>
+
+<!-- 26 ────────────────────────────────────────── -->
+<section class="slide"
+  data-notes="<p>Close it out. Relax.</p>
+  <p class='say'>The goal was a pipeline where a merge deploys exactly what was tested, checks it works, can be undone in under a minute, and tells me when something is wrong. That is done, and I showed it instead of claiming it.</p>
+  <p class='say'>What I would want you to take away is not the tools. It is that every number in here came off a run I can do again in front of you.</p>
+  <p class='warn'>If asked to run it live: the stack is up right now and I am happy to. Then thank them properly, because the feedback after each sprint is most of why this got better.</p>">
+  <div class="kicker g pop">Where it ended up</div>
+  <h2 class="wide pop">From "it works, I think"<br>to "here's the proof."</h2>
+  <div class="row pop" style="margin-top:2.5vh; gap:clamp(1rem,3vw,3rem)">
+    <div><div class="stat g" style="font-size:clamp(2.2rem,7vw,5rem)">11</div><p class="tiny">checks, all pinned</p></div>
+    <div><div class="stat g" style="font-size:clamp(2.2rem,7vw,5rem)">621</div><p class="tiny">components listed</p></div>
+    <div><div class="stat g" style="font-size:clamp(2.2rem,7vw,5rem)">37<small>s</small></div><p class="tiny">measured twice, not guessed</p></div>
+    <div><div class="stat" style="font-size:clamp(2.2rem,7vw,5rem); color:var(--amb)">9</div><p class="tiny">problems I raised on myself</p></div>
+  </div>
+  <p class="sub w pop" style="margin-top:3.5vh">Here's the commit. Here's what proved it. <b>Here's how I undo it — and how I find out I need to.</b></p>
+  <p class="tiny pop">Every number came off a run I can do again. Thank you — the feedback after each sprint is most of why this got better.</p>
+</section>
+
+</div>
+
+
+<div id="num"></div>
+<div id="hint"><kbd>←</kbd><kbd>→</kbd> move · <kbd>N</kbd> notes · <kbd>O</kbd> overview · <kbd>F</kbd> full</div>
+<div id="notes"><div class="h">Notes to self</div><div id="notesbody"></div></div>
+<div id="ov"><h4>All slides — click to jump</h4><div class="grid" id="ovgrid"></div></div>
+
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+const bar=document.getElementById('bar'), num=document.getElementById('num');
+const notes=document.getElementById('notes'), nbody=document.getElementById('notesbody');
+const ov=document.getElementById('ov'), ovgrid=document.getElementById('ovgrid');
+let i=0;
+
+slides.forEach(s=>{
+  const k=s.querySelector('.kicker');
+  if(k){ for(const t of ['r','g','w','p']) if(k.classList.contains(t)) s.dataset.t=t; }
+});
+
+const cards=[];
+slides.forEach((s,n)=>{
+  const t=s.querySelector('h1,h2');
+  const c=document.createElement('div');
+  c.className='card';
+  c.innerHTML='<span class="n">'+String(n+1).padStart(2,'0')+'</span>'+(t?t.textContent.trim():'—');
+  c.onclick=()=>{go(n); ov.classList.remove('on')};
+  ovgrid.appendChild(c); cards.push(c);
+});
+
+function go(n){
+  i=Math.max(0,Math.min(slides.length-1,n));
+  slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+  bar.style.width=((i+1)/slides.length*100)+'%';
+  num.textContent=String(i+1).padStart(2,'0')+' / '+slides.length;
+  nbody.innerHTML=slides[i].dataset.notes||'<p><em>Nothing here. Wing it.</em></p>';
+  cards.forEach((c,k)=>c.classList.toggle('cur',k===i));
+}
+document.addEventListener('keydown',e=>{
+  const k=e.key.toLowerCase();
+  if(k==='arrowright'||k==='pagedown'||e.key===' '){e.preventDefault(); go(i+1)}
+  else if(k==='arrowleft'||k==='pageup'){e.preventDefault(); go(i-1)}
+  else if(k==='home'){go(0)} else if(k==='end'){go(slides.length-1)}
+  else if(k==='n'){notes.classList.toggle('on')}
+  else if(k==='o'){ov.classList.toggle('on')}
+  else if(k==='f'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+  else if(k==='escape'){ov.classList.remove('on'); notes.classList.remove('on')}
+});
+document.getElementById('deck').addEventListener('click',e=>{
+  if(e.target.closest('#notes,#ov')) return;
+  go(i + (e.clientX < innerWidth*0.25 ? -1 : 1));
+});
+go(0);
+</script>
+</body>
+</html>
