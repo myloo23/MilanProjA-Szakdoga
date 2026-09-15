@@ -75,7 +75,27 @@ A dolgozat súlya a 3–6. fejezeten van, mert ott van a saját munka. A 2. feje
 
 ## 3. Mit küldj el ma a konzulensnek
 
-Lásd a chatben kapott levélszöveget. A lényeg: cím, egymondatos témaleírás, a nyolc fejezetcím, és egy kérdés a formai követelményekről.
+> Szép napot tanár úr!
+>
+> Köszönöm, hogy elvállalta. Összeraktam a címet és a fejezeteket.
+>
+> Cím: Automatizált telepítési lánc kiépítése és hatásának mérése saját üzemeltetésű CI/CD környezetben
+>
+> A lényeg, hogy lemérem, mennyi időbe és hány kézi lépésbe került a telepítés a pipeline előtt, és mennyibe utána. Ezt a kettőt hasonlítom össze, a hiba utáni helyreállítás idejével együtt.
+>
+> Fejezetek:
+> 1. Bevezetés
+> 2. Elméleti háttér
+> 3. A vizsgált rendszer és a kiindulási állapot
+> 4. Tervezés
+> 5. Megvalósítás
+> 6. Mérés és értékelés
+> 7. Továbbfejlesztési lehetőségek
+> 8. Összefoglalás
+>
+> Jónak tartja így a mérést? És elég ez így egy szakdolgozathoz, vagy bővítenem kellene? Gondoltam Kubernetesre, Terraformra vagy supply-chain biztonságra, illetve arra is, hogy készüljön az alkalmazáshoz egy rendes frontend és backend.
+>
+> Köszönöm szépen!
 
 ---
 
