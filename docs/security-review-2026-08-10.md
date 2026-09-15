@@ -32,6 +32,7 @@ configuration read plus two reproductions.
 | F8 | Everything is pinned, so nothing is ever patched between pushes | Low | **HW** |
 | F9 | `docker image prune --force` is host-wide | Low | **S3** |
 
+<<<<<<< Updated upstream
 ### Status
 
 Updated as findings close, so this table and the repository do not drift apart.
@@ -45,6 +46,8 @@ for everything else applies to this document too.
 | F6 | Fixed, in review. Trivy `fs --scanners secret` after Ruff in `ci.yml`, plus the pinned `gitleaks` pre-commit hook. The `misconfig` scanner this section also recommends is *not* included and stays open in `PLAN.md` — the finding was secret scanning, and IaC triage is a separate piece of work |
 | F3, F7, F8 | Open, Hardening week |
 
+=======
+>>>>>>> Stashed changes
 ---
 
 ## F1 — `/echo` returns 500 on deeply nested JSON [S3]
@@ -83,6 +86,7 @@ so a bored scanner can drive the error rate on the golden-signals dashboard from
 outside, and the one alert rule Sprint 3 is building fires on someone else's
 schedule.
 
+<<<<<<< Updated upstream
 **Fix.** Catch `RecursionError` in its own clause with its own reason —
 grouping it with the two Werkzeug exceptions would hide that it arrives from a
 different direction. The regression test is the deliverable: this is exactly the
@@ -125,6 +129,24 @@ the payload it was written for. The parse and the response are now inside one
 Neither correction changes the severity or the conclusion. F1 is real, it is
 reachable inside the 64 KiB limit on 3.12 — 16,000 levels is 32,000 bytes,
 half the ceiling — and F2 does not subsume it.
+=======
+**Fix.** Widen the catch and add the case to the suite:
+
+```python
+except (BadRequest, UnsupportedMediaType, RecursionError):
+```
+
+`RecursionError` is not in the same family as the other two and grouping it in
+one tuple hides that; a separate `except` with its own one-line reason is the
+honest version. Either way the regression test is the deliverable — this is
+exactly the kind of claim §6 says must be demonstrable, and a test in
+`tests/test_app.py` is what makes it so.
+
+**Verified on Python 3.10; the image runs 3.12.** The default recursion limit is
+1000 on both and the failure mode does not change, but the number of brackets
+needed differs slightly. Re-run it inside the container before quoting a payload
+size at a review.
+>>>>>>> Stashed changes
 
 ---
 
