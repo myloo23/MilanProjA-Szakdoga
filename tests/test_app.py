@@ -153,3 +153,19 @@ def test_ready_returns_ready(client):
 
     assert response.status_code == 200
     assert response.get_json() == {"status": "READY"}
+
+def test_version_defaults_when_unset(client, monkeypatch):
+    monkeypatch.delenv("APP_VERSION", raising=False)
+
+    response = client.get("/version")
+
+    assert response.status_code == 200
+    assert response.get_json() == {"version": "dev"}
+
+def test_version_reports_build_sha(client, monkeypatch):
+    monkeypatch.setenv("APP_VERSION", "a6a4d33")
+
+    response = client.get("/version")
+
+    assert response.status_code == 200
+    assert response.get_json() == {"version": "a6a4d33"}

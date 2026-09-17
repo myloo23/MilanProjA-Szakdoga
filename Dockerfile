@@ -28,6 +28,11 @@ WORKDIR /app
 COPY --from=builder /install /usr/local
 COPY app/ ./app/
 COPY gunicorn.conf.py .
+ARG GIT_SHA=dev
+ENV APP_VERSION=${GIT_SHA}
+LABEL org.opencontainers.image.revision=${GIT_SHA} \
+      org.opencontainers.image.source="https://github.com/myloo23/MilanProjA-Szakdoga" \
+      org.opencontainers.image.title="ProjectA backend"
 USER appuser
 EXPOSE 8000
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \

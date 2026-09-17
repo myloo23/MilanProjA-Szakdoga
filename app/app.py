@@ -1,4 +1,5 @@
 # app.py
+import os
 import time
 
 from flask import Flask, Response, g, jsonify, request
@@ -116,6 +117,10 @@ def ready():
 def prometheus_metrics():
     body, content_type = metrics.render()
     return Response(body, mimetype=content_type)
+
+@app.get("/version")
+def version():
+    return jsonify({"version": os.environ.get("APP_VERSION", "dev")})
 
 
 @app.errorhandler(RequestEntityTooLarge)
