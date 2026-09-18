@@ -1,0 +1,21 @@
+{{- if .Values.ingress.enabled }}
+# A fürt bejárata. A k3s beépített Traefik ingress controllere olvassa, és a
+# kívülről érkező HTTP-kéréseket a frontend Service-hez irányítja. Host nincs
+# megadva, így bármilyen címre érkező kérést kiszolgál.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: projecta
+spec:
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
+{{- end }}

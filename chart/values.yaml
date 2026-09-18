@@ -1,21 +1,47 @@
 # A chart változó értékei. A templates/ alatti fájlok ezekre hivatkoznak
-# ({{ .Values.<kulcs> }}), és telepítéskor felülírhatók, pl.:
-#   helm upgrade --install projecta ./chart --set image.tag=abc1234
+# ({{ .Values.<kulcs> }}); telepítéskor --set-tel felülírhatók.
 
+# Mindkét saját képet ugyanabból a commitból buildeljük, ezért egy közös tag
+# van. A pipeline egyetlen kapcsolóval vált verziót:
+#   helm upgrade --install projecta ./chart --set image.tag=<commit-sha>
 image:
-  repository: flaskapp
   tag: dev
 
-replicaCount: 2
+backend:
+  image:
+    repository: flaskapp
+  replicaCount: 2
 
-# A backend ezekből az env-változókból találja meg a Postgrest (app/db.py:
-# DB_HOST, DB_PORT, valamint POSTGRES_DB/USER/PASSWORD a Secretből).
+frontend:
+  image:
+    repository: frontend
+  replicaCount: 2
+
+# Hol éri el a backend (és a migrate init container) az adatbázist.
+# A jelszó NEM itt van: a db-credentials Secretből jön, ami a chartban nincs
+# benne, hogy a jelszó ne kerüljön gitbe. Egyszeri létrehozása:
+#   kubectl create secret generic db-credentials \
+#     --from-literal=POSTGRES_USER=projecta \
+#     --from-literal=POSTGRES_DB=projecta \
+#     --from-literal=POSTGRES_PASSWORD='<jelszó>'
 database:
   host: postgres
   port: 5432
   secretName: db-credentials
 
 # A séma-migráció (init container) képe. Ugyanaz, mint a Postgresé, mert abban
-# van psql; a fürtben már megvan, nem kell külön importálni.
+# van psql, és a fürtben már megvan.
 migrate:
   image: postgres:17-alpine
+
+# A fürtön belüli Postgres. enabled: false esetén a chart nem telepít adatbázist,
+# és a database.host egy külső szerverre mutathat.
+postgres:
+  enabled: true
+  image: postgres:17-alpine
+  storage: 2Gi
+
+# Böngészőből egy címen érhető el az alkalmazás: minden kérés a frontendhez
+# megy, az /api/ kéréseket a frontend nginx-e továbbítja a backendnek.
+ingress:
+  enabled: true

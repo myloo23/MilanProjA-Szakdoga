@@ -1,0 +1,15 @@
+# Engedélyező lista: csak az kerül a build contextbe, amit a Dockerfile
+# használ. A node_modules kimaradása a fontos: a gépen lévő (macOS-re
+# telepített) csomagok felülírnák az image-ben `npm ci`-vel telepítetteket.
+*
+
+!package.json
+!package-lock.json
+!index.html
+!vite.config.ts
+!tsconfig.json
+!tsconfig.app.json
+!tsconfig.node.json
+!src/
+!public/
+!nginx.conf
