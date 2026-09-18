@@ -14,3 +14,8 @@ database:
   host: postgres
   port: 5432
   secretName: db-credentials
+
+# A séma-migráció (init container) képe. Ugyanaz, mint a Postgresé, mert abban
+# van psql; a fürtben már megvan, nem kell külön importálni.
+migrate:
+  image: postgres:17-alpine

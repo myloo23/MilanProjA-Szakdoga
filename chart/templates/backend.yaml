@@ -12,6 +12,41 @@ spec:
       labels:
         app: backend
     spec:
+      # A séma az alkalmazás előtt, külön lépésben jön létre: a backend maga nem
+      # hoz létre táblát (lásd app/db.py). Ha a Postgres még nem fogad
+      # kapcsolatot, a psql hibával kilép, és a kubelet újrapróbálja.
+      initContainers:
+        - name: migrate
+          image: {{ .Values.migrate.image | quote }}
+          imagePullPolicy: IfNotPresent
+          command: ["psql", "-v", "ON_ERROR_STOP=1", "-f", "/schema/schema.sql"]
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 70
+          env:
+            - name: PGHOST
+              value: {{ .Values.database.host | quote }}
+            - name: PGPORT
+              value: {{ .Values.database.port | quote }}
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.secretName }}
+                  key: POSTGRES_DB
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.secretName }}
+                  key: POSTGRES_USER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.secretName }}
+                  key: POSTGRES_PASSWORD
+          volumeMounts:
+            - name: schema
+              mountPath: /schema
+              readOnly: true
       containers:
         - name: backend
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -44,6 +79,10 @@ spec:
               memory: 128Mi
             limits:
               memory: 256Mi
+      volumes:
+        - name: schema
+          configMap:
+            name: db-schema
 ---
 apiVersion: v1
 kind: Service
