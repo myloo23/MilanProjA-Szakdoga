@@ -1,0 +1,16 @@
+# A chart változó értékei. A templates/ alatti fájlok ezekre hivatkoznak
+# ({{ .Values.<kulcs> }}), és telepítéskor felülírhatók, pl.:
+#   helm upgrade --install projecta ./chart --set image.tag=abc1234
+
+image:
+  repository: flaskapp
+  tag: dev
+
+replicaCount: 2
+
+# A backend ezekből az env-változókból találja meg a Postgrest (app/db.py:
+# DB_HOST, DB_PORT, valamint POSTGRES_DB/USER/PASSWORD a Secretből).
+database:
+  host: postgres
+  port: 5432
+  secretName: db-credentials

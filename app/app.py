@@ -9,7 +9,7 @@ from werkzeug.exceptions import (
     UnsupportedMediaType,
 )
 
-from app import metrics
+from app import db, metrics, notes
 from app.logging_config import (
     REQUEST_ID_HEADER,
     configure_logging,
@@ -108,8 +108,24 @@ def health():
 
 @app.route("/ready")
 def ready():
-    # no external deps yet; when you add one (DB/registry),
-    # check it here and return 503 if it's unreachable
+    # Readiness answers "can this pod serve traffic", and without the database
+    # it cannot. A pod that fails this check is removed from the Service's
+    # endpoints and stops receiving requests without being restarted, which is
+    # what makes a rolling update safe: the new pod takes traffic only once it
+    # can actually answer.
+    #
+    # /health deliberately does NOT check the database. Liveness failures cause
+    # restarts, so tying it to an external dependency would turn a database
+    # outage into a restart loop across every replica.
+    try:
+        db.ping()
+    except Exception:
+        app.logger.warning(
+            "database unreachable, reporting not ready",
+            extra={"event": "not_ready", "dependency": "postgres"},
+        )
+        return jsonify(status="NOT_READY", dependency="postgres"), 503
+
     return jsonify(status="READY")
 
 
@@ -121,6 +137,56 @@ def prometheus_metrics():
 @app.get("/version")
 def version():
     return jsonify({"version": os.environ.get("APP_VERSION", "dev")})
+
+
+def _json_body() -> dict:
+    """The request body as a dict, or an empty dict for anything unusable.
+
+    `silent=True` keeps a malformed body from raising: the endpoints below
+    validate what they need and answer 400 themselves, so a bad request can
+    never reach the generic 500 handler. Same contract as /echo — bad input is
+    a client error, never a server error.
+    """
+    payload = request.get_json(silent=True)
+    return payload if isinstance(payload, dict) else {}
+
+
+@app.get("/notes")
+def list_notes():
+    return jsonify(notes=notes.list_notes())
+
+
+@app.post("/notes")
+def create_note():
+    payload = _json_body()
+    title = str(payload.get("title") or "").strip()
+    if not title:
+        return jsonify(error="title is required"), 400
+
+    created = notes.create_note(title, str(payload.get("body") or ""))
+    return jsonify(created), 201
+
+
+@app.put("/notes/<int:note_id>")
+def update_note(note_id: int):
+    payload = _json_body()
+    title = str(payload.get("title") or "").strip()
+    if not title:
+        return jsonify(error="title is required"), 400
+
+    updated = notes.update_note(note_id, title, str(payload.get("body") or ""))
+    if updated is None:
+        return jsonify(error="note not found"), 404
+
+    return jsonify(updated)
+
+
+@app.delete("/notes/<int:note_id>")
+def delete_note(note_id: int):
+    if not notes.delete_note(note_id):
+        return jsonify(error="note not found"), 404
+
+    return "", 204
 
 
 @app.errorhandler(RequestEntityTooLarge)
