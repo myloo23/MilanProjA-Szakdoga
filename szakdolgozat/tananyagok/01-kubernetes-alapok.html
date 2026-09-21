@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1. Kubernetes alapok</title>
+<link rel="stylesheet" href="assets/tananyag.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="top"><a href="index.html">← Tananyagtérkép</a><a href="02-konfiguracio-es-probe.html">Következő: Konfiguráció és probe-ok →</a></nav>
+
+<p class="eyebrow">1. tananyag · 1–2. nap</p>
+<h1>Kubernetes alapok</h1>
+<p class="lead">Mi a fürt, mi a pod, a Deployment és a Service, hogyan találják meg egymást, és miért jött az első ImagePullBackOff.</p>
+
+<div class="goals">
+  <h2>A végére ezt fogod érteni</h2>
+  <ul>
+    <li>Miért nem parancsokat adsz a Kubernetesnek, hanem kívánt állapotot írsz le.</li>
+    <li>Mi fut valójában a gépeden, amikor a k3d fürtöd megy, és mit jelent, ha „unreachable”.</li>
+    <li>Hogyan lesz egy Deploymentből ReplicaSet és pod, és mit árul el a pod neve.</li>
+    <li>Hogyan köti össze a címke a Service-t a podokkal.</li>
+    <li>Miért nem látja a fürt a Macen épített képet.</li>
+  </ul>
+</div>
+
+<h2 id="kivansag">1. Kívánságot írsz le, nem parancsot</h2>
+
+<p>Gondolj egy termosztátra. Nem azt mondod neki, hogy „fűts 12 percig”, hanem hogy <strong>legyen 22 fok</strong>. Onnantól folyamatosan méri a hőmérsékletet, és ha eltér, beavatkozik. Ha kinyitod az ablakot, újra fűt. Nem áll le, csak tartja azt, amit kértél.</p>
+
+<p>A Kubernetes ugyanezt csinálja konténerekkel. Azt írod le, hogy „ebből a képből mindig 2 példány fusson”. Ezt nevezik <strong>kívánt állapotnak</strong> (desired state). A fürtben folyamatosan futnak kis programok, a <strong>kontrollerek</strong>, amelyek összevetik a kívánt állapotot a tényleges állapottal, és ha eltérést látnak, beavatkoznak. Ezt a körforgást <strong>reconciliation loopnak</strong> hívják.</p>
+
+<div class="stepper" data-captions="Leírtad a kívánságot: <code>replicas: 2</code>. A kontroller megnézi, mi fut: két pod. Nincs eltérés, nincs teendő.|Kézzel kitörölsz egy podot (<code>kubectl delete pod …</code>). A tényleges állapot most 1 pod.|A kontroller a következő körben észreveszi: kívánt 2, tényleges 1. Eltérés van.|Csinál egy <strong>új</strong> podot, új névvel. Nem a régit éleszti fel, a régi végleg eltűnt.|Újra 2 = 2. A kör megy tovább, és ez a kontroller soha nem áll le.">
+<figure>
+<svg viewBox="0 0 640 250" role="img" aria-label="A reconciliation loop: kívánt állapot, kontroller, tényleges állapot">
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+    <marker id="a1b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-bad"/></marker>
+  </defs>
+  <rect x="20" y="70" width="160" height="90" rx="10" class="n-accent"/>
+  <text x="100" y="100" text-anchor="middle" class="t-bold">Kívánt állapot</text>
+  <text x="100" y="124" text-anchor="middle" class="t-mono t-small">replicas: 2</text>
+  <text x="100" y="144" text-anchor="middle" class="t-muted t-small">(a te YAML-ed)</text>
+
+  <rect x="240" y="70" width="160" height="90" rx="10" class="n-violet"/>
+  <text x="320" y="100" text-anchor="middle" class="t-bold">Kontroller</text>
+  <text x="320" y="124" text-anchor="middle" class="t-small t-muted">összehasonlít,</text>
+  <text x="320" y="142" text-anchor="middle" class="t-small t-muted">ha kell, beavatkozik</text>
+
+  <path d="M180,115 L236,115" class="line" marker-end="url(#a1)"/>
+  <path d="M400,115 L456,115" class="line" marker-end="url(#a1)"/>
+  <path d="M540,165 C540,225 320,225 320,164" class="line dash" marker-end="url(#a1)"/>
+  <text x="430" y="238" text-anchor="middle" class="t-small t-muted">folyamatosan figyeli</text>
+
+  <rect x="460" y="40" width="160" height="125" rx="10" class="n"/>
+  <text x="540" y="62" text-anchor="middle" class="t-bold">Tényleges állapot</text>
+
+  <g data-only="0,1,2,3,4">
+    <g data-only="0">
+      <rect x="480" y="78" width="120" height="30" rx="6" class="n-ok"/><text x="540" y="98" text-anchor="middle" class="t-mono t-small">backend-…-2dvr9</text>
+      <rect x="480" y="118" width="120" height="30" rx="6" class="n-ok"/><text x="540" y="138" text-anchor="middle" class="t-mono t-small">backend-…-ztss8</text>
+    </g>
+    <g data-only="1,2">
+      <rect x="480" y="78" width="120" height="30" rx="6" class="n-ok"/><text x="540" y="98" text-anchor="middle" class="t-mono t-small">backend-…-2dvr9</text>
+      <rect x="480" y="118" width="120" height="30" rx="6" class="n-bad" stroke-dasharray="4 3"/><text x="540" y="138" text-anchor="middle" class="t-small t-bad">törölve</text>
+    </g>
+    <g data-only="3,4">
+      <rect x="480" y="78" width="120" height="30" rx="6" class="n-ok"/><text x="540" y="98" text-anchor="middle" class="t-mono t-small">backend-…-2dvr9</text>
+      <rect x="480" y="118" width="120" height="30" rx="6" class="n-accent"/><text x="540" y="138" text-anchor="middle" class="t-mono t-small">backend-…-k7p4q</text>
+    </g>
+  </g>
+  <g data-only="2">
+    <text x="320" y="50" text-anchor="middle" class="t-bold t-bad">2 ≠ 1 → eltérés!</text>
+  </g>
+  <g data-only="3">
+    <path d="M400,140 C440,150 450,135 476,133" class="line-bad" marker-end="url(#a1b)"/>
+    <text x="320" y="50" text-anchor="middle" class="t-bold t-accent">új pod létrehozása</text>
+  </g>
+  <g data-only="0,4">
+    <text x="320" y="50" text-anchor="middle" class="t-bold t-ok">2 = 2 → rendben</text>
+  </g>
+</svg>
+<figcaption>Kattints végig: ez történt, amikor kitöröltél egy podot, és „magától visszajött”.</figcaption>
+</figure>
+<div class="controls"><button data-prev>← Vissza</button><button class="primary" data-next>Tovább →</button><button data-reset>Elölről</button><span class="counter"></span></div>
+<div class="caption"></div>
+</div>
+
+<div class="box key"><strong>A lényeg</strong>
+Az Ansible, amit korábban használtál, a másik megközelítés: lépésenként megmondod, mit csináljon, a playbook lefut, és utána senki nem figyel semmit. Ha éjjel leáll a konténer, reggelig áll. A Kubernetesben a kívánság a telepítés után is „él”, és valami folyamatosan érvényesíti.</div>
+
+<h2 id="furt">2. Mi fut valójában a gépeden</h2>
+
+<p>A fürtnek két fő része van. A <strong>control plane</strong> az agy: itt fut az <strong>API szerver</strong>, ez fogadja és tárolja a kívánságaidat, és itt futnak a kontrollerek is. A <code>kubectl</code> és a <code>helm</code> mindig az API szerverrel beszél. A <strong>csomópontok</strong> (node) végzik a munkát, ezeken futnak a konténerek. Mindegyiken fut egy ügynök, a <strong>kubelet</strong>, ami elindítja és figyeli a rábízott podokat.</p>
+
+<p>A <strong>k3s</strong> a Kubernetes egy kicsi, egyszerűsített kiadása. A <strong>k3d</strong> ennél is egy lépéssel tovább megy: a k3s-t Docker-konténerekbe csomagolja. A „gépeid” tehát valójában konténerek a Mac Dockerében.</p>
+
+<figure>
+<svg viewBox="0 0 640 330" role="img" aria-label="A k3d fürt felépítése a Macen">
+  <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-accent"/></marker></defs>
+  <rect x="10" y="10" width="620" height="310" rx="14" class="zone"/>
+  <text x="26" y="34" class="t-bold">A Maced</text>
+
+  <rect x="26" y="60" width="150" height="80" rx="10" class="n-accent"/>
+  <text x="101" y="88" text-anchor="middle" class="t-bold">Terminál</text>
+  <text x="101" y="110" text-anchor="middle" class="t-mono t-small">kubectl · helm</text>
+  <text x="101" y="127" text-anchor="middle" class="t-mono t-small t-muted">~/.kube/config</text>
+
+  <rect x="200" y="50" width="420" height="258" rx="12" class="n-2"/>
+  <text x="216" y="74" class="t-bold">Docker Desktop</text>
+  <text x="604" y="74" text-anchor="end" class="t-small t-muted">ha ez nem fut, nincs fürt</text>
+
+  <rect x="216" y="92" width="120" height="60" rx="8" class="n"/>
+  <text x="276" y="116" text-anchor="middle" class="t-mono t-small t-bold">serverlb</text>
+  <text x="276" y="136" text-anchor="middle" class="t-small t-muted">bejárat, :57003</text>
+
+  <rect x="360" y="92" width="244" height="92" rx="8" class="n-violet"/>
+  <text x="482" y="114" text-anchor="middle" class="t-mono t-small t-bold">k3d-szakdoga-server-0</text>
+  <text x="482" y="134" text-anchor="middle" class="t-small">control plane: API szerver,</text>
+  <text x="482" y="150" text-anchor="middle" class="t-small">kontrollerek, adatbázis</text>
+  <text x="482" y="170" text-anchor="middle" class="t-small t-muted">+ podok is futhatnak rajta</text>
+
+  <rect x="360" y="200" width="244" height="92" rx="8" class="n"/>
+  <text x="482" y="222" text-anchor="middle" class="t-mono t-small t-bold">k3d-szakdoga-agent-0</text>
+  <text x="482" y="242" text-anchor="middle" class="t-small">csak munkás: podokat futtat</text>
+  <g>
+    <rect x="378" y="256" width="62" height="24" rx="5" class="n-ok"/><text x="409" y="272" text-anchor="middle" class="t-small">pod</text>
+    <rect x="450" y="256" width="62" height="24" rx="5" class="n-ok"/><text x="481" y="272" text-anchor="middle" class="t-small">pod</text>
+    <rect x="522" y="256" width="62" height="24" rx="5" class="n-ok"/><text x="553" y="272" text-anchor="middle" class="t-small">pod</text>
+  </g>
+
+  <path d="M176,105 L212,118" class="line-accent" marker-end="url(#a2)"/>
+  <path d="M336,122 L356,128" class="line-accent" marker-end="url(#a2)"/>
+  <path d="M482,184 L482,196" class="line" />
+
+  <text x="26" y="178" class="t-small t-muted">A kubectl a</text>
+  <text x="26" y="194" class="t-small t-muted">kubeconfigból tudja,</text>
+  <text x="26" y="210" class="t-small t-muted">hol az API szerver:</text>
+  <text x="26" y="228" class="t-small t-mono">0.0.0.0:57003</text>
+</svg>
+<figcaption>A k3d fürt: három Docker-konténer. A <code>kubectl get nodes</code> ezért mutat két node-ot (server-0 és agent-0). A serverlb nem node, csak egy bejárat.</figcaption>
+</figure>
+
+<div class="box story"><strong>Ez történt nálad</strong>
+<code>Error: kubernetes cluster unreachable: Get "https://0.0.0.0:57003/version": connection refused</code>. A kubectl a helyes címet kereste, de ott nem válaszolt semmi, mert a Docker-konténerek leálltak (a gép aludt vagy a Docker újraindult). A <code>k3d cluster list</code> ezt mutatta: <code>0/1</code> server, <code>0/1</code> agent. A <code>k3d cluster start szakdoga</code> elindította a konténereket, és minden visszajött, a fürt állapotával együtt. A Postgres podnál ezért látszott <code>RESTARTS 1</code>.</div>
+
+<div class="box whatif"><strong>Mi lett volna, ha…</strong>
+…<code>k3d cluster delete</code>-et futtatsz <code>start</code> helyett? Új, üres fürtöt kapsz. A Postgres adatai a node-konténer lemezén vannak (erről a 4. tananyagban lesz szó), vagyis a jegyzetek elvesznek, és a képeket is újra be kell tölteni. A <code>stop</code>/<code>start</code> megtart mindent, a <code>delete</code> semmit.</div>
+
+<h2 id="lanc">3. Deployment → ReplicaSet → Pod</h2>
+
+<p>A <strong>pod</strong> a legkisebb egység, amit a Kubernetes futtat, nagyjából egy konténer egy vékony burokban. A lényeg, hogy <strong>a pod eldobható</strong>: nincs állandó neve és IP-címe, és ha meghal, nem éled újra, hanem egy másik jön helyette. Soha ne építs egy konkrét pod nevére.</p>
+
+<p>A <strong>Deployment</strong> az, amit te írsz: melyik képből, hány példány fusson, és hogyan történjen a verzióváltás. A Deployment nem közvetlenül podokat hoz létre. Minden verzióhoz csinál egy <strong>ReplicaSetet</strong>, és a podokat az hozza létre. A pod neve ezt a láncot mutatja:</p>
+
+<figure>
+<svg viewBox="0 0 640 250" role="img" aria-label="Deployment, ReplicaSetek és podok láncolata">
+  <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+  <text x="320" y="30" text-anchor="middle" class="t-mono" font-size="18"><tspan class="t-accent t-bold">backend</tspan>-<tspan class="t-violet t-bold">97b7c8fdd</tspan>-<tspan class="t-ok t-bold">8x88m</tspan></text>
+  <text x="200" y="52" text-anchor="middle" class="t-small t-accent">Deployment neve (te adtad)</text>
+  <text x="350" y="52" text-anchor="middle" class="t-small t-violet">ReplicaSet = verzió</text>
+  <text x="470" y="52" text-anchor="middle" class="t-small t-ok">pod (véletlen)</text>
+
+  <rect x="20" y="110" width="140" height="60" rx="10" class="n-accent"/>
+  <text x="90" y="136" text-anchor="middle" class="t-bold">Deployment</text>
+  <text x="90" y="156" text-anchor="middle" class="t-mono t-small">backend</text>
+
+  <rect x="220" y="78" width="170" height="44" rx="8" class="n-2"/>
+  <text x="305" y="98" text-anchor="middle" class="t-mono t-small">RS 547dbb8965</text>
+  <text x="305" y="114" text-anchor="middle" class="t-small t-muted">env nélkül · 0 pod</text>
+  <rect x="220" y="134" width="170" height="44" rx="8" class="n-violet"/>
+  <text x="305" y="154" text-anchor="middle" class="t-mono t-small">RS 97b7c8fdd</text>
+  <text x="305" y="170" text-anchor="middle" class="t-small">DB_HOST-tal · 2 pod</text>
+  <rect x="220" y="190" width="170" height="44" rx="8" class="n-2"/>
+  <text x="305" y="210" text-anchor="middle" class="t-mono t-small">RS 6f54d64bf7</text>
+  <text x="305" y="226" text-anchor="middle" class="t-small t-muted">abc1234 tag · 0 pod</text>
+
+  <path d="M160,130 L216,100" class="line" marker-end="url(#a3)"/>
+  <path d="M160,140 L216,156" class="line" marker-end="url(#a3)"/>
+  <path d="M160,150 L216,210" class="line" marker-end="url(#a3)"/>
+
+  <rect x="450" y="120" width="130" height="30" rx="6" class="n-ok"/><text x="515" y="140" text-anchor="middle" class="t-mono t-small">…-8x88m</text>
+  <rect x="450" y="160" width="130" height="30" rx="6" class="n-ok"/><text x="515" y="180" text-anchor="middle" class="t-mono t-small">…-f2f4c</text>
+  <path d="M390,150 L446,137" class="line" marker-end="url(#a3)"/>
+  <path d="M390,158 L446,174" class="line" marker-end="url(#a3)"/>
+</svg>
+<figcaption>A saját fürtöd ReplicaSetjei. Minden alkalommal, amikor a pod-sablon változott (env hozzáadása, új image tag), új ReplicaSet jött létre. A régiek 0 poddal megmaradnak.</figcaption>
+</figure>
+
+<div class="box key"><strong>Miért maradnak meg a régi ReplicaSetek?</strong>
+Mert így gyors a visszaállás. A régi verzió „receptje” megvan, csak 0-ra van állítva. Rollbacknél az új ReplicaSet lecsökken, a régi visszanő. Alapból 10 régi ReplicaSet marad meg (<code>revisionHistoryLimit</code>).</div>
+
+<h2 id="cimkek">4. Címkék: így találják meg egymást</h2>
+
+<p>A podok jönnek-mennek, és közben változik az IP-címük. A <strong>Service</strong> ad egy állandó nevet és címet, ami mindig az éppen élő podokra mutat, és szétosztja köztük a kéréseket. A fürtön belül a Service neve egyben DNS-név is. Ezért éri el a backend az adatbázist egyszerűen a <code>postgres</code> néven.</p>
+
+<p>A Service viszont nem név szerint találja meg a podokat, hanem <strong>címke</strong> (label) alapján. A podok kapnak egy címkét (<code>app: backend</code>), a Service pedig egy <strong>selectort</strong>: „azok a podok érdekelnek, amelyeken ez a címke van”.</p>
+
+<figure>
+<svg viewBox="0 0 640 220" role="img" aria-label="Service selector és pod címkék">
+  <defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-ok"/></marker></defs>
+  <rect x="20" y="70" width="190" height="80" rx="10" class="n-accent"/>
+  <text x="115" y="96" text-anchor="middle" class="t-bold">Service: backend</text>
+  <text x="115" y="118" text-anchor="middle" class="t-mono t-small">selector:</text>
+  <text x="115" y="136" text-anchor="middle" class="t-mono t-small">  app: backend</text>
+
+  <rect x="380" y="20" width="220" height="48" rx="8" class="n-ok"/>
+  <text x="490" y="41" text-anchor="middle" class="t-mono t-small">pod …-8x88m</text>
+  <text x="490" y="58" text-anchor="middle" class="t-mono t-small t-ok">app: backend ✓</text>
+  <rect x="380" y="86" width="220" height="48" rx="8" class="n-ok"/>
+  <text x="490" y="107" text-anchor="middle" class="t-mono t-small">pod …-f2f4c</text>
+  <text x="490" y="124" text-anchor="middle" class="t-mono t-small t-ok">app: backend ✓</text>
+  <rect x="380" y="152" width="220" height="48" rx="8" class="n-bad"/>
+  <text x="490" y="173" text-anchor="middle" class="t-mono t-small">pod (elgépelt címke)</text>
+  <text x="490" y="190" text-anchor="middle" class="t-mono t-small t-bad">app: bakend ✗</text>
+
+  <path d="M210,100 L376,46" class="line-ok" marker-end="url(#a4)"/>
+  <path d="M210,110 L376,110" class="line-ok" marker-end="url(#a4)"/>
+  <path d="M210,125 L376,172" class="line dash"/>
+  <text x="200" y="200" text-anchor="middle" class="t-small t-bad">nem egyezik → nem kap kérést</text>
+</svg>
+<figcaption>A kapcsolat csak a címkéken múlik. Egy elgépelés miatt nem jön hibaüzenet: a pod fut, csak éppen soha nem kap forgalmat.</figcaption>
+</figure>
+
+<p>Ugyanez a mechanizmus köti a Deploymentet a saját podjaihoz is (<code>selector.matchLabels</code>). Ezért kell a chartodban az <code>app: backend</code> címkének háromszor egyeznie: a Deployment selectorában, a pod-sablonban és a Service selectorában.</p>
+
+<h2 id="kep">5. Miért jön ImagePullBackOff</h2>
+
+<p>A képet nem a Maced Dockere adja oda a podnak, hanem a <strong>node</strong> keresi meg a saját képtárában. A node-ok külön konténerek, saját képtárral, és nem tudják, mi van a Mac Dockerében.</p>
+
+<figure>
+<svg viewBox="0 0 640 210" role="img" aria-label="Kép útja a Mac Dockeréből a node-okba">
+  <defs><marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-accent"/></marker></defs>
+  <rect x="20" y="40" width="200" height="130" rx="10" class="n-2"/>
+  <text x="120" y="64" text-anchor="middle" class="t-bold">Mac Docker képtára</text>
+  <rect x="40" y="80" width="160" height="28" rx="6" class="n"/><text x="120" y="99" text-anchor="middle" class="t-mono t-small">flaskapp:dev</text>
+  <rect x="40" y="118" width="160" height="28" rx="6" class="n"/><text x="120" y="137" text-anchor="middle" class="t-mono t-small">frontend:dev</text>
+
+  <rect x="420" y="20" width="200" height="80" rx="10" class="n-violet"/>
+  <text x="520" y="44" text-anchor="middle" class="t-mono t-small t-bold">server-0 képtára</text>
+  <text x="520" y="68" text-anchor="middle" class="t-mono t-small">flaskapp:dev</text>
+  <text x="520" y="86" text-anchor="middle" class="t-mono t-small">frontend:dev</text>
+  <rect x="420" y="112" width="200" height="80" rx="10" class="n"/>
+  <text x="520" y="136" text-anchor="middle" class="t-mono t-small t-bold">agent-0 képtára</text>
+  <text x="520" y="160" text-anchor="middle" class="t-mono t-small">flaskapp:dev</text>
+  <text x="520" y="178" text-anchor="middle" class="t-mono t-small">frontend:dev</text>
+
+  <path d="M220,100 L416,62" class="line-accent" marker-end="url(#a5)"/>
+  <path d="M220,112 L416,150" class="line-accent" marker-end="url(#a5)"/>
+  <text x="318" y="96" text-anchor="middle" class="t-mono t-small t-accent">k3d image import</text>
+</svg>
+<figcaption>A <code>k3d image import frontend:dev -c szakdoga</code> minden node-ba bemásolja a képet. Az <code>imagePullPolicy: IfNotPresent</code> pedig azt mondja: ha helyben megvan, ne keresd az interneten.</figcaption>
+</figure>
+
+<div class="box story"><strong>Ez történt nálad</strong>
+A 6. napon szándékosan <code>--set image.tag=abc1234</code>-et adtál meg. Ilyen kép nincs a node-okon, ezért a kubelet megpróbálta letölteni egy registryből, nem sikerült, és egyre hosszabb várakozásokkal újrapróbálja. Ez a <em>BackOff</em>: <code>ErrImagePull</code> → <code>ImagePullBackOff</code>.</div>
+
+<div class="box thesis"><strong>A dolgozat szempontjából</strong>
+Élesben nincs <code>k3d image import</code>. Ott egy registry van, amit a node-ok elérnek, és a pipeline tölti fel a képet a commit SHA-jával jelölve. A probléma ugyanaz, csak ott a pipeline oldja meg, nem te kézzel. A kézi és az automatikus változat közötti különbség része a mérésednek.</div>
+
+<h2 id="parancsok">6. A három parancs, amit reflexből használj</h2>
+
+<pre><code>kubectl get pods              <span class="c"># mi van most</span>
+kubectl describe pod &lt;név&gt;    <span class="c"># MIÉRT olyan, a lényeg az Events rész az alján</span>
+kubectl logs &lt;név&gt;            <span class="c"># mit írt maga az alkalmazás</span>
+kubectl logs -l app=backend   <span class="c"># minden backend pod logja egyszerre, címke alapján</span></code></pre>
+
+<p>A <code>describe</code> kimenetének az alja majdnem mindig kimondja a hibát. Mielőtt keresel vagy kérdezel, azt nézd meg.</p>
+
+<h2 id="kviz">Ellenőrizd magad</h2>
+<div class="quiz">
+<details><summary>Kitörölsz egy podot. Újraindul?</summary><p>Nem. A pod végleg eltűnik. A ReplicaSet kontrollere észreveszi, hogy eggyel kevesebb van a kívántnál, és létrehoz egy <strong>új</strong> podot, új névvel és új IP-címmel.</p></details>
+<details><summary>Miért látsz két node-ot, ha a k3d három konténert indított?</summary><p>A harmadik, a <code>serverlb</code>, nem node, csak egy bejárat, ami az API szerverhez (és az Ingresshez) továbbít. Podok nem futnak rajta.</p></details>
+<details><summary>Mit árul el a <code>backend-6f54d64bf7-qpp2l</code> név középső része?</summary><p>A ReplicaSetet, vagyis azt, hogy melyik pod-sablon-verzióból készült. Ugyanaz a középső rész = ugyanaz a verzió. A <code>6f54d64bf7</code> a hibás <code>abc1234</code> tagű verzió volt.</p></details>
+<details><summary>A Service mögött nincs egyetlen pod sem, pedig a podok futnak. Mit nézel meg először?</summary><p>A címkéket: <code>kubectl get pods --show-labels</code>, és hogy egyezik-e a Service selectorával. Utána azt, hogy a podok <code>1/1</code> READY állapotúak-e, mert a nem ready podok is kimaradnak (lásd a 2. tananyagot).</p></details>
+</div>
+
+<h2 id="szotar">Szótár</h2>
+<div class="table-wrap"><table>
+<tr><th>Fogalom</th><th>Egy mondatban</th></tr>
+<tr><td>fürt (cluster)</td><td>a control plane és a node-ok együtt</td></tr>
+<tr><td>control plane</td><td>az agy: API szerver, kontrollerek, állapottár</td></tr>
+<tr><td>node</td><td>egy gép (nálad egy Docker-konténer), ami podokat futtat</td></tr>
+<tr><td>kubelet</td><td>a node-on futó ügynök, ami elindítja és figyeli a podokat</td></tr>
+<tr><td>pod</td><td>egy futó konténer a fürtben; eldobható</td></tr>
+<tr><td>Deployment</td><td>a kívánság: miből, hányat, hogyan frissüljön</td></tr>
+<tr><td>ReplicaSet</td><td>egy verzióhoz tartozó podcsoport; a régi 0 poddal megmarad</td></tr>
+<tr><td>Service</td><td>állandó belső név és cím az élő podok előtt</td></tr>
+<tr><td>címke / selector</td><td>felirat a podon / szűrő, ami a felirat alapján választ</td></tr>
+<tr><td>reconciliation loop</td><td>a kontroller körforgása: összevet, és ha kell, beavatkozik</td></tr>
+</table></div>
+
+<footer class="page"><a href="index.html">← Tananyagtérkép</a><a href="02-konfiguracio-es-probe.html">Következő: Konfiguráció és probe-ok →</a></footer>
+</div>
+<script src="assets/tananyag.js"></script>
+</body>
+</html>

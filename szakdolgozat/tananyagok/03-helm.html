@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3. Helm</title>
+<link rel="stylesheet" href="assets/tananyag.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="top"><a href="02-konfiguracio-es-probe.html">← 2. Konfiguráció és probe-ok</a><a href="04-frissites-es-adat.html">Következő: Frissítés és adat →</a></nav>
+
+<p class="eyebrow">3. tananyag · 6. nap</p>
+<h1>Helm: sablonok, release-ek, visszaállás</h1>
+<p class="lead">Mi a chart, hogyan lesz a <code>values.yaml</code>-ből YAML, mit tárol a Helm minden telepítésről, és miért kellett „átvenni” a kézzel létrehozott erőforrásokat.</p>
+
+<div class="goals">
+  <h2>A végére ezt fogod érteni</h2>
+  <ul>
+    <li>Mit ad a Helm a sima <code>kubectl apply</code>-hoz képest.</li>
+    <li>Hogyan állnak össze a <code>templates/</code> és a <code>values.yaml</code>, és mit csinál a <code>--set</code>.</li>
+    <li>Mi a release és a revízió, és miért új revízió a rollback is.</li>
+    <li>Mit jelentett az <code>invalid ownership metadata</code> és a <code>conflict … kubectl-client-side-apply</code> hiba.</li>
+  </ul>
+</div>
+
+<h2 id="miert">1. Mit ad a Helm a kubectl-hez képest</h2>
+
+<p>A <code>kubectl apply -f</code> beküldi a YAML-t, és ennyi. Nem tudja, hogy ezek a fájlok egy alkalmazáshoz tartoznak, nem jegyzi meg, mi volt az előző verzió, és ha változtatni akarsz egy értéken (pl. az image tagen), a fájlt kell átírnod. A Helm három dolgot tesz hozzá:</p>
+
+<div class="table-wrap"><table>
+<tr><th>Probléma a kubectl-lel</th><th>A Helm megoldása</th></tr>
+<tr><td>A változó értékek (tag, replikaszám) be vannak égetve a YAML-be.</td><td><strong>Sablonok + values</strong>: a YAML-ben <code>{{ .Values.image.tag }}</code> áll, az értéket telepítéskor adod meg.</td></tr>
+<tr><td>Több fájl, több parancs, és semmi nem tartja össze őket.</td><td><strong>Release</strong>: az egész alkalmazás egy néven (<code>projecta</code>) települ, frissül és törlődik.</td></tr>
+<tr><td>Nincs előzmény, nincs „vissza az előzőre” gomb.</td><td><strong>Revíziók</strong>: minden telepítés sorszámot kap, és bármelyikre vissza lehet állni.</td></tr>
+</table></div>
+
+<h2 id="felepites">2. A chartod felépítése</h2>
+
+<figure>
+<svg viewBox="0 0 640 300" role="img" aria-label="A chart könyvtárszerkezete">
+  <rect x="20" y="20" width="290" height="260" rx="10" class="n"/>
+  <text x="40" y="50" class="t-mono t-bold">chart/</text>
+  <text x="60" y="80" class="t-mono t-small">Chart.yaml</text>
+  <text x="60" y="106" class="t-mono t-small t-accent t-bold">values.yaml</text>
+  <text x="60" y="132" class="t-mono t-small">templates/</text>
+  <text x="84" y="156" class="t-mono t-small">backend.yaml</text>
+  <text x="84" y="178" class="t-mono t-small">db-schema.yaml</text>
+  <text x="84" y="200" class="t-mono t-small">frontend.yaml</text>
+  <text x="84" y="222" class="t-mono t-small">ingress.yaml</text>
+  <text x="84" y="244" class="t-mono t-small">postgres.yaml</text>
+
+  <text x="330" y="80" class="t-small">név, a chart verziója (0.2.0)</text>
+  <text x="330" y="106" class="t-small t-accent">az egyetlen hely, ahol értékek vannak</text>
+  <text x="330" y="132" class="t-small">sablonok: YAML + <tspan class="t-mono">{{ }}</tspan> helyek</text>
+  <text x="330" y="156" class="t-small t-muted">Deployment + Service + migrate init</text>
+  <text x="330" y="178" class="t-small t-muted">ConfigMap a sémával</text>
+  <text x="330" y="200" class="t-small t-muted">Deployment + Service (nginx)</text>
+  <text x="330" y="222" class="t-small t-muted">a fürt bejárata (Traefik)</text>
+  <text x="330" y="244" class="t-small t-muted">PVC + Deployment + Service</text>
+</svg>
+<figcaption>A <code>helm create</code> generált egy nginx-es mintát, a saját manifestjeid ennek a helyére kerültek. Minden, ami telepítésenként változhat, a <code>values.yaml</code>-ben van.</figcaption>
+</figure>
+
+<h2 id="render">3. Hogyan lesz a sablonból YAML</h2>
+
+<p>A Helm a sablonokat összefésüli az értékekkel (ez a <strong>renderelés</strong>), és az eredményt, egy közönséges Kubernetes YAML-t, küldi be az API szervernek. Az értékek több helyről jöhetnek, és a később megadott nyer.</p>
+
+<div class="stepper" data-captions="A sablon: <code>image: &quot;{{ .Values.backend.image.repository }}:{{ .Values.image.tag }}&quot;</code>. A <code>.Values</code> a <code>values.yaml</code> tartalmát jelenti, a pontok a beágyazást.|Az alapértékek a <code>values.yaml</code>-ből: <code>backend.image.repository = flaskapp</code>, <code>image.tag = dev</code>.|A <code>--set image.tag=abc1234</code> felülírja az alapértéket, <strong>csak erre a telepítésre</strong>. A <code>values.yaml</code> fájl nem változik.|Renderelés: <code>image: &quot;flaskapp:abc1234&quot;</code>. A <code>helm template chart</code> pontosan ezt mutatja meg telepítés nélkül. Ha valami gyanús, először ezt futtasd.|A kész YAML az API szerverhez megy, és onnantól minden úgy megy, mint a <code>kubectl apply</code>-nál.">
+<figure>
+<svg viewBox="0 0 640 250" role="img" aria-label="Renderelés lépései">
+  <defs><marker id="c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+  <g data-step="0">
+    <rect x="20" y="20" width="200" height="60" rx="10" class="n"/>
+    <text x="120" y="44" text-anchor="middle" class="t-bold">templates/backend.yaml</text>
+    <text x="120" y="66" text-anchor="middle" class="t-mono t-small">{{ .Values… }}</text>
+  </g>
+  <g data-step="1">
+    <rect x="20" y="95" width="200" height="60" rx="10" class="n-accent"/>
+    <text x="120" y="119" text-anchor="middle" class="t-bold">values.yaml</text>
+    <text x="120" y="141" text-anchor="middle" class="t-mono t-small">image.tag: dev</text>
+  </g>
+  <g data-step="2">
+    <rect x="20" y="170" width="200" height="60" rx="10" class="n-warn"/>
+    <text x="120" y="194" text-anchor="middle" class="t-bold">--set (parancssor)</text>
+    <text x="120" y="216" text-anchor="middle" class="t-mono t-small">image.tag=abc1234</text>
+    <text x="232" y="200" class="t-small t-warn t-bold">nyer</text>
+  </g>
+  <g data-step="3">
+    <path d="M220,50 L296,110" class="line" marker-end="url(#c1)"/>
+    <path d="M220,125 L296,125" class="line" marker-end="url(#c1)"/>
+    <path d="M220,200 L296,140" class="line" marker-end="url(#c1)"/>
+    <rect x="300" y="95" width="130" height="60" rx="10" class="n-violet"/>
+    <text x="365" y="120" text-anchor="middle" class="t-bold">helm</text>
+    <text x="365" y="140" text-anchor="middle" class="t-small">renderel</text>
+    <rect x="300" y="175" width="130" height="50" rx="8" class="n-2"/>
+    <text x="365" y="197" text-anchor="middle" class="t-mono t-small">image:</text>
+    <text x="365" y="214" text-anchor="middle" class="t-mono t-small">flaskapp:abc1234</text>
+  </g>
+  <g data-step="4">
+    <path d="M430,125 L496,125" class="line" marker-end="url(#c1)"/>
+    <rect x="500" y="95" width="120" height="60" rx="10" class="n"/>
+    <text x="560" y="120" text-anchor="middle" class="t-bold">API szerver</text>
+    <text x="560" y="140" text-anchor="middle" class="t-small t-muted">a fürtben</text>
+  </g>
+</svg>
+</figure>
+<div class="controls"><button data-prev>← Vissza</button><button class="primary" data-next>Tovább →</button><button data-reset>Elölről</button><span class="counter"></span></div>
+<div class="caption"></div>
+</div>
+
+<h3>Feltételes részek</h3>
+<p>A sablonnyelv nem csak értékeket helyettesít be. A <code>postgres.yaml</code> és az <code>ingress.yaml</code> így kezdődik:</p>
+<pre><code>{{- if .Values.postgres.enabled }}
+...
+{{- end }}</code></pre>
+<p>Ha <code>--set postgres.enabled=false</code>-szal telepítesz, a Postgres egyáltalán nem kerül a renderelt YAML-be. Ezt akkor használnád, ha az adatbázis a fürtön kívül, pl. egy felhős szolgáltatásban fut. A <code>{{-</code> kötőjele levágja a sor előtti üres helyet, hogy ne maradjon üres sor a kimenetben.</p>
+
+<div class="box story"><strong>Ez történt nálad</strong>
+Az első próbálkozásnál a generált sablonok (<code>ingress.yaml</code>, <code>httproute.yaml</code>, <code>NOTES.txt</code>) olyan értékekre hivatkoztak, pl. <code>.Values.ingress.enabled</code>, amelyek az új <code>values.yaml</code>-ben már nem voltak benne. A Helm ilyenkor <em>nil pointer</em> hibával leáll. Ezért kellett ezeket kivenni, mielőtt a saját sablonjaid a helyükre kerültek.</div>
+
+<h2 id="release">4. Release és revíziók</h2>
+
+<p>A <strong>release</strong> egy chart egy telepített példánya egy névvel. Nálad a neve <code>projecta</code>. Minden <code>helm upgrade</code> és <code>helm rollback</code> új <strong>revíziót</strong> hoz létre, sorszámmal. A Helm minden revízió teljes renderelt tartalmát eltárolja a fürtben, egy Secretben (<code>sh.helm.release.v1.projecta.v4</code> stb.), ezért tud bármelyikre visszaállni.</p>
+
+<div class="stepper" data-captions="<strong>1. revízió</strong>, <code>helm upgrade --install</code>: a release még nem létezett, ezért telepítés lett belőle. A backend fut, de <code>0/1</code>, mert hiányzik a <code>DB_HOST</code>.|<strong>2. revízió</strong>: a chartba bekerült az <code>env</code> és az <code>envFrom</code>. A pod-sablon változott, ezért új ReplicaSet és új podok jöttek: <code>1/1</code>.|<strong>3. revízió</strong>, <code>--set image.tag=abc1234</code>: nem létező kép. Az új pod ImagePullBackOff állapotba került, a régi kettő tovább szolgált ki.|<strong>4. revízió</strong>, <code>helm rollback projecta 2</code>: a rollback <em>nem törli</em> a 3-ast, és nem „ugrik vissza” a 2-esre. Új revíziót csinál, a 2-es tartalmával. Az előzmény így teljes marad: látszik, hogy volt egy rossz verzió, és hogy vissza lett állítva.">
+<figure>
+<svg viewBox="0 0 640 190" role="img" aria-label="A projecta release revíziói">
+  <line x1="40" y1="90" x2="600" y2="90" class="line"/>
+  <g data-step="0">
+    <circle cx="80" cy="90" r="18" class="n-warn"/><text x="80" y="95" text-anchor="middle" class="t-bold">1</text>
+    <text x="80" y="134" text-anchor="middle" class="t-small">install</text>
+    <text x="80" y="152" text-anchor="middle" class="t-small t-warn">0/1, nincs DB_HOST</text>
+  </g>
+  <g data-step="1">
+    <circle cx="220" cy="90" r="18" class="n-ok"/><text x="220" y="95" text-anchor="middle" class="t-bold">2</text>
+    <text x="220" y="134" text-anchor="middle" class="t-small">upgrade</text>
+    <text x="220" y="152" text-anchor="middle" class="t-small t-ok">env hozzáadva, 1/1</text>
+  </g>
+  <g data-step="2">
+    <circle cx="360" cy="90" r="18" class="n-bad"/><text x="360" y="95" text-anchor="middle" class="t-bold">3</text>
+    <text x="360" y="134" text-anchor="middle" class="t-small">upgrade --set</text>
+    <text x="360" y="152" text-anchor="middle" class="t-small t-bad">abc1234 · ImagePullBackOff</text>
+  </g>
+  <g data-step="3">
+    <circle cx="500" cy="90" r="18" class="n-ok"/><text x="500" y="95" text-anchor="middle" class="t-bold">4</text>
+    <text x="500" y="134" text-anchor="middle" class="t-small">rollback 2</text>
+    <text x="500" y="152" text-anchor="middle" class="t-small t-ok">a 2-es tartalma</text>
+    <path d="M500,70 C470,20 250,20 222,68" class="line-ok dash"/>
+    <text x="360" y="30" text-anchor="middle" class="t-small t-ok">tartalom másolása</text>
+  </g>
+</svg>
+</figure>
+<div class="controls"><button data-prev>← Vissza</button><button class="primary" data-next>Tovább →</button><button data-reset>Elölről</button><span class="counter"></span></div>
+<div class="caption"></div>
+</div>
+
+<pre><code>REVISION  STATUS      DESCRIPTION
+1         superseded  Install complete
+2         superseded  Upgrade complete
+3         superseded  Upgrade complete
+4         deployed    Rollback to 2</code></pre>
+
+<div class="box whatif"><strong>Mi lett volna, ha…</strong>
+…<code>helm rollback projecta 1</code>-et futtatsz? Visszakapod az env nélküli változatot, és a backend újra <code>0/1</code> lesz. A rollback nem „az utolsó működő” állapotra áll vissza, hanem arra, amit megmondasz. Neked kell tudnod, melyik revízió volt jó.</div>
+
+<div class="box key"><strong>Az <code>upgrade --install</code> miért jobb, mint külön install és upgrade?</strong>
+Mert mindig ugyanaz a parancs: ha nincs még release, telepít, ha van, frissít. A pipeline-nak így nem kell tudnia, hogy először fut-e. Ez az <em>idempotencia</em>: ugyanazt a parancsot akárhányszor lefuttatva ugyanaz az eredmény.</div>
+
+<h2 id="tulajdon">5. Kié az erőforrás? Két ütközés, amibe belefutottál</h2>
+
+<h3>a) <code>invalid ownership metadata</code>: melyik release-é?</h3>
+<p>A Helm minden általa létrehozott erőforrásra rátesz egy címkét és két annotációt. Ebből tudja, hogy az erőforrás hozzá tartozik. Egy <code>kubectl apply</code>-jal létrehozott erőforráson ezek nincsenek rajta, ezért a Helm nem nyúl hozzá, és nem is ír felül valamit, amiről nem tudja, kié.</p>
+
+<figure>
+<svg viewBox="0 0 640 210" role="img" aria-label="Helm tulajdonjelölések">
+  <rect x="10" y="20" width="290" height="170" rx="10" class="n-bad"/>
+  <text x="160" y="46" text-anchor="middle" class="t-bold">kubectl apply-jal készült</text>
+  <text x="40" y="76" class="t-mono t-small">metadata:</text>
+  <text x="56" y="96" class="t-mono t-small">name: postgres</text>
+  <text x="56" y="116" class="t-mono t-small t-muted">labels: {app: postgres}</text>
+  <text x="160" y="160" text-anchor="middle" class="t-small t-bad t-bold">Helm: „ez nem az enyém”</text>
+
+  <rect x="320" y="20" width="310" height="170" rx="10" class="n-ok"/>
+  <text x="475" y="46" text-anchor="middle" class="t-bold">Helm által átvehető</text>
+  <text x="334" y="76" class="t-mono t-small">labels:</text>
+  <text x="346" y="96" class="t-mono t-small">app.kubernetes.io/managed-by: Helm</text>
+  <text x="334" y="120" class="t-mono t-small">annotations:</text>
+  <text x="346" y="140" class="t-mono t-small">meta.helm.sh/release-name: projecta</text>
+  <text x="346" y="160" class="t-mono t-small">meta.helm.sh/release-namespace: default</text>
+</svg>
+<figcaption>Kétféle megoldás van: törlöd, és a Helm újra létrehozza (a backendnél így csináltad), vagy ráteszed a jelöléseket, és a Helm átveszi (a Postgresnél így csináltad, mert a törlés adatvesztéssel járt volna).</figcaption>
+</figure>
+
+<h3>b) <code>conflict … kubectl-client-side-apply</code>: kié az adott mező?</h3>
+<p>A Helm 4 alapból <strong>server-side apply</strong>-jal telepít. Ilyenkor az API szerver <em>mezőnként</em> nyilvántartja, melyik eszköz állította be (ez a <strong>field manager</strong>). A Postgres readiness probe-ját annak idején a <code>kubectl apply</code> állította be, ezért azok a mezők a kubectl nevén voltak. A chart ezeket módosítani akarta, és az API szerver nem írja felül csendben egy másik eszköz mezőit: inkább megáll és szól.</p>
+
+<figure>
+<svg viewBox="0 0 640 170" role="img" aria-label="Mezőszintű tulajdonjog">
+  <defs><marker id="c2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-bad"/></marker></defs>
+  <rect x="200" y="20" width="240" height="130" rx="10" class="n"/>
+  <text x="320" y="44" text-anchor="middle" class="t-bold">Deployment: postgres</text>
+  <rect x="216" y="58" width="208" height="34" rx="6" class="n-2"/>
+  <text x="320" y="80" text-anchor="middle" class="t-mono t-small">image · ports · env …</text>
+  <rect x="216" y="100" width="208" height="34" rx="6" class="n-warn"/>
+  <text x="320" y="122" text-anchor="middle" class="t-mono t-small">readinessProbe.exec.command</text>
+
+  <text x="100" y="80" text-anchor="middle" class="t-small t-bold">helm</text>
+  <text x="100" y="98" text-anchor="middle" class="t-small t-muted">(átvéve)</text>
+  <text x="540" y="116" text-anchor="middle" class="t-small t-bold">kubectl-client-</text>
+  <text x="540" y="132" text-anchor="middle" class="t-small t-bold">side-apply</text>
+  <path d="M130,110 L212,117" class="line-bad" marker-end="url(#c2)"/>
+  <text x="20" y="160" class="t-small t-bad">módosítani akarja → conflict</text>
+</svg>
+<figcaption>A <code>--force-conflicts</code> egyszer kimondja: ezeket a mezőket a Helm veszi át. Utána már nincs ütközés.</figcaption>
+</figure>
+
+<div class="box key"><strong>Miért ne kerüljön a <code>--force-conflicts</code> a pipeline-ba?</strong>
+Mert az ütközés hasznos jelzés. Ha a jövőben valaki kézzel átír valamit a fürtben (<code>kubectl edit</code>), a következő telepítés szólni fog, nem pedig csendben felülírja. A kézi beavatkozásokról tudni akarsz, különösen egy olyan dolgozatban, ami az emberi beavatkozások számát méri.</div>
+
+<h2 id="pipeline">6. Hová tart ez: a pipeline</h2>
+<p>A 3. héten a <code>ci.yml</code>-ben az Ansible-lépés helyére ez a sor kerül:</p>
+<pre><code>helm upgrade --install projecta ./chart --set image.tag=$GITHUB_SHA</code></pre>
+<p>Minden commit után a pipeline a commit SHA-jával jelölt képeket telepíti. A <code>helm history</code> így minden revízióhoz pontosan megmutatja, melyik commit futott, a <code>helm rollback</code> pedig a visszaállítás egy parancsban.</p>
+
+<h2 id="parancsok">Parancsok</h2>
+<pre><code>helm template chart                               <span class="c"># mit küldene be, telepítés nélkül</span>
+helm upgrade --install projecta ./chart           <span class="c"># telepít vagy frissít</span>
+helm upgrade --install projecta ./chart --set image.tag=abc1234
+helm history projecta                             <span class="c"># revíziók</span>
+helm rollback projecta 2                          <span class="c"># új revízió a 2-es tartalmával</span>
+helm get values projecta                          <span class="c"># milyen --set értékekkel fut most</span>
+helm get manifest projecta                        <span class="c"># a most futó renderelt YAML</span></code></pre>
+
+<h2 id="kviz">Ellenőrizd magad</h2>
+<div class="quiz">
+<details><summary>Módosítja a <code>--set image.tag=x</code> a <code>values.yaml</code>-t?</summary><p>Nem. Csak az adott telepítésre írja felül az értéket. A Helm viszont eltárolja a revízióval együtt, ezért a <code>helm get values projecta</code> megmutatja.</p></details>
+<details><summary>A rollback után hány revízió van, ha előtte 3 volt?</summary><p>4. A rollback új revízió, a régiek megmaradnak.</p></details>
+<details><summary>Hogyan nézed meg telepítés nélkül, mit csinálna a chart?</summary><p><code>helm template chart</code>. Kiírja a renderelt YAML-t, és a sablonhibák is itt jönnek elő.</p></details>
+<details><summary>Miért nem törölted a Postgrest, ahogy a backendet, hogy a Helm létrehozhassa?</summary><p>Mert a PVC törlésével az adatbázis tartalma is elveszett volna. A backend állapotmentes, azt nyugodtan lehet törölni és újra létrehozni. A Postgrest ezért jelölésekkel vetted át.</p></details>
+<details><summary>Mi a különbség az <code>invalid ownership metadata</code> és a field manager conflict között?</summary><p>Az első azt kérdezi, melyik <em>release</em>-hez tartozik az egész erőforrás (címke és annotációk). A második azt, hogy melyik <em>eszköz</em> állította be az egyes mezőket. Az elsőt a jelölések megoldják, a másodikhoz egyszer kell a <code>--force-conflicts</code>.</p></details>
+</div>
+
+<h2 id="szotar">Szótár</h2>
+<div class="table-wrap"><table>
+<tr><th>Fogalom</th><th>Egy mondatban</th></tr>
+<tr><td>chart</td><td>sablonok és alapértékek csomagja</td></tr>
+<tr><td>values</td><td>a sablonokba behelyettesített értékek</td></tr>
+<tr><td>renderelés</td><td>sablon + értékek → kész Kubernetes YAML</td></tr>
+<tr><td>release</td><td>egy chart telepített példánya névvel (<code>projecta</code>)</td></tr>
+<tr><td>revízió</td><td>a release egy sorszámozott állapota; upgrade és rollback is újat hoz létre</td></tr>
+<tr><td>server-side apply</td><td>az API szerver mezőnként nyilvántartja, ki mit állított be</td></tr>
+<tr><td>field manager</td><td>az eszköz, amelyik egy mezőt beállított (helm, kubectl…)</td></tr>
+<tr><td>idempotens</td><td>többször futtatva is ugyanaz az eredmény</td></tr>
+</table></div>
+
+<footer class="page"><a href="02-konfiguracio-es-probe.html">← 2. Konfiguráció és probe-ok</a><a href="04-frissites-es-adat.html">Következő: Frissítés és adat →</a></footer>
+</div>
+<script src="assets/tananyag.js"></script>
+</body>
+</html>

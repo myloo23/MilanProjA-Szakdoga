@@ -7,7 +7,7 @@ measurements this project exists to make, and a pool adds a lifecycle that
 gunicorn's fork model would need care with.
 
 Nothing here creates the schema. That is the deployment's job — see the
-`migrate` init container in `k8s/backend.yaml`, which runs the statements in
+`migrate` init container in `chart/templates/backend.yaml`, which runs the statements in
 the `db-schema` ConfigMap before this application starts.
 """
 

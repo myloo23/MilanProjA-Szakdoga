@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4. Frissítés és adat</title>
+<link rel="stylesheet" href="assets/tananyag.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="top"><a href="03-helm.html">← 3. Helm</a><a href="05-halozat-es-frontend.html">Következő: Hálózat és frontend →</a></nav>
+
+<p class="eyebrow">4. tananyag · 4. és 6. nap</p>
+<h1>Frissítés kiesés nélkül, és adat, ami megmarad</h1>
+<p class="lead">Miért nem állt le semmi a rossz image tagnél, miért frissül másképp a Postgres, és hol van fizikailag az adatbázis.</p>
+
+<div class="goals">
+  <h2>A végére ezt fogod érteni</h2>
+  <ul>
+    <li>Lépésről lépésre, hogyan cseréli a RollingUpdate a podokat, és mi tartja a forgalmat közben.</li>
+    <li>Miért ragadt be a rossz verzió leállás nélkül, és miért nem állt vissza magától.</li>
+    <li>Miért <code>Recreate</code> a Postgres stratégiája.</li>
+    <li>Mi a PVC, hol vannak ténylegesen az adatok, és mi mit él túl.</li>
+  </ul>
+</div>
+
+<h2 id="rolling">1. RollingUpdate: csere működés közben</h2>
+
+<p>A Deployment alapértelmezett frissítési stratégiája a <strong>RollingUpdate</strong>. Két beállítás szabályozza:</p>
+<div class="table-wrap"><table>
+<tr><th>Beállítás</th><th>Jelentés</th><th>Alapérték</th><th>2 replikánál</th></tr>
+<tr><td><code>maxSurge</code></td><td>hány pod lehet a kívánton <em>felül</em> csere közben</td><td>25%</td><td>0,5 → felfelé kerekítve <strong>1</strong></td></tr>
+<tr><td><code>maxUnavailable</code></td><td>hány pod hiányozhat a kívántból csere közben</td><td>25%</td><td>0,5 → lefelé kerekítve <strong>0</strong></td></tr>
+</table></div>
+<p>Két replikánál tehát egyszerre legfeljebb 3 pod létezik, és <strong>soha nem lehet 2-nél kevesebb ready pod</strong>. Régi podot csak akkor állít le, ha egy új már ready lett.</p>
+
+<div class="stepper" data-captions="Kiindulás: a régi verzió (v1) két podja fut, mindkettő kap kérést.|<code>helm upgrade</code>: új ReplicaSet (v2) jön létre. A maxSurge = 1 miatt egy új pod indul. Még nem ready, ezért nem kap kérést. A forgalom továbbra is a két régire megy.|Az új pod readiness probe-ja sikeres: bekerül a Service mögé. Most 3 pod szolgál ki.|Mivel van egy ready új pod, egy régi leállhat (maxUnavailable = 0 mellett is marad 2 ready). A Service azonnal kiveszi a régi podot a forgalomból.|Indul a második új pod. Közben 1 régi + 1 új szolgál ki.|A második új is ready, az utolsó régi leáll. Kész: 2 új pod, a v1 ReplicaSet 0-ra csökkent, de megmaradt a rollbackhez.">
+<figure>
+<svg viewBox="0 0 640 230" role="img" aria-label="RollingUpdate lépései">
+  <defs><marker id="d1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-ok"/></marker></defs>
+  <rect x="20" y="85" width="120" height="60" rx="10" class="n-accent"/>
+  <text x="80" y="112" text-anchor="middle" class="t-bold">Service</text>
+  <text x="80" y="132" text-anchor="middle" class="t-mono t-small">backend</text>
+
+  <text x="300" y="24" text-anchor="middle" class="t-bold t-muted">v1 (régi RS)</text>
+  <text x="520" y="24" text-anchor="middle" class="t-bold t-accent">v2 (új RS)</text>
+
+  <!-- régi A -->
+  <g data-only="0,1,2">
+    <rect x="240" y="44" width="120" height="44" rx="8" class="n-ok"/><text x="300" y="64" text-anchor="middle" class="t-mono t-small">v1 · A</text><text x="300" y="80" text-anchor="middle" class="t-small t-ok">ready</text>
+    <path d="M140,105 L236,70" class="line-ok" marker-end="url(#d1)"/>
+  </g>
+  <g data-only="3,4,5">
+    <rect x="240" y="44" width="120" height="44" rx="8" class="n-2" stroke-dasharray="4 3"/><text x="300" y="70" text-anchor="middle" class="t-small t-muted">leállítva</text>
+  </g>
+  <!-- régi B -->
+  <g data-only="0,1,2,3,4">
+    <rect x="240" y="140" width="120" height="44" rx="8" class="n-ok"/><text x="300" y="160" text-anchor="middle" class="t-mono t-small">v1 · B</text><text x="300" y="176" text-anchor="middle" class="t-small t-ok">ready</text>
+    <path d="M140,125 L236,160" class="line-ok" marker-end="url(#d1)"/>
+  </g>
+  <g data-only="5">
+    <rect x="240" y="140" width="120" height="44" rx="8" class="n-2" stroke-dasharray="4 3"/><text x="300" y="166" text-anchor="middle" class="t-small t-muted">leállítva</text>
+  </g>
+  <!-- új C -->
+  <g data-only="1">
+    <rect x="460" y="44" width="120" height="44" rx="8" class="n-warn"/><text x="520" y="64" text-anchor="middle" class="t-mono t-small">v2 · C</text><text x="520" y="80" text-anchor="middle" class="t-small t-warn">indul, 0/1</text>
+  </g>
+  <g data-only="2,3,4,5">
+    <rect x="460" y="44" width="120" height="44" rx="8" class="n-ok"/><text x="520" y="64" text-anchor="middle" class="t-mono t-small">v2 · C</text><text x="520" y="80" text-anchor="middle" class="t-small t-ok">ready</text>
+    <path d="M140,100 C300,20 400,30 456,58" class="line-ok" marker-end="url(#d1)"/>
+  </g>
+  <!-- új D -->
+  <g data-only="4">
+    <rect x="460" y="140" width="120" height="44" rx="8" class="n-warn"/><text x="520" y="160" text-anchor="middle" class="t-mono t-small">v2 · D</text><text x="520" y="176" text-anchor="middle" class="t-small t-warn">indul, 0/1</text>
+  </g>
+  <g data-only="5">
+    <rect x="460" y="140" width="120" height="44" rx="8" class="n-ok"/><text x="520" y="160" text-anchor="middle" class="t-mono t-small">v2 · D</text><text x="520" y="176" text-anchor="middle" class="t-small t-ok">ready</text>
+    <path d="M140,130 C300,215 400,205 456,170" class="line-ok" marker-end="url(#d1)"/>
+  </g>
+  <text x="400" y="218" text-anchor="middle" class="t-small t-muted">ready podok száma soha nem megy 2 alá</text>
+</svg>
+</figure>
+<div class="controls"><button data-prev>← Vissza</button><button class="primary" data-next>Tovább →</button><button data-reset>Elölről</button><span class="counter"></span></div>
+<div class="caption"></div>
+</div>
+
+<h2 id="rossz">2. Mi történt a rossz image tagnél</h2>
+
+<p>A <code>--set image.tag=abc1234</code> után a folyamat a fenti 2. lépésnél elakadt. Az új pod soha nem lett ready, mert a képet sem tudta letölteni. A RollingUpdate szabálya viszont az, hogy régi podot csak akkor állít le, ha van helyette ready új. Így a két régi pod érintetlenül futott tovább.</p>
+
+<figure>
+<svg viewBox="0 0 640 170" role="img" aria-label="Beragadt frissítés">
+  <defs><marker id="d2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-ok"/></marker></defs>
+  <rect x="20" y="55" width="120" height="60" rx="10" class="n-accent"/>
+  <text x="80" y="90" text-anchor="middle" class="t-bold">Service</text>
+  <rect x="220" y="20" width="170" height="44" rx="8" class="n-ok"/><text x="305" y="40" text-anchor="middle" class="t-mono t-small">backend-97b7c8fdd-8x88m</text><text x="305" y="56" text-anchor="middle" class="t-small t-ok">1/1 Running</text>
+  <rect x="220" y="104" width="170" height="44" rx="8" class="n-ok"/><text x="305" y="124" text-anchor="middle" class="t-mono t-small">backend-97b7c8fdd-f2f4c</text><text x="305" y="140" text-anchor="middle" class="t-small t-ok">1/1 Running</text>
+  <path d="M140,75 L216,44" class="line-ok" marker-end="url(#d2)"/>
+  <path d="M140,95 L216,124" class="line-ok" marker-end="url(#d2)"/>
+  <rect x="450" y="60" width="170" height="50" rx="8" class="n-bad"/><text x="535" y="80" text-anchor="middle" class="t-mono t-small">backend-6f54d64bf7-qpp2l</text><text x="535" y="98" text-anchor="middle" class="t-small t-bad">0/1 ImagePullBackOff</text>
+  <text x="535" y="134" text-anchor="middle" class="t-small t-muted">nem kap kérést</text>
+</svg>
+<figcaption>Pontosan ezt mutatta a <code>kubectl get pods</code>: két régi pod <code>1/1</code>, egy új <code>ImagePullBackOff</code>. A felhasználók semmit nem vettek észre.</figcaption>
+</figure>
+
+<div class="box key"><strong>Nem áll vissza magától</strong>
+A Deployment ebben az állapotban ragad. 10 perc után (<code>progressDeadlineSeconds: 600</code>) „elakadtnak” jelöli magát, de visszaállni akkor sem fog. A visszaállás a te döntésed volt: <code>helm rollback projecta 2</code>. A pipeline-ban erre való a Helm várakozó és hiba esetén automatikusan visszaállító kapcsolója (a <code>--wait</code> mellett Helm 3-ban <code>--atomic</code>, Helm 4-ben <code>--rollback-on-failure</code>, ezt a pipeline építésekor ellenőrizzük a te verziódon).</div>
+
+<div class="box thesis"><strong>A dolgozat szempontjából: mit mérsz a helyreállításnál?</strong>
+A „hibás telepítés utáni helyreállítás ideje” a hiba észlelésétől addig tart, amíg a jó verzió ismét teljesen kiszolgál (minden pod <code>1/1</code>, a <code>/version</code> a jó SHA-t adja). A <code>helm history</code> időbélyege csak azt mutatja, mikor futtattad a parancsot, ezért ehhez nem elég. És mivel a rossz verzió itt leállást sem okozott, érdemes külön mérni azt az esetet is, amikor a hibás verzió <em>elindul</em>, de rosszul működik. Ott a readiness nem fogja meg a hibát.</div>
+
+<h2 id="recreate">3. Recreate: amikor két példány egyszerre tilos</h2>
+
+<p>A backend <strong>állapotmentes</strong>: minden adatot az adatbázisban tart, ezért két verziója nyugodtan futhat egymás mellett. A Postgres nem ilyen. Két Postgres-folyamat nem írhatja egyszerre ugyanazt az adatkönyvtárat, mert az adat megsérülne. (A Postgres ezt egy zárolófájllal próbálja megakadályozni, de erre nem akarsz építeni.) Ezért a Postgresnél a stratégia <strong>Recreate</strong>: előbb leáll a régi, és csak utána indul az új.</p>
+
+<figure>
+<svg viewBox="0 0 640 220" role="img" aria-label="RollingUpdate és Recreate idővonala">
+  <text x="20" y="30" class="t-bold">RollingUpdate (backend)</text>
+  <rect x="140" y="44" width="300" height="26" rx="5" class="n-2"/><text x="290" y="62" text-anchor="middle" class="t-small">régi</text>
+  <rect x="330" y="78" width="290" height="26" rx="5" class="n-ok"/><text x="475" y="96" text-anchor="middle" class="t-small">új</text>
+  <rect x="330" y="40" width="110" height="68" rx="5" fill="none" class="line-accent dash"/>
+  <text x="385" y="122" text-anchor="middle" class="t-small t-accent">átfedés: két verzió fut</text>
+
+  <text x="20" y="160" class="t-bold">Recreate (postgres)</text>
+  <rect x="140" y="174" width="190" height="26" rx="5" class="n-2"/><text x="235" y="192" text-anchor="middle" class="t-small">régi</text>
+  <rect x="380" y="174" width="240" height="26" rx="5" class="n-ok"/><text x="500" y="192" text-anchor="middle" class="t-small">új</text>
+  <text x="355" y="166" text-anchor="middle" class="t-small t-bad">rés</text>
+  <line x1="330" y1="170" x2="330" y2="204" class="line-bad"/>
+  <line x1="380" y1="170" x2="380" y2="204" class="line-bad"/>
+</svg>
+<figcaption>A Recreate ára egy rövid kiesés. Nálad ilyenkor a backend podok <code>0/1</code>-re váltanak (a readiness nem éri el a DB-t), majd maguktól visszaállnak.</figcaption>
+</figure>
+
+<div class="box whatif"><strong>Mi lett volna, ha…</strong>
+…a Postgres is RollingUpdate-tel frissülne? Az új pod el akarna indulni, miközben a régi még fut. Mivel a kötet <code>ReadWriteOnce</code>, jó esetben az új pod nem is tudja csatolni, és a frissítés beragad. Rossz esetben (ha ugyanazon a node-on vannak) mindkettő hozzáfér, és ez az adatkönyvtár sérüléséhez vezethet.</div>
+
+<h2 id="pvc">4. Hol van ténylegesen az adatbázis?</h2>
+
+<p>A pod eldobható, és a konténer fájlrendszere vele együtt eltűnik. Az adatnak ezért egy <strong>kötetre</strong> (volume) van szüksége, ami túléli a podot. Ennek három szereplője van:</p>
+
+<figure>
+<svg viewBox="0 0 640 260" role="img" aria-label="PVC, PV és a tényleges tárhely">
+  <defs><marker id="d3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+  <rect x="20" y="30" width="170" height="80" rx="10" class="n-ok"/>
+  <text x="105" y="56" text-anchor="middle" class="t-bold">postgres pod</text>
+  <text x="105" y="78" text-anchor="middle" class="t-mono t-small">/var/lib/postgresql</text>
+  <text x="105" y="94" text-anchor="middle" class="t-mono t-small">/data</text>
+
+  <rect x="240" y="30" width="170" height="80" rx="10" class="n-accent"/>
+  <text x="325" y="56" text-anchor="middle" class="t-bold">PVC</text>
+  <text x="325" y="76" text-anchor="middle" class="t-mono t-small">postgres-data</text>
+  <text x="325" y="94" text-anchor="middle" class="t-small t-muted">„kérek 2Gi-t”</text>
+
+  <rect x="460" y="30" width="160" height="80" rx="10" class="n-violet"/>
+  <text x="540" y="56" text-anchor="middle" class="t-bold">PV</text>
+  <text x="540" y="76" text-anchor="middle" class="t-small">a tényleges kötet</text>
+  <text x="540" y="94" text-anchor="middle" class="t-small t-muted">local-path hozza létre</text>
+
+  <path d="M190,70 L236,70" class="line" marker-end="url(#d3)"/>
+  <path d="M410,70 L456,70" class="line" marker-end="url(#d3)"/>
+
+  <rect x="300" y="150" width="320" height="90" rx="10" class="n-2"/>
+  <text x="460" y="176" text-anchor="middle" class="t-bold">node-konténer lemeze</text>
+  <text x="460" y="198" text-anchor="middle" class="t-mono t-small">k3d-szakdoga-agent-0 (vagy server-0)</text>
+  <text x="460" y="220" text-anchor="middle" class="t-mono t-small t-muted">/var/lib/rancher/k3s/storage/…</text>
+  <path d="M540,110 L540,146" class="line" marker-end="url(#d3)"/>
+
+  <text x="20" y="160" class="t-small">A pod a PVC-t kéri.</text>
+  <text x="20" y="180" class="t-small">A PVC-hez a k3s <tspan class="t-mono">local-path</tspan></text>
+  <text x="20" y="200" class="t-small">tárolója létrehoz egy PV-t:</text>
+  <text x="20" y="220" class="t-small">egy mappát a node lemezén.</text>
+</svg>
+<figcaption>A PVC (PersistentVolumeClaim) egy igény („kell 2 GiB tárhely”), a PV (PersistentVolume) a kiszolgált tárhely. A pod csak a PVC nevét ismeri, azt nem, hogy a tárhely fizikailag hol van.</figcaption>
+</figure>
+
+<h3>Mi mit él túl?</h3>
+<div class="table-wrap"><table>
+<tr><th>Esemény</th><th>A jegyzetek megmaradnak?</th><th>Miért</th></tr>
+<tr><td><code>kubectl delete pod postgres-…</code></td><td>✅ igen</td><td>a PVC és a PV független a podtól, az új pod ugyanazt csatolja</td></tr>
+<tr><td><code>helm upgrade</code> (Postgres újraindul)</td><td>✅ igen</td><td>ugyanaz, mint fent</td></tr>
+<tr><td><code>helm uninstall projecta</code></td><td>✅ igen</td><td>a <code>helm.sh/resource-policy: keep</code> miatt a Helm nem törli a PVC-t</td></tr>
+<tr><td><code>k3d cluster stop</code> / <code>start</code></td><td>✅ igen</td><td>a node-konténerek lemeze megmarad</td></tr>
+<tr><td><code>kubectl delete pvc postgres-data</code></td><td>❌ nem</td><td>a local-path PV törlődik a PVC-vel</td></tr>
+<tr><td><code>k3d cluster delete szakdoga</code></td><td>❌ nem</td><td>a node-konténerek a lemezükkel együtt törlődnek</td></tr>
+</table></div>
+
+<div class="box whatif"><strong>Mi lett volna, ha…</strong>
+…nincs <code>helm.sh/resource-policy: keep</code> a PVC-n? Egy <code>helm uninstall projecta</code> mindent törölne, amit a chart létrehozott, a PVC-t is, és vele minden jegyzetet. A <code>keep</code> miatt a Helm ezt az egy erőforrást kihagyja a törlésből. Ha tényleg törölni akarod, azt külön, tudatosan kell megtenned.</div>
+
+<div class="box key"><strong>Tudatos egyszerűsítés</strong>
+Az adatbázis egyetlen node lemezén van, mentés nélkül. Ez egy fejlesztői fürtön rendben van. Éles környezetben menedzselt adatbázis vagy hálózati tárhely és rendszeres mentés kellene. Ez a továbbfejlesztési fejezetbe tartozik, a mérést nem érinti.</div>
+
+<h2 id="kviz">Ellenőrizd magad</h2>
+<div class="quiz">
+<details><summary>2 replikánál legfeljebb hány pod létezik egyszerre egy frissítés alatt, és miért?</summary><p>3. A maxSurge 25%-a a 2-nek 0,5, amit a Kubernetes felfelé kerekít 1-re: a kívánt 2 fölött egy pod lehet.</p></details>
+<details><summary>Miért nem okozott leállást a rossz image tag?</summary><p>Mert a maxUnavailable 0 volt (a 25% lefelé kerekítve). Régi pod csak akkor áll le, ha egy új ready lett, és az új soha nem lett ready.</p></details>
+<details><summary>Visszaáll magától a Deployment egy beragadt frissítés után?</summary><p>Nem. 10 perc után elakadtnak jelöli magát, de a visszaállást neked (vagy a pipeline-nak) kell elindítani.</p></details>
+<details><summary>Miért elfogadható a Recreate kiesése a Postgresnél?</summary><p>Mert az alternatíva, hogy két példány egyszerre írja ugyanazt az adatkönyvtárat, adatsérülést okozhat. Egy pár másodperces, tervezett kiesés kisebb kockázat, mint egy sérült adatbázis.</p></details>
+<details><summary><code>helm uninstall</code> után újratelepíted a chartot. Megvannak a jegyzetek?</summary><p>Igen. A PVC a <code>keep</code> miatt megmaradt, és az új telepítés ugyanazzal a névvel (<code>postgres-data</code>) keresi, így ugyanazt a kötetet kapja meg.</p></details>
+</div>
+
+<h2 id="szotar">Szótár</h2>
+<div class="table-wrap"><table>
+<tr><th>Fogalom</th><th>Egy mondatban</th></tr>
+<tr><td>RollingUpdate</td><td>fokozatos csere: az új podok addig jönnek, amíg a régiek kiszolgálnak</td></tr>
+<tr><td>Recreate</td><td>előbb minden régi leáll, utána indulnak az újak</td></tr>
+<tr><td>maxSurge / maxUnavailable</td><td>mennyivel lehet több / kevesebb pod a kívántnál csere közben</td></tr>
+<tr><td>állapotmentes</td><td>nem tárol adatot magában; bármikor eldobható és többszörözhető</td></tr>
+<tr><td>PVC</td><td>tárhelyigény („kell 2 GiB”)</td></tr>
+<tr><td>PV</td><td>a kiszolgált tárhely; nálad egy mappa a node lemezén</td></tr>
+<tr><td>ReadWriteOnce</td><td>a kötetet egyszerre csak egy node csatolhatja írásra</td></tr>
+<tr><td>resource-policy: keep</td><td>a Helm törléskor ezt az erőforrást meghagyja</td></tr>
+</table></div>
+
+<footer class="page"><a href="03-helm.html">← 3. Helm</a><a href="05-halozat-es-frontend.html">Következő: Hálózat és frontend →</a></footer>
+</div>
+<script src="assets/tananyag.js"></script>
+</body>
+</html>
