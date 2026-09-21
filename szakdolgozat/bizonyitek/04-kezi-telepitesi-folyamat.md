@@ -289,6 +289,55 @@ futtatás lenne, és torzítaná a tanulási görbét. Ezt a 6.1-ben is le kell 
 
 ---
 
+## 7.d A második próbafuttatás (`kezi-01`) — a mérőeszköz behangolása
+
+2026-09-21, commit `14cae9b`, jegyzőkönyv: [`meres/kezi-01.txt`](meres/kezi-01.txt).
+Az időbélyeges prompt működött, a telepítés hibátlan volt (`/version` →
+`14cae9b`, füstteszt tiszta), de a futtatás **adatsornak nem használható**:
+
+- két `clear` parancs 53 másodperc holtidőt vitt bele;
+- az 1. és a 12. lépés feleslegesen megismétlődött;
+- több helyen előregépelés történt (a következő parancs a futó előző alatt), így
+  a 7–8. és a 10–11. lépés prompt-időbélyegei összecsúsztak, lépésenkénti
+  bontás nem nyerhető ki belőlük.
+
+A kinyerhető szakaszidők (tájékoztatásul, nem mérési adat):
+
+| Lépés | Idő |
+|---|---|
+| 1 · push | 18 mp |
+| 2 · ssh | 8 mp |
+| 3 · fetch + checkout | 7 mp |
+| 4 · SHA | 8 mp |
+| 5 · backend build | 18 mp |
+| 6 · frontend build | 3 mp |
+| 7–8 · registry push (össze­vont) | 14 mp |
+| 9 · helm upgrade | 8 mp |
+| 10–11 · rollout status (össze­vont) | 35 mp |
+| 12 · /version | 3 mp |
+| 13 · füstteszt | 8 mp |
+
+Tiszta munkaidő kb. 2 perc 10 mp, teljes eltelt idő 3 perc 18 mp. **A
+legdrágább tétel a gördülő csere kivárása (35 mp), nem a build** — ez a 6.4-ben
+újabb érv amellett, hogy a két sorozat különbsége nem build-időkülönbség.
+
+**Ebből következő szabályok a mért futtatásokra** (a 6.1-be is):
+
+1. Nem gépelünk előre: minden parancs a prompt megjelenése után indul.
+2. Nincs `clear`, és nincs semmilyen a listán kívüli parancs a rögzítés alatt.
+3. Egy lépés nem ismételhető meg feleslegesen. Elrontott parancs benne marad —
+   az valódi kézi költség —, de a szükségtelen ismétlés nem az.
+
+**A mért sorozat ezért a `kezi-02`-vel kezdődik** és `kezi-11`-ig tart (tíz
+futtatás). A `kezi-00` és a `kezi-01` módszertani próbafuttatás; a dolgozatban
+ezt ki kell mondani, nem elhallgatni: a mérőeszközt két futtatáson hangoltuk be,
+és az adatgyűjtés csak utána indult. Ez a 6.1 része, és a 00-terv 8. pontjának
+„egyetlen operátor" korlátjához is tartozik.
+
+Az adatsor gyűjtőfájlja: [`meres/kezi-sorozat.csv`](meres/kezi-sorozat.csv).
+
+---
+
 ## 8. A kész-feltétel
 
 > *Kész, ha:* a lista alapján valaki más is végig tudná csinálni.
