@@ -167,7 +167,11 @@ A gép ott maradna az Azure-ban, de a Terraform nem tudna róla. A következő <
 <tr><td><strong>cloud-init</strong></td><td>A felhő szabványos indulási szkriptje. A Terraform átadja a gép létrehozásakor (<code>custom_data</code>), és a gép az első indulásakor lefuttatja. Egy parancs, egy eredmény.</td></tr>
 </table></div>
 
-<p>Két dolog van benne, ami nem magától értetődő. A <code>registries.yaml</code> a k3s telepítése <em>előtt</em> jön létre, mert a k3s induláskor olvassa be — utólag írva újra kellene indítani a szolgáltatást. A <code>--tls-san</code> pedig azt mondja meg, hogy a fürt API-tanúsítványa a publikus IP-címre is legyen érvényes; enélkül a laptopodról minden <code>kubectl</code> tanúsítványhibával állna meg.</p>
+<p>Egy dolog van benne, ami nem magától értetődő: a <code>--tls-san</code> azt mondja meg, hogy a fürt API-tanúsítványa a publikus IP-címre is legyen érvényes; enélkül a laptopodról minden <code>kubectl</code> tanúsítványhibával állna meg.</p>
+
+<p><strong>Ami korábban itt állt, és kikerült.</strong> A cloud-init eredetileg kiírt egy <code>registries.yaml</code> fájlt is, azzal az indoklással, hogy a k3s enélkül TLS-hibával bukna a helyi registryn. A 2.4 pont ellenőrzése ezt megcáfolta: a fájl tartalma k3s v1.36.4 alatt meg sem jelent a generált containerd-konfigurációban, és <em>a fájl eltávolítása után is</em> sikerült a képletöltés. A valódi ok a containerd alapértelmezése: a loopback-címre mutató registryt (<code>localhost</code>, adott porton) kivételként kezeli, TLS nélkül is elfogadja. A fürt tehát attól éri el a registryt, hogy ugyanazon a gépen fut.</p>
+
+<p>Ezt azért hagyjuk itt leírva, és nem töröljük némán: a védésen a „miért működik" kérdésre a rossz válasz is hihetően hangzik, és ez a tananyag arra való, hogy a jót mondd. Ha a fürt valaha másik gépre kerül, a kivétel megszűnik — akkor a registrynek TLS és hitelesítés kell, vagy a containerdnek kimondott <code>insecure</code> beállítás.</p>
 
 <div class="box whatif"><strong>Mi lenne, ha kimaradna a <code>--write-kubeconfig-mode 0644</code>?</strong>
 A kubeconfig csak rootnak lenne olvasható, és az <code>scp</code> „Permission denied”-del elszállna. Cserébe: egy világ által olvasható kubeconfig a fürt teljes hozzáférése. Egyfelhasználós mérőgépen vállalható, megosztott gépen nem — és ezt a dolgozatban ki kell mondani, nem elhallgatni.</div>
