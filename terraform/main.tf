@@ -101,6 +101,10 @@ resource "azurerm_linux_virtual_machine" "main" {
   size                = var.vm_size
   admin_username      = var.admin_username
 
+  # Ha meg van adva, a gép ebbe a rendelkezésre állási zónába kerül. Lásd a
+  # variables.tf "zone" leírását: kapacitáshiánynál ez a kerülőút.
+  zone = var.zone
+
   network_interface_ids = [azurerm_network_interface.main.id]
 
   # Jelszavas belépés nincs. Ez az azurerm alapértelmezése is, de kimondva

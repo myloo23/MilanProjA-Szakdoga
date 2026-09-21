@@ -1,6 +1,8 @@
 #cloud-config
-# A gép első indulásakor fut le, egyszer. A Terraform tölti ki a ${...}
-# helyeket (templatefile), tehát ez a fájl önmagában nem futtatható.
+# A gép első indulásakor fut le, egyszer. Ez egy Terraform-sablon: a dollárjeles
+# behelyettesítési helyeket a templatefile() tölti ki, tehát a fájl önmagában,
+# Terraform nélkül nem futtatható. (Kommentben sem írhatunk ilyen helyőrzőt,
+# mert a sablonfeldolgozó azt is kifejezésként próbálná értelmezni.)
 
 package_update: true
 package_upgrade: false

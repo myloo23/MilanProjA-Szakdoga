@@ -19,9 +19,19 @@ variable "allowed_cidr" {
 }
 
 variable "location" {
-  description = "Az Azure-régió. A nyugat-európai a legközelebbi olcsó régió."
+  description = <<-EOT
+    Az Azure-régió. Az Azure for Students előfizetésre régiókorlátozó szabály
+    vonatkozik ("Allowed resource deployment regions"), ami a westeurope-ot
+    nem engedi: az apply 403 RequestDisallowedByAzure hibával áll meg. Az
+    engedélyezett listát az
+      az policy assignment list --disable-scope-strict-match
+    adja meg. A legközelebbi engedélyezett régió (austriaeast) kicsi és új:
+    ott a B2ms létrehozása 409 SkuNotAvailable hibával állt meg kapacitáshiány
+    miatt, amit az `az vm list-skus` nem jelez előre. Az alapérték ezért egy
+    nagy, régi régió.
+  EOT
   type        = string
-  default     = "westeurope"
+  default     = "austriaeast"
 }
 
 variable "prefix" {
@@ -58,4 +68,17 @@ variable "os_disk_size_gb" {
   description = "A rendszerlemez mérete. A konténerképek és a registry ezen laknak."
   type        = number
   default     = 48
+}
+
+variable "zone" {
+  description = <<-EOT
+    Rendelkezésre állási zóna ("1", "2" vagy "3"), vagy null a régió közös
+    készletéből való foglaláshoz. Az Azure a kapacitást zónánként tartja
+    nyilván: ha a régió általános készlete kifogyott (409 SkuNotAvailable,
+    "Capacity Restrictions"), egy konkrét zóna kérése még sikerülhet.
+    A dolgozat szempontjából közömbös, melyik zónában fut a gép — egy
+    csomópont, egy zóna (ADR-0008).
+  EOT
+  type        = string
+  default     = null
 }
