@@ -243,6 +243,60 @@ vázába írd be, ami eltért a leírtaktól, és commitold a repó változásai
 
 ---
 
+### Amit a 2.4-ből tudnod kell — védésre, szóban
+
+Nem a parancsokat kell fejből tudni, hanem ezt a hat dolgot. Mindegyik mögött
+ott van, hogy a dolgozat melyik részében hivatkozol rá.
+
+**1. Miért kell a fürtnek registry.** A Kubernetes nem a te gépedről kapja a
+konténerképet, hanem *lehúzza* egy címről, amit a Deployment megad. A build
+eredménye tehát csak akkor telepíthető, ha előbb felkerül valahová, ahonnan a
+fürt kéri. Ez a "build once, push to registry" elv (ADR-0002): egyetlen
+képpéldány készül, azt szállítjuk, nem építjük újra minden környezetben.
+→ 4.6, és a mérés elfogadási kritériuma is erre épül (a `/version` a
+képbe égetett SHA-t adja vissza).
+
+**2. Miért éri el a fürt a `localhost:5001`-et.** Mert a k3s ugyanazon a gépen
+fut, mint a registry, és a containerd a loopback-címre mutató registryt
+kivételként kezeli: TLS nélkül is elfogadja. Ez nem beállítás kérdése — a
+2.4-ben bizonyítottuk, hogy a `registries.yaml` nélkül is megy. Ha bárki
+rákérdez, hogy "és ha másik gépen lenne a fürt?", a válasz: akkor vagy TLS és
+hitelesítés kellene a registrynek, vagy a containerd `insecure` beállítása —
+és pont ez az ára a D5 döntésnek.
+→ 4.5, 4.6, D5.
+
+**3. Mi a különbség a `localhost:5001` és a `registry:5000` között.** Ugyanaz a
+registry, két nézőpontból. A `5000` a konténer saját portja, ezen a
+`projecta-platform` hálózaton lévő konténerek érik el névvel. Az `5001` a
+gazdagépre publikált port. Konténeren belül a `localhost` *az a konténer*, nem
+a gép — ez a projekt leggyakoribb hibaforrása, a `docs/DEVELOPMENT.md` is ezzel
+kezdi a platformfejezetet.
+→ 4.6, és a pipeline hibakeresésénél.
+
+**4. Miért köt minden port a 127.0.0.1-re.** A registrynek nincs hitelesítése,
+és a gépnek publikus IP-címe van: ha a `0.0.0.0`-ra kötne, bárki felülírhatná
+benne a képeket, amiket a fürt telepít — vagyis a "megváltoztathatatlan
+artefaktum", amire az egész lánc épül, idegen kézbe kerülne. Ezért megy a
+Gitea felülete SSH-alagúton, nem a tűzfalon át.
+→ 6.5 és a biztonsági áttekintés F4 pontja.
+
+**5. Miért nincs a Gitea beállításában kattintós lépés.** Mert a gép
+Terraformból épül, és `destroy` + `apply` után újra kellene csinálni. Az
+`INSTALL_LOCK` és a parancssori admin-létrehozás azt jelenti, hogy a platform
+üzembe helyezése is reprodukálható. Ez ugyanaz az elv, amit a dolgozat mér,
+csak eggyel lejjebb: ami kézzel van, az minden ismétlésnél újra fizetendő.
+→ 4.5, és a 6. fejezet érvelésében.
+
+**6. Mit ér a negatív próba.** Azt hittem, a `registries.yaml` miatt működik a
+letöltés. Az ellenőrzés azt mutatta, hogy a fájl nem jelenik meg a containerd
+konfigurációjában — ez még csak gyanú. Bizonyíték az lett, hogy *elvettem* a
+fájlt, és a letöltés attól sem romlott el. **Egy állítás akkor bizonyított, ha
+az ellenkezőjét is megpróbáltad előállítani.** Ez a 6. fejezet módszertani
+része, és ugyanez az elv a visszaállítás-mérésben: a `helm rollback` képességét
+nem az mutatja meg, hogy fut, hanem hogy szándékosan elrontott képpel is
+visszaáll.
+→ 6.1, és a 3.2 pont hibainjektálása.
+
 ### Ami a 2.4-gyel NEM lett kész, és tudni kell róla
 
 1. **A chart még nem a registryre mutat.** A `chart/values.yaml`-ban a kép
