@@ -1,0 +1,4 @@
+# Másold át terraform.tfvars néven, és töltsd ki. A terraform.tfvars nincs
+# verziókövetve (lásd .gitignore), mert a saját IP-címed van benne.
+subscription_id = "ide-jon-az-elofizetes-azonositoja"
+allowed_cidr    = "1.2.3.4/32"

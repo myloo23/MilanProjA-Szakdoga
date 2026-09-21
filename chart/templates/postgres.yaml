@@ -1,0 +1,68 @@
+{{- if .Values.postgres.enabled }}
+# PostgreSQL a fürtön belül. A db-credentials Secret nem része a chartnak
+# (lásd values.yaml), itt csak hivatkozunk rá.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data
+  annotations:
+    # `helm uninstall` alapból mindent töröl, amit a chart létrehozott, a PVC-vel
+    # együtt az adatbázis tartalmát is. Ez az annotáció kiveszi a PVC-t ez alól:
+    # az adat csak kifejezett `kubectl delete pvc` hatására vész el.
+    helm.sh/resource-policy: keep
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: {{ .Values.postgres.storage }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  # Recreate: frissítéskor előbb leáll a régi pod, csak utána indul az új.
+  # RollingUpdate-tel egy pillanatig két Postgres írná ugyanazt az adatkönyvtárat.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.image | quote }}
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: {{ .Values.database.secretName }}
+          ports:
+            - containerPort: 5432
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\""]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: postgres-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+{{- end }}

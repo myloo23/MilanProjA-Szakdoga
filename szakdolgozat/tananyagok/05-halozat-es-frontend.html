@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5. Hálózat és frontend</title>
+<link rel="stylesheet" href="assets/tananyag.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="top"><a href="04-frissites-es-adat.html">← 4. Frissítés és adat</a><a href="06-hibaelharitas.html">Következő: Hibaelhárítás →</a></nav>
+
+<p class="eyebrow">5. tananyag · 5. nap</p>
+<h1>Egy kérés útja a böngészőtől az adatbázisig</h1>
+<p class="lead">Ingress, Traefik, nginx reverse proxy, cache-fejlécek és a frontend image felépítése.</p>
+
+<div class="goals">
+  <h2>A végére ezt fogod érteni</h2>
+  <ul>
+    <li>Minden állomást, amin egy <code>GET /api/notes</code> kérés átmegy, és hogy melyik mit csinál.</li>
+    <li>Miért a frontend nginx-e továbbítja az API-kéréseket, és mit csinál a <code>proxy_pass</code> végén lévő <code>/</code>.</li>
+    <li>Miért nem szabad az <code>index.html</code>-t cache-elni, a JS-fájlokat viszont igen.</li>
+    <li>Hogyan épül fel a frontend image, és miért kell hozzá <code>.dockerignore</code>.</li>
+  </ul>
+</div>
+
+<h2 id="ut">1. A kérés útja</h2>
+
+<p>Kattints végig, mi történik, amikor a böngésző betölti a jegyzeteket.</p>
+
+<div class="stepper" data-captions="A böngésző a <code>http://localhost:8080/api/notes</code> címet kéri. A 8080-as port a Macen van.|A <code>kubectl port-forward -n kube-system svc/traefik 8080:80</code> egy alagút: ami a Mac 8080-as portjára jön, azt a fürtben lévő <code>traefik</code> Service 80-as portjára továbbítja. Erre azért van szükség, mert a fürtöt port-mapping nélkül hoztad létre, így kívülről nincs más út befelé.|A <strong>Traefik</strong> az <strong>ingress controller</strong>: egy program a fürtben, ami az Ingress erőforrásokat olvassa, és ezek alapján irányítja a bejövő HTTP-kéréseket. A <code>projecta</code> Ingress azt mondja: minden (<code>/</code>) menjen a <code>frontend</code> Service-hez.|A <code>frontend</code> Service az egyik ready nginx podra küldi a kérést, a 8080-as portjára.|Az <strong>nginx</strong> megnézi az útvonalat. Az <code>/api/</code> kezdetűeket <strong>levágott előtaggal</strong> továbbítja: <code>/api/notes</code> → <code>http://backend/notes</code>. A <code>backend</code> név a Service neve, a CoreDNS oldja fel.|A <code>backend</code> Service az egyik ready Flask podra küldi a kérést (80 → 8000).|A Flask a <code>postgres</code> Service-en keresztül lekérdezi a <code>note</code> táblát, és JSON-t ad vissza. A válasz ugyanezen az úton megy vissza a böngészőig.">
+<figure>
+<svg viewBox="0 0 640 400" role="img" aria-label="Egy kérés útja a fürtön keresztül">
+  <defs>
+    <marker id="e1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-accent"/></marker>
+  </defs>
+  <!-- Mac -->
+  <rect x="10" y="10" width="170" height="380" rx="12" class="zone"/>
+  <text x="26" y="34" class="t-bold">Mac</text>
+  <rect x="26" y="52" width="138" height="54" rx="8" class="n-accent" data-step="0"/>
+  <text x="95" y="75" text-anchor="middle" class="t-bold" data-step="0">Böngésző</text>
+  <text x="95" y="94" text-anchor="middle" class="t-mono t-small" data-step="0">localhost:8080</text>
+  <rect x="26" y="140" width="138" height="54" rx="8" class="n-2" data-step="1"/>
+  <text x="95" y="162" text-anchor="middle" class="t-bold t-small" data-step="1">kubectl</text>
+  <text x="95" y="180" text-anchor="middle" class="t-mono t-small" data-step="1">port-forward</text>
+
+  <!-- Fürt -->
+  <rect x="200" y="10" width="430" height="380" rx="12" class="zone"/>
+  <text x="216" y="34" class="t-bold">k3d fürt</text>
+
+  <g data-step="2">
+    <rect x="220" y="52" width="180" height="54" rx="8" class="n-violet"/>
+    <text x="310" y="74" text-anchor="middle" class="t-bold">Traefik</text>
+    <text x="310" y="94" text-anchor="middle" class="t-small">olvassa: Ingress projecta</text>
+  </g>
+  <g data-step="3">
+    <rect x="220" y="140" width="180" height="54" rx="8" class="n-accent"/>
+    <text x="310" y="162" text-anchor="middle" class="t-bold">Service frontend</text>
+    <text x="310" y="182" text-anchor="middle" class="t-mono t-small">:80 → :8080</text>
+  </g>
+  <g data-step="4">
+    <rect x="430" y="140" width="185" height="80" rx="8" class="n-ok"/>
+    <text x="522" y="162" text-anchor="middle" class="t-bold">nginx pod</text>
+    <text x="522" y="182" text-anchor="middle" class="t-mono t-small">/ → index.html, JS</text>
+    <text x="522" y="202" text-anchor="middle" class="t-mono t-small">/api/x → backend/x</text>
+  </g>
+  <g data-step="5">
+    <rect x="220" y="240" width="180" height="54" rx="8" class="n-accent"/>
+    <text x="310" y="262" text-anchor="middle" class="t-bold">Service backend</text>
+    <text x="310" y="282" text-anchor="middle" class="t-mono t-small">:80 → :8000</text>
+    <rect x="430" y="240" width="185" height="54" rx="8" class="n-ok"/>
+    <text x="522" y="262" text-anchor="middle" class="t-bold">Flask pod</text>
+    <text x="522" y="282" text-anchor="middle" class="t-mono t-small">GET /notes</text>
+  </g>
+  <g data-step="6">
+    <rect x="220" y="320" width="180" height="54" rx="8" class="n-accent"/>
+    <text x="310" y="342" text-anchor="middle" class="t-bold">Service postgres</text>
+    <text x="310" y="362" text-anchor="middle" class="t-mono t-small">:5432</text>
+    <rect x="430" y="320" width="185" height="54" rx="8" class="n-ok"/>
+    <text x="522" y="342" text-anchor="middle" class="t-bold">Postgres pod</text>
+    <text x="522" y="362" text-anchor="middle" class="t-mono t-small">SELECT … FROM note</text>
+  </g>
+
+  <path d="M95,106 L95,136" class="line-accent" marker-end="url(#e1)" data-step="1"/>
+  <path d="M164,160 C190,150 190,90 216,82" class="line-accent" marker-end="url(#e1)" data-step="2"/>
+  <path d="M310,106 L310,136" class="line-accent" marker-end="url(#e1)" data-step="3"/>
+  <path d="M400,167 L426,167" class="line-accent" marker-end="url(#e1)" data-step="4"/>
+  <path d="M470,220 C470,232 420,232 404,252" class="line-accent" marker-end="url(#e1)" data-step="5"/>
+  <path d="M400,267 L426,267" class="line-accent" marker-end="url(#e1)" data-step="5"/>
+  <path d="M470,294 C470,306 420,306 404,332" class="line-accent" marker-end="url(#e1)" data-step="6"/>
+  <path d="M400,347 L426,347" class="line-accent" marker-end="url(#e1)" data-step="6"/>
+</svg>
+</figure>
+<div class="controls"><button data-prev>← Vissza</button><button class="primary" data-next>Tovább →</button><button data-reset>Elölről</button><span class="counter"></span></div>
+<div class="caption"></div>
+</div>
+
+<div class="box key"><strong>Service vs. Ingress</strong>
+A Service <em>a fürtön belül</em> ad állandó címet a podoknak (L4: IP és port). Az Ingress a <em>fürtön kívülről</em> érkező HTTP-forgalomra vonatkozó szabály (L7: host, útvonal). Az Ingress önmagában nem csinál semmit, egy ingress controller (nálad a k3s-sel érkező Traefik) valósítja meg.</div>
+
+<h2 id="proxy">2. Miért az nginx továbbítja az API-t?</h2>
+
+<p>A böngésző szempontjából így minden egy címről jön: a HTML, a JS és az API is <code>localhost:8080</code>. Ennek két következménye van:</p>
+<p><strong>Nincs CORS-probléma.</strong> A böngésző alapból tiltja, hogy egy oldal JS-e egy <em>másik</em> címről (más host vagy port) olvasson választ, hacsak az a szerver kifejezetten nem engedi (CORS-fejlécek). Ha a frontend a <code>localhost:8080</code>-ról, a backend a <code>localhost:8000</code>-ról jönne, ezt be kellene állítani a Flaskban.</p>
+<p><strong>A frontend kódjában nincs backend-cím.</strong> Az <code>api.ts</code> mindig relatív <code>/api/…</code> útvonalat hív. Ugyanaz a buildelt kép működik a gépeden, a fürtben és élesben is. Ha a cím be lenne égetve a buildbe, környezetenként külön képet kellene építeni.</p>
+
+<h3>A <code>proxy_pass</code> végén lévő perjel</h3>
+<div class="table-wrap"><table>
+<tr><th>Konfig</th><th>Böngésző kéri</th><th>Backend kapja</th><th>Eredmény</th></tr>
+<tr><td><code>proxy_pass http://backend/;</code></td><td><code>/api/notes</code></td><td><code>/notes</code></td><td>✅ 200</td></tr>
+<tr><td><code>proxy_pass http://backend;</code></td><td><code>/api/notes</code></td><td><code>/api/notes</code></td><td>❌ 404, ilyen útvonal nincs a Flaskban</td></tr>
+</table></div>
+<p>A szabály: ha a <code>proxy_pass</code> címe tartalmaz útvonalat (itt a <code>/</code>), az nginx a <code>location</code>-ben illesztett részt (<code>/api/</code>) erre cseréli. Ha nincs benne útvonal, a kérést változatlanul adja tovább.</p>
+
+<div class="box whatif"><strong>Mi lett volna, ha…</strong>
+…a <code>backend</code> Service nem létezne, amikor az nginx elindul? Az nginx induláskor feloldja a <code>proxy_pass</code>-ban lévő nevet, és ha nem sikerül (<em>host not found in upstream</em>), el sem indul. Nálad ez nem fordulhat elő, mert a Service ugyanabban a chartban van. A Service neve akkor is feloldható, ha mögötte még egy pod sincs.</div>
+
+<h3>Fejlesztés közben ugyanez, Vite-tal</h3>
+<p>Ha a gépeden <code>npm run dev</code>-vel dolgozol, nincs nginx. A <code>vite.config.ts</code>-ben lévő <code>server.proxy</code> ugyanazt csinálja: az <code>/api</code> kéréseket levágott előtaggal a <code>localhost:8000</code>-n futó Flaskhoz küldi. A frontend kódnak így nem kell tudnia, melyik környezetben fut.</p>
+
+<h2 id="cache">3. Cache: mit szabad megjegyeznie a böngészőnek?</h2>
+
+<p>A Vite build a fájlnevekbe a tartalomból számolt hash-t tesz: <code>index-BMb6wjPv.js</code>. Ha a kód változik, a név is változik. Az <code>index.html</code> neve viszont mindig ugyanaz, és ez hivatkozik a JS-fájlokra.</p>
+
+<figure>
+<svg viewBox="0 0 640 250" role="img" aria-label="Mi történik, ha az index.html cache-elve van">
+  <defs>
+    <marker id="e2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+  </defs>
+  <text x="20" y="28" class="t-bold t-bad">Ha az index.html cache-elve lenne</text>
+  <rect x="10" y="40" width="210" height="50" rx="8" class="n-bad"/>
+  <text x="115" y="60" text-anchor="middle" class="t-mono t-small">index.html (régi, cache-ből)</text>
+  <text x="115" y="78" text-anchor="middle" class="t-mono t-small">→ index-AAAA.js</text>
+  <path d="M220,65 L256,65" class="line" marker-end="url(#e2)"/>
+  <rect x="260" y="40" width="160" height="50" rx="8" class="n-2"/>
+  <text x="340" y="70" text-anchor="middle" class="t-mono t-small">index-AAAA.js (régi)</text>
+  <text x="440" y="60" class="t-small t-bad">a felhasználó a régi</text>
+  <text x="440" y="78" class="t-small t-bad">verziót látja a telepítés után</text>
+
+  <text x="20" y="138" class="t-bold t-ok">A chartodban</text>
+  <rect x="10" y="150" width="210" height="60" rx="8" class="n-ok"/>
+  <text x="115" y="170" text-anchor="middle" class="t-mono t-small">index.html</text>
+  <text x="115" y="186" text-anchor="middle" class="t-mono t-small">Cache-Control: no-cache</text>
+  <text x="115" y="202" text-anchor="middle" class="t-mono t-small">→ index-BBBB.js (új)</text>
+  <path d="M220,180 L256,180" class="line" marker-end="url(#e2)"/>
+  <rect x="260" y="150" width="160" height="60" rx="8" class="n-ok"/>
+  <text x="340" y="172" text-anchor="middle" class="t-mono t-small">/assets/index-BBBB.js</text>
+  <text x="340" y="190" text-anchor="middle" class="t-mono t-small">max-age=1 év,</text>
+  <text x="340" y="204" text-anchor="middle" class="t-mono t-small">immutable</text>
+  <text x="440" y="176" class="t-small t-ok">mindig a friss index.html,</text>
+  <text x="440" y="194" class="t-small t-ok">a JS pedig gyorsan, cache-ből</text>
+</svg>
+<figcaption>A <code>no-cache</code> nem azt jelenti, hogy „ne tárold”, hanem hogy „használat előtt kérdezd meg a szervert, változott-e”. Az <code>immutable</code> azt mondja: ez a fájl ezen a néven soha nem változik.</figcaption>
+</figure>
+
+<div class="box thesis"><strong>A dolgozat szempontjából</strong>
+A „változtatástól a működő telepítésig eltelt idő” akkor ér véget, amikor az új verzió <em>tényleg</em> látszik. Ha a böngésző a régit mutatná, a mérés hamis lenne. A felület alján megjelenő „Backend verzió” a <code>/api/version</code>-ből jön (a buildkor beégetett commit SHA), így szemmel és szkripttel is ellenőrizhető, mi fut éppen.</div>
+
+<h2 id="health">4. A frontend saját <code>/healthz</code>-e</h2>
+<p>Az nginx egy <code>/healthz</code> végponton maga válaszol, a backend megkérdezése nélkül. Ha a frontend probe-ja a backendet is ellenőrizné, egy backend-kiesés a frontend podokat is kivenné a forgalomból. A felhasználó ilyenkor semmilyen választ nem kapna, pedig a frontend a hibaüzenetet is meg tudná jeleníteni. Ugyanaz az elv, mint a backendnél: minden probe csak a saját komponense állapotát nézze.</p>
+
+<h2 id="image">5. A frontend image felépítése</h2>
+
+<figure>
+<svg viewBox="0 0 640 270" role="img" aria-label="Többlépcsős Docker build">
+  <defs><marker id="e3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-accent"/></marker></defs>
+  <rect x="20" y="20" width="190" height="210" rx="10" class="n-2"/>
+  <text x="115" y="44" text-anchor="middle" class="t-bold">build context</text>
+  <text x="115" y="62" text-anchor="middle" class="t-small t-muted">(.dockerignore után)</text>
+  <text x="40" y="92" class="t-mono t-small">package*.json</text>
+  <text x="40" y="112" class="t-mono t-small">src/ public/</text>
+  <text x="40" y="132" class="t-mono t-small">index.html</text>
+  <text x="40" y="152" class="t-mono t-small">vite/ts configok</text>
+  <text x="40" y="172" class="t-mono t-small">nginx.conf</text>
+  <text x="40" y="204" class="t-mono t-small t-bad">node_modules ✗</text>
+
+  <rect x="240" y="20" width="180" height="210" rx="10" class="n-warn"/>
+  <text x="330" y="44" text-anchor="middle" class="t-bold">1. szakasz: build</text>
+  <text x="330" y="64" text-anchor="middle" class="t-mono t-small">node:22-alpine</text>
+  <text x="330" y="100" text-anchor="middle" class="t-mono t-small">npm ci</text>
+  <text x="330" y="124" text-anchor="middle" class="t-mono t-small">npm run build</text>
+  <text x="330" y="158" text-anchor="middle" class="t-mono t-small">→ /app/dist</text>
+  <text x="330" y="200" text-anchor="middle" class="t-small t-muted">~ több száz MB,</text>
+  <text x="330" y="216" text-anchor="middle" class="t-small t-muted">eldobva a végén</text>
+
+  <rect x="450" y="20" width="170" height="210" rx="10" class="n-ok"/>
+  <text x="535" y="44" text-anchor="middle" class="t-bold">2. szakasz: futás</text>
+  <text x="535" y="64" text-anchor="middle" class="t-mono t-small">nginx-unprivileged</text>
+  <text x="535" y="100" text-anchor="middle" class="t-mono t-small">dist → html/</text>
+  <text x="535" y="124" text-anchor="middle" class="t-mono t-small">nginx.conf</text>
+  <text x="535" y="158" text-anchor="middle" class="t-mono t-small">nem root, :8080</text>
+  <text x="535" y="200" text-anchor="middle" class="t-small t-ok">ez lesz a kép:</text>
+  <text x="535" y="216" text-anchor="middle" class="t-small t-ok">nincs benne Node</text>
+
+  <path d="M210,125 L236,125" class="line-accent" marker-end="url(#e3)"/>
+  <path d="M420,145 L446,145" class="line-accent" marker-end="url(#e3)"/>
+  <text x="435" y="258" text-anchor="middle" class="t-mono t-small t-accent">COPY --from=build ↗</text>
+</svg>
+<figcaption>Többlépcsős (multi-stage) build: a Node és a fejlesztői csomagok csak a build szakaszban vannak. A végső képben csak az nginx és a kész statikus fájlok maradnak.</figcaption>
+</figure>
+
+<div class="box whatif"><strong>Mi lett volna, ha…</strong>
+…nincs <code>.dockerignore</code>? A <code>COPY . .</code> a macOS-re telepített <code>node_modules</code>-t is bemásolná, és felülírná azt, amit az <code>npm ci</code> épp Linuxra telepített. Natív részeket tartalmazó csomagoknál ez rossz platformra fordított binárisokat jelent, és a build hibázik vagy furcsán viselkedik. Ráadásul minden buildnél több száz MB-ot küldene át a Dockernek. Az allow-list (mindent tilt, csak a felsoroltakat engedi) azért jobb, mert egy új fájl alapból kimarad.</div>
+
+<div class="box key"><strong>Miért 8080 és miért <code>unprivileged</code>?</strong>
+A projekt szabálya, hogy konténer nem futhat rootként. A sima nginx kép rootként indul. Az <code>nginx-unprivileged</code> változat alapból nem-root felhasználóval fut, és mivel nem-root folyamat alapesetben nem nyithat 1024 alatti portot, a 80 helyett a 8080-on figyel. A chart <code>runAsNonRoot: true</code> beállítása ezt ki is kényszeríti: ha a kép mégis rootként indulna, a Kubernetes nem indítaná el.</div>
+
+<h2 id="kviz">Ellenőrizd magad</h2>
+<div class="quiz">
+<details><summary>Miért kell a <code>kubectl port-forward</code> a böngészős eléréshez?</summary><p>Mert a k3d fürtöt port-mapping nélkül hoztad létre, így a Mac egyik portja sem vezet a Traefikhez. A port-forward egy ideiglenes alagút. Ha újra létrehoznád a fürtöt, a <code>-p "8080:80@loadbalancer"</code> kapcsoló állandóvá tenné.</p></details>
+<details><summary>Mi a különbség a Service és az Ingress között?</summary><p>A Service a fürtön belüli állandó cím (IP és port). Az Ingress a kívülről jövő HTTP-kérések útválasztási szabálya (host, útvonal), amit egy ingress controller, nálad a Traefik, hajt végre.</p></details>
+<details><summary>Az API 404-et ad, a Flask logjában <code>/api/notes</code> látszik. Mi a hiba?</summary><p>Hiányzik a perjel a <code>proxy_pass http://backend/</code> végéről, ezért az nginx nem vágja le az <code>/api</code> előtagot.</p></details>
+<details><summary>Miért kaphat a JS-fájl egyéves cache-t, az <code>index.html</code> miért nem?</summary><p>Mert a JS-fájl neve a tartalmától függ: ha változik, új nevet kap. Az <code>index.html</code> neve fix, és ez mondja meg, melyik JS-t kell betölteni. Ha régi maradna, a régi JS töltődne be.</p></details>
+<details><summary>Mit nyersz a multi-stage builddel?</summary><p>Kisebb és biztonságosabb képet: a futó konténerben nincs Node, npm és fejlesztői csomag, csak az nginx és a statikus fájlok.</p></details>
+</div>
+
+<h2 id="szotar">Szótár</h2>
+<div class="table-wrap"><table>
+<tr><th>Fogalom</th><th>Egy mondatban</th></tr>
+<tr><td>Ingress</td><td>szabály a kívülről jövő HTTP-kérések irányítására</td></tr>
+<tr><td>ingress controller</td><td>a program, ami az Ingress szabályait végrehajtja (Traefik)</td></tr>
+<tr><td>reverse proxy</td><td>szerver, ami a kéréseket egy másik szervernek továbbítja (nginx → backend)</td></tr>
+<tr><td>port-forward</td><td>ideiglenes alagút a gépedről egy fürtbeli Service-hez</td></tr>
+<tr><td>CORS</td><td>a böngésző szabálya a más címről érkező válaszok olvasására</td></tr>
+<tr><td>same-origin</td><td>ugyanaz a séma, host és port, itt nincs CORS-korlát</td></tr>
+<tr><td>multi-stage build</td><td>több <code>FROM</code> egy Dockerfile-ban; csak az utolsó szakasz lesz a kép</td></tr>
+<tr><td>build context</td><td>amit a Docker a buildhez megkap; a <code>.dockerignore</code> szűri</td></tr>
+</table></div>
+
+<footer class="page"><a href="04-frissites-es-adat.html">← 4. Frissítés és adat</a><a href="06-hibaelharitas.html">Következő: Hibaelhárítás →</a></footer>
+</div>
+<script src="assets/tananyag.js"></script>
+</body>
+</html>

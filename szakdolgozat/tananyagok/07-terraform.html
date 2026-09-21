@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7. Terraform</title>
+<link rel="stylesheet" href="assets/tananyag.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="top"><a href="06-hibaelharitas.html">← 6. Hibaelhárítás</a><a href="index.html">Tananyagtérkép →</a></nav>
+
+<p class="eyebrow">7. tananyag · 2. hét</p>
+<h1>Terraform: a gép, amit nem kattintással hozol létre</h1>
+<p class="lead">Mi az a state, és miért ez a Terraform lényege. Mit csinál a <code>plan</code>, mielőtt bármi történne. Miért a Terraform hozza létre a fürtöt, és miért nem ő telepíti az alkalmazást.</p>
+
+<div class="goals">
+  <h2>A végére ezt fogod érteni</h2>
+  <ul>
+    <li>Miért nem elég a portálon összekattintani a gépet, még akkor sem, ha gyorsabb.</li>
+    <li>Mi a provider, a resource és a <strong>state</strong>, és miért a state a három közül a fontos.</li>
+    <li>Mit hasonlít össze a <code>terraform plan</code>, és mit jelent a <code>+</code>, a <code>~</code> és a <code>-</code> a kimenetében.</li>
+    <li>Mi az a drift, és miért állít vissza a Terraform olyasmit, amit te írtál át.</li>
+    <li>Miért a cloud-init telepíti a k3s-t, és miért a Helm dolga az alkalmazás (a mérés érvényessége múlik rajta).</li>
+  </ul>
+</div>
+
+<h2 id="miert">1. Miért kód, ha kattintani gyorsabb</h2>
+
+<p>A portálon tíz perc alatt összeállítasz egy virtuális gépet. Terraformban ugyanez másfél óra, ha először csinálod. A kérdés jogos: mit kapsz a különbségért?</p>
+
+<p>Három dolgot, és mind a három a dolgozatban is érvel.</p>
+
+<div class="table-wrap"><table>
+<tr><th>Portálon kattintva</th><th>Terraformmal</th></tr>
+<tr><td>A beállítások a fejedben és a képernyőn vannak. Fél év múlva nem tudod, miért 48 GB a lemez.</td><td>A beállítás <strong>szöveg</strong>: verziókövetve, kommentelve, a döntés indoklásával együtt.</td></tr>
+<tr><td>„Építsd fel újra ugyanígy” = kattintsd végig újra, és reménykedj.</td><td><code>terraform destroy</code> + <code>terraform apply</code>. Ha ugyanaz jön ki, az bizonyíték, nem ígéret.</td></tr>
+<tr><td>Ha valaki átállít valamit, csak akkor derül ki, ha baj lesz belőle.</td><td>A következő <code>plan</code> megmutatja, hogy a valóság eltért a leírástól.</td></tr>
+</table></div>
+
+<div class="box thesis"><strong>Hogyan kapcsolódik a dolgozathoz</strong>
+A 4.5 alfejezet nem attól lesz erős, hogy leírod, mi az a Terraform, hanem attól, hogy a <code>destroy</code> + <code>apply</code> próbát elvégzed, és a kimenetet beteszed ábrának. Az „infrastruktúra kódból” állítás bizonyíték nélkül marketingmondat.</div>
+
+<h2 id="fogalmak">2. A három fogalom, amiből minden más következik</h2>
+
+<p><strong>Provider.</strong> A Terraform önmagában nem tud semmit az Azure-ról. A provider (nálad az <code>azurerm</code>) az a bővítmény, ami a leírásodat Azure API-hívásokká fordítja. Ezért kell <code>terraform init</code> a legelső parancsnak: az tölti le. És ezért van a <code>versions.tf</code>-ben verzió rögzítve — ugyanaz a logika, mint a <code>requirements.txt</code> hash-einél: ne változzon alattad a fordító.</p>
+
+<p><strong>Resource.</strong> Egy erőforrás egy darab valóság: egy hálózat, egy IP-cím, egy gép. A <code>resource "azurerm_public_ip" "main"</code> két nevet ad neki: a típusát (ezt a provider ismeri) és egy belső nevet (<code>main</code>), amivel máshol hivatkozol rá.</p>
+
+<p><strong>State.</strong> Ez a nehéz és ez a lényeg. Az <code>apply</code> után a Terraform egy fájlba (<code>terraform.tfstate</code>) leírja, <em>mit hozott létre</em>: melyik kódbeli erőforráshoz melyik valódi Azure-azonosító tartozik. Enélkül a következő futásnál fogalma sem lenne róla, hogy a gép, ami ott van, az <em>a te géped</em>-e, vagy egy másik, és mindent újra létrehozna.</p>
+
+<div class="box key"><strong>Egy mondatban</strong>
+A Terraform mindig három dolgot hasonlít össze: amit <strong>leírtál</strong> (a kód), amit <strong>tud</strong> (a state), és ami <strong>van</strong> (az Azure). Minden parancs ezen a háromszögön dolgozik.</div>
+
+<h2 id="ciklus">3. Mi történik egy futtatás alatt</h2>
+
+<div class="stepper" data-captions="<strong>terraform init</strong> — letölti az <code>azurerm</code> providert, és létrehozza a <code>.terraform.lock.hcl</code> fájlt a provider ellenőrzőösszegével. Ez a fájl megy gitbe: ettől kap mindenki ugyanazt a providert.|<strong>terraform plan</strong> — beolvassa a kódot, beolvassa a state-et, és megkérdezi az Azure-t, mi van valójában. Még nem csinál semmit. A kimenet minden sora <code>+</code> (létrehoz), <code>~</code> (módosít) vagy <code>-</code> (töröl).|<strong>terraform apply</strong> — végrehajtja a tervet, a függőségek sorrendjében. Nem te mondod meg a sorrendet: abból jön, hogy melyik erőforrás hivatkozik melyikre.|<strong>state frissítés</strong> — az apply végén a Terraform beírja a state-be, mi jött létre és milyen azonosítóval. Innentől tudja, hogy ezek az övéi.|<strong>drift</strong> — ha közben valaki a portálon átállít egy tűzfalszabályt, a kód és a valóság eltér. A következő <code>plan</code> ezt <code>~</code> sorként mutatja, és az <code>apply</code> <strong>visszaállítja a kód szerinti állapotot</strong>. A kód az igazság, nem a portál.">
+<figure>
+<svg viewBox="0 0 640 260" role="img" aria-label="A kód, a state és az Azure viszonya">
+  <rect x="20" y="60" width="150" height="80" rx="10" class="n-accent"/>
+  <text x="95" y="90" text-anchor="middle" class="t-bold">A kódod</text>
+  <text x="95" y="110" text-anchor="middle" class="t-small">amit leírtál</text>
+  <text x="95" y="128" text-anchor="middle" class="t-mono t-small">*.tf</text>
+
+  <rect x="245" y="60" width="150" height="80" rx="10" class="n-violet"/>
+  <text x="320" y="90" text-anchor="middle" class="t-bold">state</text>
+  <text x="320" y="110" text-anchor="middle" class="t-small">amit a Terraform tud</text>
+  <text x="320" y="128" text-anchor="middle" class="t-mono t-small">terraform.tfstate</text>
+
+  <rect x="470" y="60" width="150" height="80" rx="10" class="n-ok"/>
+  <text x="545" y="90" text-anchor="middle" class="t-bold">Azure</text>
+  <text x="545" y="110" text-anchor="middle" class="t-small">ami valójában van</text>
+
+  <g data-step="1">
+    <path d="M170,85 L241,85" class="line-accent" marker-end="url(#a7)"/>
+    <path d="M470,110 L399,110" class="line-accent" marker-end="url(#a7)"/>
+    <text x="320" y="40" text-anchor="middle" class="t-small t-accent t-bold">plan: összeveti a hármat</text>
+  </g>
+  <g data-step="2">
+    <path d="M170,170 C300,210 420,210 545,150" class="line-ok" marker-end="url(#o7)"/>
+    <text x="330" y="205" text-anchor="middle" class="t-small t-ok t-bold">apply: létrehozza, ami hiányzik</text>
+  </g>
+  <g data-step="3">
+    <path d="M470,135 L399,135" class="line dash"/>
+    <text x="320" y="160" text-anchor="middle" class="t-small t-violet">a state megjegyzi az azonosítókat</text>
+  </g>
+  <g data-step="4">
+    <text x="545" y="180" text-anchor="middle" class="t-small t-bad t-bold">kézi módosítás a portálon</text>
+    <text x="545" y="198" text-anchor="middle" class="t-small t-bad">→ a plan ezt ~ sorként mutatja</text>
+  </g>
+
+  <defs>
+    <marker id="a7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-accent"/></marker>
+    <marker id="o7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-ok"/></marker>
+  </defs>
+</svg>
+<figcaption>A <code>plan</code> sosem módosít. Ez az egyetlen parancs, amit nyugodtan futtathatsz bármikor.</figcaption>
+</figure>
+<div class="controls">
+  <button data-prev>← Vissza</button>
+  <button data-next class="primary">Tovább →</button>
+  <button data-reset>Elölről</button>
+  <span class="counter"></span>
+</div>
+<div class="caption"></div>
+</div>
+
+<div class="box whatif"><strong>Mi lenne, ha a state-et kitörölnéd?</strong>
+A gép ott maradna az Azure-ban, de a Terraform nem tudna róla. A következő <code>apply</code> létrehozna egy <em>másodikat</em>, és fizetnéd mindkettőt. Ezért van a state a <code>.gitignore</code>-ban de a lemezeden, és ezért nem szabad két gépről ugyanazt a környezetet kezelni közös state nélkül. (Csapatban ezt oldja meg a távoli state — nálad ez a 7. fejezet anyaga.)</div>
+
+<h2 id="kodod">4. A te kódod, erőforrásonként</h2>
+
+<p>Nyolc erőforrás, és mindegyiknek pontosan egy dolga van. A sorrendet nem te adod meg: a Terraform abból építi fel, hogy melyik hivatkozik melyikre.</p>
+
+<figure>
+<svg viewBox="0 0 640 300" role="img" aria-label="Az erőforrások függőségi gráfja">
+  <rect x="20" y="16" width="150" height="40" rx="8" class="n"/><text x="95" y="41" text-anchor="middle" class="t-small t-bold">resource_group</text>
+  <rect x="20" y="86" width="150" height="40" rx="8" class="n"/><text x="95" y="111" text-anchor="middle" class="t-small t-bold">virtual_network</text>
+  <rect x="20" y="156" width="150" height="40" rx="8" class="n"/><text x="95" y="181" text-anchor="middle" class="t-small t-bold">subnet</text>
+  <rect x="20" y="226" width="150" height="40" rx="8" class="n-warn"/><text x="95" y="251" text-anchor="middle" class="t-small t-bold">security_group</text>
+
+  <rect x="240" y="16" width="150" height="40" rx="8" class="n-accent"/><text x="315" y="41" text-anchor="middle" class="t-small t-bold">public_ip</text>
+  <rect x="240" y="156" width="150" height="40" rx="8" class="n"/><text x="315" y="181" text-anchor="middle" class="t-small t-bold">network_interface</text>
+  <rect x="240" y="226" width="150" height="40" rx="8" class="n-warn"/><text x="315" y="251" text-anchor="middle" class="t-small">nsg ↔ nic kötés</text>
+
+  <rect x="455" y="96" width="165" height="70" rx="8" class="n-ok"/>
+  <text x="537" y="122" text-anchor="middle" class="t-bold">linux_virtual_machine</text>
+  <text x="537" y="142" text-anchor="middle" class="t-small">B2ms · Ubuntu 24.04</text>
+  <text x="537" y="158" text-anchor="middle" class="t-small">SSH-kulcs, jelszó nincs</text>
+
+  <rect x="455" y="216" width="165" height="56" rx="8" class="n-violet"/>
+  <text x="537" y="240" text-anchor="middle" class="t-small t-bold">cloud-init.yaml</text>
+  <text x="537" y="258" text-anchor="middle" class="t-small">k3s + Docker telepítése</text>
+
+  <path d="M95,56 L95,82" class="line" marker-end="url(#a7b)"/>
+  <path d="M95,126 L95,152" class="line" marker-end="url(#a7b)"/>
+  <path d="M170,176 L236,176" class="line" marker-end="url(#a7b)"/>
+  <path d="M315,56 L315,152" class="line" marker-end="url(#a7b)"/>
+  <path d="M170,246 L236,246" class="line" marker-end="url(#a7b)"/>
+  <path d="M315,196 L315,222" class="line" marker-end="url(#a7b)"/>
+  <path d="M390,176 L451,150" class="line" marker-end="url(#a7b)"/>
+  <path d="M537,216 L537,170" class="line dash" marker-end="url(#a7b)"/>
+  <text x="600" y="196" text-anchor="middle" class="t-small t-muted">custom_data</text>
+
+  <defs><marker id="a7b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+</svg>
+<figcaption>A publikus IP-cím azért van külön erőforrás és azért statikus, mert a k3s tanúsítványába is beépül (<code>--tls-san</code>), és a kubeconfig is erre mutat.</figcaption>
+</figure>
+
+<h3>Amit érdemes külön megérteni a kódban</h3>
+
+<p><strong>A hivatkozás teremti a sorrendet.</strong> Sehol nem írtad le, hogy előbb a hálózat készüljön el. Csak azt írtad, hogy az alhálózat a <code>azurerm_virtual_network.main.name</code>-re hivatkozik — ebből a Terraform tudja, mi a sorrend.</p>
+
+<p><strong>A tűzfal alapértelmezése a tiltás.</strong> Az NSG-ben csak azt sorolod fel, ami <em>át</em> mehet. Amit nem írtál le, az zárva van. Ezért nincs „tiltó szabály” a kódodban.</p>
+
+<p><strong>A <code>/32</code> nem elírás.</strong> A <code>allowed_cidr</code> egy hálózatot vár, nem egy címet. A <code>84.0.12.34/32</code> azt jelenti: pontosan ez az egy cím. A <code>variables.tf</code>-ben van rá <code>validation</code> blokk, tehát a Terraform szól, ha lemarad.</p>
+
+<h2 id="cloudinit">5. cloud-init: miért így települ a k3s</h2>
+
+<p>A gép létrehozása és a gép <em>felkészítése</em> két külön dolog. A Terraform az elsőt tudja. A másodikra három út volt:</p>
+
+<div class="table-wrap"><table>
+<tr><th>Megoldás</th><th>Miért nem / miért igen</th></tr>
+<tr><td>SSH-zz be és futtasd le kézzel</td><td>Működik, de ettől a fürt <em>nem</em> a kód eredménye lesz. A 2.3 pont kész-feltétele pont az, hogy kézi beavatkozás nélkül álljon fel.</td></tr>
+<tr><td>Ansible a gép felállása után</td><td>Megvan a projektben, de egy külön futtatás, külön kézi lépés — és pont azt a kézi lépést szaporítaná, amit mérünk.</td></tr>
+<tr><td><strong>cloud-init</strong></td><td>A felhő szabványos indulási szkriptje. A Terraform átadja a gép létrehozásakor (<code>custom_data</code>), és a gép az első indulásakor lefuttatja. Egy parancs, egy eredmény.</td></tr>
+</table></div>
+
+<p>Két dolog van benne, ami nem magától értetődő. A <code>registries.yaml</code> a k3s telepítése <em>előtt</em> jön létre, mert a k3s induláskor olvassa be — utólag írva újra kellene indítani a szolgáltatást. A <code>--tls-san</code> pedig azt mondja meg, hogy a fürt API-tanúsítványa a publikus IP-címre is legyen érvényes; enélkül a laptopodról minden <code>kubectl</code> tanúsítványhibával állna meg.</p>
+
+<div class="box whatif"><strong>Mi lenne, ha kimaradna a <code>--write-kubeconfig-mode 0644</code>?</strong>
+A kubeconfig csak rootnak lenne olvasható, és az <code>scp</code> „Permission denied”-del elszállna. Cserébe: egy világ által olvasható kubeconfig a fürt teljes hozzáférése. Egyfelhasználós mérőgépen vállalható, megosztott gépen nem — és ezt a dolgozatban ki kell mondani, nem elhallgatni.</div>
+
+<h2 id="hatar">6. Meddig ér a Terraform, és hol kezdődik a Helm</h2>
+
+<p>Ez a tananyag legfontosabb bekezdése, mert nem eszközkérdés, hanem a mérés érvényességéről szól.</p>
+
+<figure>
+<svg viewBox="0 0 640 170" role="img" aria-label="A Terraform és a Helm hatóköre">
+  <rect x="20" y="30" width="290" height="110" rx="12" class="zone"/>
+  <text x="36" y="54" class="t-bold t-accent">Terraform</text>
+  <text x="36" y="78" class="t-small">gép, hálózat, tűzfal, IP-cím</text>
+  <text x="36" y="98" class="t-small">a k3s maga (cloud-inittel)</text>
+  <text x="36" y="122" class="t-small t-muted">egyszer fut le, aztán ritkán</text>
+
+  <rect x="340" y="30" width="280" height="110" rx="12" class="zone"/>
+  <text x="356" y="54" class="t-bold t-ok">Helm</text>
+  <text x="356" y="78" class="t-small">backend, frontend, adatbázis</text>
+  <text x="356" y="98" class="t-small">verzióváltás, visszaállítás</text>
+  <text x="356" y="122" class="t-small t-muted">minden telepítésnél fut — EZT mérjük</text>
+
+  <path d="M325,85 L335,85" class="line"/>
+  <text x="330" y="22" text-anchor="middle" class="t-small t-muted">a határ</text>
+</svg>
+<figcaption>Ha a Terraform telepítené az alkalmazást is, a mért telepítési lánc összemosódna a környezet létrehozásával, és a mérés két oldala nem lenne összehasonlítható.</figcaption>
+</figure>
+
+<h2 id="hibak">7. Amibe bele fogsz futni</h2>
+
+<div class="table-wrap"><table>
+<tr><th>Üzenet</th><th>Mi történt</th><th>Mit csinálj</th></tr>
+<tr><td><code>building account: could not acquire access token</code></td><td>Nem vagy bejelentkezve, vagy lejárt a munkamenet.</td><td><code>az login</code>, aztán újra.</td></tr>
+<tr><td><code>subscription_id is required</code></td><td>Nincs kitöltve a <code>terraform.tfvars</code>.</td><td><code>az account show --query id -o tsv</code>, és be a fájlba.</td></tr>
+<tr><td><code>SkuNotAvailable</code> / <code>QuotaExceeded</code></td><td>A régióban nincs ilyen méret a hallgatói fiókhoz, vagy elérted a kvótát.</td><td>Másik régió a <code>location</code>-ben, vagy kisebb <code>vm_size</code>.</td></tr>
+<tr><td>Az SSH időtúllépéssel elhal</td><td>Megváltozott a publikus IP-címed, a tűzfal a régit engedi.</td><td><code>curl -s ifconfig.me</code>, új érték az <code>allowed_cidr</code>-be, <code>terraform apply</code>.</td></tr>
+<tr><td><code>Error acquiring the state lock</code></td><td>Egy megszakadt futás bent hagyta a zárolást.</td><td>Előbb nézd meg, tényleg nem fut-e másik <code>apply</code>. Csak utána <code>terraform force-unlock &lt;id&gt;</code>.</td></tr>
+<tr><td>A gép él, de a <code>kubectl</code> nem csatlakozik</td><td>A cloud-init még fut, vagy elhasalt.</td><td><code>ssh</code>, majd <code>cloud-init status</code> és <code>sudo cat /var/log/cloud-init-output.log</code>.</td></tr>
+</table></div>
+
+<h2 id="parancsok">Parancsok</h2>
+
+<pre><code><span class="c"># előkészítés, egyszer</span>
+az login
+az account show --query id -o tsv     <span class="c"># előfizetés-azonosító</span>
+curl -s ifconfig.me                   <span class="c"># a saját IP-d, /32-vel a végére</span>
+
+<span class="c"># a ciklus</span>
+terraform init                        <span class="c"># provider + lock-fájl</span>
+terraform fmt                         <span class="c"># egységes formázás</span>
+terraform validate                    <span class="c"># szintaxis és hivatkozások</span>
+terraform plan                        <span class="c"># OLVASD EL, mielőtt applyzol</span>
+terraform apply
+
+<span class="c"># eredmények és ellenőrzés</span>
+terraform output -raw public_ip
+terraform output -raw kubeconfig_command
+ssh azureuser@$(terraform output -raw public_ip) 'cloud-init status'
+
+<span class="c"># kreditfegyelem — a gépen belüli shutdown NEM állítja le a számlázást</span>
+az vm deallocate -g szakdoga-rg -n szakdoga-vm
+az vm start      -g szakdoga-rg -n szakdoga-vm
+
+<span class="c"># a 2.3 pont kész-feltétele</span>
+terraform destroy && terraform apply</code></pre>
+
+<h2 id="kviz">Ellenőrizd magad</h2>
+<div class="quiz">
+<details><summary>Miért nem elég a kód ahhoz, hogy a Terraform tudja, mit kell csinálnia?</summary>
+<p>Mert a kód csak a kívánt állapotot írja le. Ahhoz, hogy tudja, mit kell <em>változtatni</em>, tudnia kell, mi az, ami már megvan és az övé — ez a state. Kód + state + a valóság lekérdezése: ebből lesz a terv.</p></details>
+
+<details><summary>Átállítasz egy tűzfalszabályt a portálon. Mit mutat a következő <code>terraform plan</code>?</summary>
+<p>Egy <code>~</code> (módosítás) sort arra a szabályra, mert a valóság eltért a kódtól. Az <code>apply</code> visszaállítaná a kód szerinti értéket. Ha a portálon beállított érték a helyes, akkor <strong>a kódot</strong> kell átírni, nem a portált — különben a következő apply visszacsinálja.</p></details>
+
+<details><summary>Miért statikus a publikus IP-cím?</summary>
+<p>Mert két helyen is beépül: a k3s API-tanúsítványába (<code>--tls-san</code>) és a laptopodon lévő kubeconfigba. Ha újraindításkor változna, mindkettőt újra kellene csinálni.</p></details>
+
+<details><summary>Miért nem a Terraform telepíti az alkalmazást, ha egyszer úgyis tud Kubernetes-providert?</summary>
+<p>Mert az alkalmazás telepítése az, amit a dolgozat <em>mér</em>. Ha a környezet létrehozása és az alkalmazás telepítése ugyanabban a futásban történne, a mért idő nem a telepítési láncról szólna. A határ nem kényelmi kérdés, hanem a mérés érvényességének a feltétele.</p></details>
+
+<details><summary>Mi a különbség a gépen belüli <code>shutdown</code> és az <code>az vm deallocate</code> között?</summary>
+<p>A <code>shutdown</code> leállítja az operációs rendszert, de a gép továbbra is foglalja az erőforrást, és számláz. A <code>deallocate</code> elengedi a hardvert; utána már csak a lemez és a publikus IP fogyaszt.</p></details>
+</div>
+
+<h2 id="szotar">Szótár</h2>
+<div class="table-wrap"><table>
+<tr><th>Fogalom</th><th>Egy mondatban</th></tr>
+<tr><td>provider</td><td>a bővítmény, ami a leírást egy adott szolgáltató API-hívásaira fordítja</td></tr>
+<tr><td>resource</td><td>egy darab valóság, amit a Terraform kezel (gép, hálózat, IP)</td></tr>
+<tr><td>state</td><td>a nyilvántartás arról, melyik kódbeli erőforrás melyik valódi erőforrás</td></tr>
+<tr><td>plan</td><td>a terv: mi jönne létre, módosulna, törlődne — végrehajtás nélkül</td></tr>
+<tr><td>apply</td><td>a terv végrehajtása, függőségi sorrendben</td></tr>
+<tr><td>drift</td><td>a valóság eltérése a kódtól, jellemzően kézi módosítás miatt</td></tr>
+<tr><td>cloud-init</td><td>a felhős gép első indulásakor lefutó beállítószkript</td></tr>
+<tr><td>deallocate</td><td>a gép hardverének elengedése; ettől áll le a számlázás</td></tr>
+</table></div>
+
+<footer class="page"><a href="06-hibaelharitas.html">← 6. Hibaelhárítás</a><a href="index.html">Tananyagtérkép →</a></footer>
+</div>
+<script src="assets/tananyag.js"></script>
+</body>
+</html>

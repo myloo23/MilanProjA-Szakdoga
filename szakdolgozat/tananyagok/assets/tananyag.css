@@ -1,0 +1,287 @@
+/* Közös stílus a tananyag-oldalakhoz. Világos és sötét módot is követ. */
+
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --surface-2: #f0f1ee;
+  --text: #1d1f22;
+  --muted: #5f636b;
+  --border: #dcdedb;
+  --accent: #2c5ecf;
+  --accent-soft: #e6edfb;
+  --ok: #1f7a4d;
+  --ok-soft: #e3f3ea;
+  --warn: #9a5b00;
+  --warn-soft: #fbf0dc;
+  --bad: #b3261e;
+  --bad-soft: #fbe7e5;
+  --violet: #6b4bc4;
+  --violet-soft: #efeafb;
+  --code-bg: #f2f3f1;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .05);
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121315;
+    --surface: #1a1c1f;
+    --surface-2: #22252a;
+    --text: #eceef0;
+    --muted: #a3a8b0;
+    --border: #30343a;
+    --accent: #7a9cf0;
+    --accent-soft: #1f2a44;
+    --ok: #5cc98f;
+    --ok-soft: #173326;
+    --warn: #e5ab4f;
+    --warn-soft: #3a2c14;
+    --bad: #f0827a;
+    --bad-soft: #3d1c1a;
+    --violet: #a993ee;
+    --violet-soft: #2a2342;
+    --code-bg: #202327;
+    --shadow: none;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.wrap {
+  max-width: 50rem;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+nav.top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: .875rem;
+  margin-bottom: 2rem;
+}
+nav.top a { color: var(--muted); text-decoration: none; }
+nav.top a:hover { color: var(--accent); }
+
+.eyebrow {
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 .25rem;
+}
+
+h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 .75rem; }
+h2 {
+  font-size: 1.35rem;
+  line-height: 1.3;
+  margin: 3rem 0 .75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+h3 { font-size: 1.05rem; margin: 1.75rem 0 .5rem; }
+p { margin: .6rem 0; }
+.lead { font-size: 1.1rem; color: var(--muted); }
+
+a { color: var(--accent); }
+
+code {
+  font: .88em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--code-bg);
+  border-radius: 4px;
+  padding: .1em .35em;
+}
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .9rem 1rem;
+  overflow-x: auto;
+  font-size: .85rem;
+  line-height: 1.55;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+.c { color: var(--muted); }            /* komment a kódban */
+.hl { background: var(--accent-soft); border-radius: 3px; }
+
+/* Célok doboz */
+.goals {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow);
+}
+.goals h2 { margin: 0 0 .5rem; padding: 0; border: 0; font-size: 1rem; }
+.goals ul { margin: 0; padding-left: 1.2rem; }
+
+/* Kiemelt dobozok */
+.box {
+  border-radius: 10px;
+  padding: .9rem 1.1rem;
+  margin: 1.25rem 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.box > strong:first-child { display: block; margin-bottom: .25rem; }
+.box.story { background: var(--violet-soft); border-color: transparent; }
+.box.story > strong:first-child { color: var(--violet); }
+.box.whatif { background: var(--warn-soft); border-color: transparent; }
+.box.whatif > strong:first-child { color: var(--warn); }
+.box.key { background: var(--accent-soft); border-color: transparent; }
+.box.key > strong:first-child { color: var(--accent); }
+.box.thesis { background: var(--ok-soft); border-color: transparent; }
+.box.thesis > strong:first-child { color: var(--ok); }
+
+/* Ábrák */
+figure {
+  margin: 1.5rem 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: var(--shadow);
+}
+figure svg { display: block; width: 100%; height: auto; }
+figcaption { font-size: .85rem; color: var(--muted); margin-top: .5rem; }
+
+/* SVG elemek tokenekkel, hogy sötét módban is olvasható legyen */
+svg text { fill: var(--text); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+svg .t-muted { fill: var(--muted); }
+svg .t-small { font-size: 11px; }
+svg .t-mono { font-family: ui-monospace, Menlo, monospace; }
+svg .t-bold { font-weight: 600; }
+svg .t-accent { fill: var(--accent); }
+svg .t-ok { fill: var(--ok); }
+svg .t-bad { fill: var(--bad); }
+svg .t-warn { fill: var(--warn); }
+svg .t-violet { fill: var(--violet); }
+svg .n { fill: var(--surface); stroke: var(--border); stroke-width: 1.5; }
+svg .n-2 { fill: var(--surface-2); stroke: var(--border); stroke-width: 1.5; }
+svg .n-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+svg .n-ok { fill: var(--ok-soft); stroke: var(--ok); stroke-width: 1.5; }
+svg .n-bad { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 1.5; }
+svg .n-warn { fill: var(--warn-soft); stroke: var(--warn); stroke-width: 1.5; }
+svg .n-violet { fill: var(--violet-soft); stroke: var(--violet); stroke-width: 1.5; }
+svg .zone { fill: none; stroke: var(--border); stroke-width: 1.5; stroke-dasharray: 5 4; }
+svg .line { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+svg .line-accent { stroke: var(--accent); stroke-width: 2; fill: none; }
+svg .line-ok { stroke: var(--ok); stroke-width: 2; fill: none; }
+svg .line-bad { stroke: var(--bad); stroke-width: 2; fill: none; }
+svg .dash { stroke-dasharray: 5 4; }
+svg .ah { fill: var(--muted); }
+svg .ah-accent { fill: var(--accent); }
+svg .ah-ok { fill: var(--ok); }
+svg .ah-bad { fill: var(--bad); }
+
+/* Táblázat */
+.table-wrap { overflow-x: auto; margin: 1rem 0; }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { text-align: left; vertical-align: top; padding: .55rem .7rem; border-bottom: 1px solid var(--border); }
+th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+
+/* Interaktív léptető */
+.stepper { margin: 1.5rem 0; }
+.stepper .controls {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-top: .75rem;
+}
+.stepper button, .toggle button {
+  font: inherit;
+  font-size: .875rem;
+  font-weight: 600;
+  padding: .4rem .9rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.stepper button.primary, .toggle button[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+@media (prefers-color-scheme: dark) {
+  .stepper button.primary, .toggle button[aria-pressed="true"] { color: #0e1220; }
+}
+.stepper button:disabled { opacity: .45; cursor: not-allowed; }
+.stepper .counter { font-size: .85rem; color: var(--muted); margin-left: auto; }
+.stepper .caption {
+  min-height: 3.2em;
+  margin-top: .75rem;
+  padding: .7rem .9rem;
+  border-radius: 8px;
+  background: var(--surface-2);
+  font-size: .95rem;
+}
+.toggle { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem; }
+
+.step-hidden { opacity: .12; transition: opacity .25s; }
+.step-shown { opacity: 1; transition: opacity .25s; }
+.step-active { opacity: 1; }
+
+/* Önellenőrzés */
+.quiz details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .7rem 1rem;
+  margin: .6rem 0;
+}
+.quiz summary { cursor: pointer; font-weight: 600; }
+.quiz details[open] summary { margin-bottom: .4rem; }
+
+/* Tartalomjegyzék */
+.toc { font-size: .92rem; columns: 2 16rem; margin: 1rem 0 0; padding-left: 1.2rem; }
+
+/* Kártyák az index oldalon */
+.cards { display: grid; gap: .9rem; margin: 1.5rem 0; }
+.card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: .25rem 1rem;
+  align-items: start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow);
+}
+.card:has(h3 a:hover) { border-color: var(--accent); }
+.card .num {
+  grid-row: span 2;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 2ch;
+}
+.card h3 { margin: 0; font-size: 1.05rem; }
+.card p { margin: 0; font-size: .9rem; color: var(--muted); grid-column: 2; }
+.card label { grid-row: span 2; font-size: .8rem; color: var(--muted); display: flex; gap: .35rem; align-items: center; cursor: pointer; }
+
+footer.page { margin-top: 4rem; font-size: .85rem; color: var(--muted); display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+
+@media (max-width: 560px) {
+  h1 { font-size: 1.6rem; }
+  .card { grid-template-columns: auto 1fr; }
+  .card label { grid-column: 2; grid-row: auto; }
+}
+.card h3 a { color: inherit; text-decoration: none; }
+.card h3 a::after { content: " →"; color: var(--accent); }
+.card h3 a:hover { color: var(--accent); }

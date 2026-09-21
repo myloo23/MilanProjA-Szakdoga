@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2. Konfiguráció és probe-ok</title>
+<link rel="stylesheet" href="assets/tananyag.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="top"><a href="01-kubernetes-alapok.html">← 1. Kubernetes alapok</a><a href="03-helm.html">Következő: Helm →</a></nav>
+
+<p class="eyebrow">2. tananyag · 4. és 6. nap</p>
+<h1>Konfiguráció és probe-ok</h1>
+<p class="lead">Miért volt a backend <code>0/1</code>, honnan tudja a pod, hol az adatbázis, hová kerül a jelszó, és mit csinál az init container.</p>
+
+<div class="goals">
+  <h2>A végére ezt fogod érteni</h2>
+  <ul>
+    <li>A liveness és a readiness probe közti különbséget, és hogy miért nem nézi a <code>/health</code> az adatbázist.</li>
+    <li>Miért jelenti a <code>localhost</code> a podban a podot magát.</li>
+    <li>Hogyan jut el a beállítás és a jelszó a konténerbe: env, Secret, ConfigMap.</li>
+    <li>Mit csinál az init container, és miért nem az alkalmazás hozza létre a táblát.</li>
+  </ul>
+</div>
+
+<h2 id="probe">1. Két kérdés, két probe</h2>
+
+<p>A kubelet rendszeresen két különböző kérdést tesz fel a konténernek, és a válasz következménye is különböző.</p>
+
+<div class="table-wrap"><table>
+<tr><th></th><th>livenessProbe → <code>/health</code></th><th>readinessProbe → <code>/ready</code></th></tr>
+<tr><td>A kérdés</td><td>Élsz még?</td><td>Tudsz most kéréseket kiszolgálni?</td></tr>
+<tr><td>Ha nem</td><td>A konténer <strong>újraindul</strong></td><td>A pod <strong>kikerül a Service mögül</strong>, de fut tovább</td></tr>
+<tr><td>A <code>kubectl get pods</code>-ban</td><td>nő a <code>RESTARTS</code></td><td><code>0/1</code> a READY oszlopban</td></tr>
+<tr><td>Mit ellenőriz nálad</td><td>csak azt, hogy a Flask válaszol</td><td>a Flask válaszol <em>és</em> eléri a Postgrest</td></tr>
+</table></div>
+
+<p>Próbáld ki, mi történik az egyes helyzetekben:</p>
+
+<div class="toggle-figure">
+<div class="toggle" role="group" aria-label="Helyzet">
+  <button data-state="ok" data-caption="Minden rendben: mindkét probe sikeres, a Service mindkét podnak küld kéréseket.">Minden működik</button>
+  <button data-state="nodb" data-caption="Az adatbázis nem érhető el. A <code>/ready</code> 503-at ad, ezért a podok kikerülnek a Service mögül, <strong>de nem indulnak újra</strong>, mert a <code>/health</code> továbbra is 200. Ha a DB visszajön, maguktól visszakerülnek. Nálad ez történt a <code>DB_HOST</code> hiánya miatt.">Nincs adatbázis</button>
+  <button data-state="hang" data-caption="A Flask-folyamat lefagyott, egyik végpont sem válaszol. A liveness probe elbukik, ezért a kubelet újraindítja a konténert. Egy újraindítás itt valóban segíthet.">A Flask lefagy</button>
+  <button data-state="wrong" data-caption="<strong>A rossz tervezés:</strong> ha a <code>/health</code> is nézné az adatbázist, egy DB-kiesésnél minden replika újraindulna, újra és újra (CrashLoopBackOff). Egy újraindítás nem javítja meg az adatbázist, csak zajt és terhelést okoz. Ezért nem nézi a <code>/health</code> a DB-t.">Ha a /health is nézné a DB-t</button>
+</div>
+<figure>
+<svg viewBox="0 0 640 260" role="img" aria-label="Probe-ok hatása a Service-re">
+  <defs>
+    <marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-ok"/></marker>
+  </defs>
+  <rect x="20" y="100" width="140" height="60" rx="10" class="n-accent"/>
+  <text x="90" y="126" text-anchor="middle" class="t-bold">Service</text>
+  <text x="90" y="146" text-anchor="middle" class="t-mono t-small">backend</text>
+
+  <rect x="500" y="100" width="120" height="60" rx="10" data-when="ok,hang,wrong" class="n-ok"/>
+  <rect x="500" y="100" width="120" height="60" rx="10" data-when="nodb" class="n-bad"/>
+  <text x="560" y="126" text-anchor="middle" class="t-bold">Postgres</text>
+  <text x="560" y="146" text-anchor="middle" class="t-small" data-when="ok,hang,wrong">elérhető</text>
+  <text x="560" y="146" text-anchor="middle" class="t-small t-bad" data-when="nodb">nem elérhető</text>
+
+  <!-- pod 1 -->
+  <g>
+    <rect x="260" y="40" width="160" height="80" rx="10" class="n-ok" data-when="ok"/>
+    <rect x="260" y="40" width="160" height="80" rx="10" class="n-warn" data-when="nodb"/>
+    <rect x="260" y="40" width="160" height="80" rx="10" class="n-bad" data-when="hang,wrong"/>
+    <text x="340" y="62" text-anchor="middle" class="t-mono t-small t-bold">pod 1</text>
+    <text x="340" y="84" text-anchor="middle" class="t-mono t-small" data-when="ok">/health 200 · /ready 200</text>
+    <text x="340" y="84" text-anchor="middle" class="t-mono t-small" data-when="nodb">/health 200 · /ready 503</text>
+    <text x="340" y="84" text-anchor="middle" class="t-mono t-small" data-when="hang">/health ✗ · /ready ✗</text>
+    <text x="340" y="84" text-anchor="middle" class="t-mono t-small" data-when="wrong">/health 503 · /ready 503</text>
+    <text x="340" y="106" text-anchor="middle" class="t-small t-ok t-bold" data-when="ok">1/1 · kap kérést</text>
+    <text x="340" y="106" text-anchor="middle" class="t-small t-warn t-bold" data-when="nodb">0/1 · fut, nem kap kérést</text>
+    <text x="340" y="106" text-anchor="middle" class="t-small t-bad t-bold" data-when="hang">újraindítás</text>
+    <text x="340" y="106" text-anchor="middle" class="t-small t-bad t-bold" data-when="wrong">újraindítás, újra és újra</text>
+  </g>
+  <!-- pod 2 -->
+  <g>
+    <rect x="260" y="140" width="160" height="80" rx="10" class="n-ok" data-when="ok,hang"/>
+    <rect x="260" y="140" width="160" height="80" rx="10" class="n-warn" data-when="nodb"/>
+    <rect x="260" y="140" width="160" height="80" rx="10" class="n-bad" data-when="wrong"/>
+    <text x="340" y="162" text-anchor="middle" class="t-mono t-small t-bold">pod 2</text>
+    <text x="340" y="184" text-anchor="middle" class="t-mono t-small" data-when="ok,hang">/health 200 · /ready 200</text>
+    <text x="340" y="184" text-anchor="middle" class="t-mono t-small" data-when="nodb">/health 200 · /ready 503</text>
+    <text x="340" y="184" text-anchor="middle" class="t-mono t-small" data-when="wrong">/health 503 · /ready 503</text>
+    <text x="340" y="206" text-anchor="middle" class="t-small t-ok t-bold" data-when="ok,hang">1/1 · kap kérést</text>
+    <text x="340" y="206" text-anchor="middle" class="t-small t-warn t-bold" data-when="nodb">0/1 · fut, nem kap kérést</text>
+    <text x="340" y="206" text-anchor="middle" class="t-small t-bad t-bold" data-when="wrong">újraindítás, újra és újra</text>
+  </g>
+
+  <path d="M160,120 L256,82" class="line-ok" marker-end="url(#b1)" data-when="ok"/>
+  <path d="M160,140 L256,178" class="line-ok" marker-end="url(#b1)" data-when="ok,hang"/>
+  <path d="M160,120 L256,82" class="line dash" data-when="nodb,hang,wrong"/>
+  <path d="M160,140 L256,178" class="line dash" data-when="nodb,wrong"/>
+  <path d="M420,80 L496,120" class="line"/>
+  <path d="M420,180 L496,140" class="line"/>
+</svg>
+</figure>
+<div class="caption box"></div>
+</div>
+
+<div class="box thesis"><strong>A dolgozat szempontjából</strong>
+A readiness probe miatt lehet kiesés nélkül verziót váltani. Az új pod csak akkor kap forgalmat, amikor már tényleg ki tud szolgálni, és a régit csak utána állítják le. A régi, Ansible-es megoldásodnál nem volt ilyen, ott mértél kb. 37 másodperc kiesést. Ez a két szám egymás mellé kerül a mérési fejezetben.</div>
+
+<h2 id="localhost">2. Miért nem érte el a backend az adatbázist</h2>
+
+<p>A backend a <code>DB_HOST</code> környezeti változóból olvassa ki, hol az adatbázis (<code>app/db.py</code>), és ha nincs megadva, a <code>localhost</code>-ot használja. A gépeden, Docker Compose-zal ez valószínűleg működött. A podban viszont nem.</p>
+
+<figure>
+<svg viewBox="0 0 640 230" role="img" aria-label="A localhost a podon belül a pod saját magát jelenti">
+  <defs>
+    <marker id="b2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-bad"/></marker>
+    <marker id="b3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-ok"/></marker>
+  </defs>
+  <rect x="20" y="30" width="250" height="170" rx="12" class="n-2"/>
+  <text x="36" y="54" class="t-bold">backend pod</text>
+  <text x="36" y="72" class="t-small t-muted">saját hálózat, saját localhost</text>
+  <rect x="40" y="90" width="210" height="46" rx="8" class="n"/>
+  <text x="145" y="110" text-anchor="middle" class="t-mono t-small">gunicorn :8000</text>
+  <text x="145" y="126" text-anchor="middle" class="t-mono t-small t-muted">connect("localhost:5432")</text>
+  <path d="M200,136 C230,175 90,190 80,142" class="line-bad" marker-end="url(#b2)"/>
+  <text x="150" y="190" text-anchor="middle" class="t-small t-bad">senki nem figyel az 5432-n</text>
+
+  <rect x="420" y="30" width="200" height="170" rx="12" class="n-2"/>
+  <text x="436" y="54" class="t-bold">postgres pod</text>
+  <rect x="440" y="90" width="160" height="46" rx="8" class="n-ok"/>
+  <text x="520" y="118" text-anchor="middle" class="t-mono t-small">postgres :5432</text>
+
+  <path d="M250,110 L436,112" class="line-ok dash" marker-end="url(#b3)"/>
+  <text x="343" y="100" text-anchor="middle" class="t-mono t-small t-ok">DB_HOST=postgres</text>
+  <text x="343" y="130" text-anchor="middle" class="t-small t-muted">a Service neve</text>
+</svg>
+<figcaption>Minden podnak saját hálózati tere van. A <code>localhost</code> a podon belül a pod saját magát jelenti, nem a node-ot és nem a Macedet.</figcaption>
+</figure>
+
+<div class="box story"><strong>Ez történt nálad</strong>
+A logban 5 másodpercenként ez jelent meg: <code>"database unreachable, reporting not ready"</code> és <code>"path": "/ready", "status": 503</code>. Az 5 másodperc a readiness probe <code>periodSeconds</code> értéke. A pod állapota <code>Running</code> volt, de <code>0/1</code> READY, és egyszer sem indult újra. Pont úgy viselkedett, ahogy a fenti „Nincs adatbázis” helyzetben.</div>
+
+<h3>Hogyan lesz a <code>postgres</code> névből cím?</h3>
+<p>A fürtben fut egy DNS-szerver (CoreDNS). Minden Service kap egy teljes nevet: <code>postgres.default.svc.cluster.local</code>, vagyis <em>név.névtér.svc.cluster.local</em>. A pod DNS-beállításai miatt az azonos névtérben elég a rövid név is. Egy másik névtérből már <code>postgres.default</code> kellene.</p>
+
+<h2 id="env">3. Honnan kapja a konténer a beállításait</h2>
+
+<p>A konténerbe háromféle módon jut be kívülről beállítás. A chartod mindhármat használja:</p>
+
+<figure>
+<svg viewBox="0 0 640 340" role="img" aria-label="Env, Secret és ConfigMap útja a konténerbe">
+  <defs><marker id="b4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+
+  <rect x="20" y="20" width="200" height="80" rx="10" class="n-accent"/>
+  <text x="120" y="44" text-anchor="middle" class="t-bold">values.yaml</text>
+  <text x="120" y="66" text-anchor="middle" class="t-mono t-small">database.host: postgres</text>
+  <text x="120" y="84" text-anchor="middle" class="t-mono t-small">database.port: 5432</text>
+
+  <rect x="20" y="130" width="200" height="80" rx="10" class="n-warn"/>
+  <text x="120" y="154" text-anchor="middle" class="t-bold">Secret: db-credentials</text>
+  <text x="120" y="176" text-anchor="middle" class="t-mono t-small">POSTGRES_USER / _DB</text>
+  <text x="120" y="194" text-anchor="middle" class="t-mono t-small">POSTGRES_PASSWORD</text>
+
+  <rect x="20" y="240" width="200" height="80" rx="10" class="n-violet"/>
+  <text x="120" y="264" text-anchor="middle" class="t-bold">ConfigMap: db-schema</text>
+  <text x="120" y="286" text-anchor="middle" class="t-mono t-small">schema.sql: |</text>
+  <text x="120" y="304" text-anchor="middle" class="t-mono t-small">CREATE TABLE …</text>
+
+  <rect x="380" y="20" width="240" height="300" rx="12" class="n-2"/>
+  <text x="396" y="44" class="t-bold">backend konténer</text>
+  <rect x="396" y="60" width="208" height="150" rx="8" class="n"/>
+  <text x="408" y="80" class="t-small t-muted">környezeti változók</text>
+  <text x="408" y="104" class="t-mono t-small">DB_HOST=postgres</text>
+  <text x="408" y="124" class="t-mono t-small">DB_PORT=5432</text>
+  <text x="408" y="148" class="t-mono t-small">POSTGRES_USER=…</text>
+  <text x="408" y="168" class="t-mono t-small">POSTGRES_DB=…</text>
+  <text x="408" y="188" class="t-mono t-small">POSTGRES_PASSWORD=…</text>
+  <rect x="396" y="226" width="208" height="78" rx="8" class="n"/>
+  <text x="408" y="246" class="t-small t-muted">fájlrendszer (migrate konténer)</text>
+  <text x="408" y="272" class="t-mono t-small">/schema/schema.sql</text>
+
+  <path d="M220,60 L392,112" class="line" marker-end="url(#b4)"/>
+  <text x="300" y="72" text-anchor="middle" class="t-mono t-small">env:</text>
+  <path d="M220,170 L392,168" class="line" marker-end="url(#b4)"/>
+  <text x="300" y="160" text-anchor="middle" class="t-mono t-small">envFrom: secretRef</text>
+  <path d="M220,280 L392,268" class="line" marker-end="url(#b4)"/>
+  <text x="300" y="266" text-anchor="middle" class="t-mono t-small">volumeMounts</text>
+</svg>
+<figcaption>Az <code>env</code> egyenként ad meg változókat, az <code>envFrom</code> egy Secret összes kulcsát átadja változóként, a ConfigMap-kötet pedig kulcsonként egy fájlt tesz a konténerbe.</figcaption>
+</figure>
+
+<p>A chart releváns része (<code>chart/templates/backend.yaml</code>):</p>
+<pre><code>env:
+  - name: DB_HOST
+    value: {{ .Values.database.host | quote }}     <span class="c"># → "postgres"</span>
+  - name: DB_PORT
+    value: {{ .Values.database.port | quote }}     <span class="c"># → "5432" (az env érték mindig szöveg!)</span>
+envFrom:
+  - secretRef:
+      name: {{ .Values.database.secretName }}      <span class="c"># → db-credentials, minden kulcsa env lesz</span></code></pre>
+
+<div class="box whatif"><strong>Mi lett volna, ha…</strong>
+…a <code>| quote</code> nélkül írod a portot? A sablonból <code>value: 5432</code> lesz, ami a YAML-ben szám, a Kubernetes viszont szöveget vár, és elutasítja: <em>cannot unmarshal number into … of type string</em>. A <code>quote</code> idézőjelbe teszi, így <code>"5432"</code> lesz belőle.</div>
+
+<h3>Miért nincs a jelszó a chartban?</h3>
+<p>A <strong>Secret</strong> nem titkosít, csak <strong>base64-kódol</strong>. Bárki, aki olvashatja, egy paranccsal visszafejti:</p>
+<pre><code>kubectl get secret db-credentials -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 -d</code></pre>
+<p>A Secret azért hasznos, mert a Kubernetes külön jogosultsággal kezeli, mint a többi erőforrást, és a jelszó nem kerül a manifestbe. Ha viszont a jelszót a <code>values.yaml</code>-be vagy egy sablonba írnád, a gitbe is bekerülne, a repó teljes története pedig örökre megőrizné. Ezért a chart csak <em>hivatkozik</em> a Secretre. A Secretet egyszer, kézzel kell létrehozni, a pipeline-ban pedig a Gitea titkos változóiból jön majd.</p>
+
+<div class="box key"><strong>A régi <code>k8s/postgres.yaml</code> hibája</strong>
+Abban a Secret <code>stringData</code>-ként, olvasható szövegként volt benne, jelszóval együtt. Helyi gyakorláshoz ez elmegy, de a chartba már nem került át ez a megoldás.</div>
+
+<h2 id="init">4. Az init container: a séma az alkalmazás előtt</h2>
+
+<p>Az <strong>init container</strong> olyan konténer, ami a pod fő konténerei <em>előtt</em> fut le, és ki is kell lépnie, mielőtt a fő konténerek elindulnak. Ha hibával lép ki, a kubelet újrapróbálja, és a fő konténer addig el sem indul. Nálad a <code>migrate</code> nevű init container a Postgres képéből indul, mert abban van <code>psql</code>, és lefuttatja a <code>schema.sql</code>-t.</p>
+
+<div class="stepper" data-captions="A pod létrejön. A <code>kubectl get pods</code> ezt mutatja: <code>Init:0/1</code>. Egy init container van, és még egy sem futott le.|A <code>migrate</code> fut: <code>psql -v ON_ERROR_STOP=1 -f /schema/schema.sql</code>. A <code>CREATE TABLE IF NOT EXISTS</code> miatt nem baj, ha a tábla már létezik, csak egy NOTICE-t ír.|A <code>migrate</code> 0-val kilépett. Csak ekkor indul a backend konténer. Az állapot: <code>PodInitializing</code>, majd <code>Running 0/1</code>.|A readiness probe sikeres: a <code>/ready</code> eléri a DB-t. Az állapot <code>1/1</code>, a pod bekerül a Service mögé.|<strong>Hibás eset:</strong> ha a Postgres még nem fogad kapcsolatot, a psql hibával kilép. Az állapot <code>Init:Error</code>, aztán <code>Init:CrashLoopBackOff</code>, és a kubelet egyre ritkábban próbálkozik. A backend el sem indul, a hiba a <code>kubectl logs &lt;pod&gt; -c migrate</code> kimenetében látszik.">
+<figure>
+<svg viewBox="0 0 640 200" role="img" aria-label="Init container lépései">
+  <defs><marker id="b5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+  <rect x="10" y="20" width="620" height="165" rx="12" class="zone"/>
+  <text x="26" y="44" class="t-bold">backend pod</text>
+
+  <rect x="40" y="70" width="220" height="80" rx="10" class="n-2" data-only="0"/>
+  <rect x="40" y="70" width="220" height="80" rx="10" class="n-accent" data-only="1"/>
+  <rect x="40" y="70" width="220" height="80" rx="10" class="n-ok" data-only="2,3"/>
+  <rect x="40" y="70" width="220" height="80" rx="10" class="n-bad" data-only="4"/>
+  <text x="150" y="96" text-anchor="middle" class="t-bold">init: migrate</text>
+  <text x="150" y="118" text-anchor="middle" class="t-mono t-small">psql -f schema.sql</text>
+  <text x="150" y="138" text-anchor="middle" class="t-small t-muted" data-only="0">vár</text>
+  <text x="150" y="138" text-anchor="middle" class="t-small t-accent t-bold" data-only="1">fut…</text>
+  <text x="150" y="138" text-anchor="middle" class="t-small t-ok t-bold" data-only="2,3">kész (exit 0)</text>
+  <text x="150" y="138" text-anchor="middle" class="t-small t-bad t-bold" data-only="4">hiba → újrapróbálja</text>
+
+  <path d="M260,110 L356,110" class="line" marker-end="url(#b5)"/>
+  <text x="308" y="100" text-anchor="middle" class="t-small t-muted">csak ha kész</text>
+
+  <rect x="360" y="70" width="240" height="80" rx="10" class="n-2" data-only="0,1,4"/>
+  <rect x="360" y="70" width="240" height="80" rx="10" class="n-warn" data-only="2"/>
+  <rect x="360" y="70" width="240" height="80" rx="10" class="n-ok" data-only="3"/>
+  <text x="480" y="96" text-anchor="middle" class="t-bold">backend (gunicorn)</text>
+  <text x="480" y="122" text-anchor="middle" class="t-small t-muted" data-only="0,1,4">még nem indult el</text>
+  <text x="480" y="122" text-anchor="middle" class="t-small t-warn t-bold" data-only="2">fut, 0/1 (probe még nem sikerült)</text>
+  <text x="480" y="122" text-anchor="middle" class="t-small t-ok t-bold" data-only="3">1/1 · kap kérést</text>
+</svg>
+</figure>
+<div class="controls"><button data-prev>← Vissza</button><button class="primary" data-next>Tovább →</button><button data-reset>Elölről</button><span class="counter"></span></div>
+<div class="caption"></div>
+</div>
+
+<h3>Miért nem a Flask hozza létre a táblát induláskor?</h3>
+<p>Mert két replika van, és mindkettő egyszerre indul. Mindkettő egyszerre futtatná a sémát, ami egy <code>CREATE TABLE IF NOT EXISTS</code>-nél még éppen működik, egy komolyabb migrációnál (oszlop hozzáadása, adatátalakítás) viszont versenyhelyzetet okoz. Van egy másik előnye is a szétválasztásnak: ha a séma hibás, a hiba a <code>migrate</code> konténerben, az indulás előtt jelentkezik, és a backend el sem indul, nem pedig egy későbbi <code>/notes</code> kérés hal el.</p>
+
+<div class="box whatif"><strong>Mi lett volna, ha…</strong>
+…nincs <code>-v ON_ERROR_STOP=1</code>? A psql alapból egy hibás SQL-utasítás után is folytatja, és a végén 0-val lép ki. Az init container „sikeresnek” látszana, a backend elindulna egy hibás sémával. A kapcsoló miatt az első hibánál nem 0-val lép ki, így a hiba nem marad rejtve.</div>
+
+<div class="box key"><strong>Tudatos egyszerűsítés</strong>
+Az init container minden pod minden indulásánál lefut. Egyetlen, idempotens <code>CREATE TABLE IF NOT EXISTS</code>-nél ez rendben van. Több, egymásra épülő migrációhoz egy igazi migrációs eszköz kellene (pl. Alembic), ami nyilvántartja, mi futott már le. Ez a továbbfejlesztési fejezetbe tartozik.</div>
+
+<h2 id="kviz">Ellenőrizd magad</h2>
+<div class="quiz">
+<details><summary>Egy pod <code>Running</code>, de <code>0/1</code>, és a RESTARTS 0. Melyik probe bukik el?</summary><p>A readiness. Ha a liveness bukna el, a RESTARTS nőne. A <code>kubectl logs</code> és a <code>describe</code> Events része megmondja, miért.</p></details>
+<details><summary>Miért ne ellenőrizze a <code>/health</code> az adatbázist?</summary><p>Mert a liveness hibája újraindítást vált ki. Egy DB-kiesésnél így minden replika újraindítási hurokba kerülne, pedig az újraindítás nem javítja meg az adatbázist. A readiness pont erre való: kivesz a forgalomból, de nem indít újra.</p></details>
+<details><summary>Mit jelent a <code>localhost</code> egy podban?</summary><p>Magát a podot. Minden podnak saját hálózati tere van. Egy másik szolgáltatást a Service nevével érsz el, pl. <code>postgres</code>.</p></details>
+<details><summary>Titkosítja a Secret a jelszót?</summary><p>Nem, csak base64-kódolja. Az előnye a külön jogosultságkezelés, és hogy a jelszó nem kerül a manifestbe. Gitbe ezért így sem kerülhet.</p></details>
+<details><summary>A pod <code>Init:CrashLoopBackOff</code> állapotban van. Hol keresed a hibát?</summary><p>Az init container logjában: <code>kubectl logs &lt;pod&gt; -c migrate</code>. A backend konténernek még nincs logja, mert el sem indult.</p></details>
+</div>
+
+<h2 id="szotar">Szótár</h2>
+<div class="table-wrap"><table>
+<tr><th>Fogalom</th><th>Egy mondatban</th></tr>
+<tr><td>livenessProbe</td><td>„élsz még?”, ha nem: újraindítás</td></tr>
+<tr><td>readinessProbe</td><td>„tudsz kiszolgálni?”, ha nem: kikerülsz a Service mögül</td></tr>
+<tr><td>env / envFrom</td><td>környezeti változók egyenként / egy Secret vagy ConfigMap összes kulcsa</td></tr>
+<tr><td>Secret</td><td>érzékeny adat külön kezelve; base64, nem titkosítás</td></tr>
+<tr><td>ConfigMap</td><td>nem titkos beállítás vagy fájltartalom, változóként vagy fájlként csatolható</td></tr>
+<tr><td>init container</td><td>a fő konténer előtt lefutó és kilépő konténer</td></tr>
+<tr><td>CoreDNS</td><td>a fürt DNS-szervere, ettől lesz a Service neve feloldható cím</td></tr>
+<tr><td>idempotens</td><td>többször lefuttatva is ugyanazt az eredményt adja</td></tr>
+</table></div>
+
+<footer class="page"><a href="01-kubernetes-alapok.html">← 1. Kubernetes alapok</a><a href="03-helm.html">Következő: Helm →</a></footer>
+</div>
+<script src="assets/tananyag.js"></script>
+</body>
+</html>

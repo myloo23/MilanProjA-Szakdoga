@@ -148,8 +148,47 @@ def test_a_body_at_the_limit_is_still_accepted(client):
     assert response.status_code == 200
     assert response.get_json() == {"received": payload}
 
-def test_ready_returns_ready(client):
+def test_ready_returns_ready(client, monkeypatch):
+    monkeypatch.setattr("app.app.db.ping", lambda: None)
+
     response = client.get("/ready")
 
     assert response.status_code == 200
     assert response.get_json() == {"status": "READY"}
+
+def test_ready_returns_503_when_database_unreachable(client, monkeypatch):
+    def unreachable():
+        raise OSError("connection refused")
+
+    monkeypatch.setattr("app.app.db.ping", unreachable)
+
+    response = client.get("/ready")
+
+    assert response.status_code == 503
+    assert response.get_json() == {"status": "NOT_READY", "dependency": "postgres"}
+
+def test_health_does_not_depend_on_database(client, monkeypatch):
+    def unreachable():
+        raise OSError("connection refused")
+
+    monkeypatch.setattr("app.app.db.ping", unreachable)
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+
+def test_version_defaults_when_unset(client, monkeypatch):
+    monkeypatch.delenv("APP_VERSION", raising=False)
+
+    response = client.get("/version")
+
+    assert response.status_code == 200
+    assert response.get_json() == {"version": "dev"}
+
+def test_version_reports_build_sha(client, monkeypatch):
+    monkeypatch.setenv("APP_VERSION", "a6a4d33")
+
+    response = client.get("/version")
+
+    assert response.status_code == 200
+    assert response.get_json() == {"version": "a6a4d33"}

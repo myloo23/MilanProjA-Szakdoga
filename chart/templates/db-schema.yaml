@@ -1,0 +1,14 @@
+# A `note` tábla sémája. A backend Deployment `migrate` init containere futtatja
+# le minden indulás előtt; az IF NOT EXISTS miatt ismételten is biztonságos.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-schema
+data:
+  schema.sql: |
+    CREATE TABLE IF NOT EXISTS note (
+        id         SERIAL PRIMARY KEY,
+        title      TEXT NOT NULL,
+        body       TEXT NOT NULL DEFAULT '',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );

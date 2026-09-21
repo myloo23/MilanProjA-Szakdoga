@@ -1,0 +1,9 @@
+apiVersion: v2
+name: projecta
+description: ProjectA — Flask backend, React frontend és PostgreSQL egy k3s/k3d fürtön
+type: application
+# A chart saját verziója: akkor nő, ha a templates/ vagy a values.yaml változik.
+version: 0.2.0
+# Az alkalmazás verzióját nem ez adja, hanem a telepítéskor megadott image.tag
+# (a pipeline-ban a commit SHA-ja), ezért itt csak jelzésértékű.
+appVersion: "dev"
