@@ -1,0 +1,193 @@
+# 2.5 — A kézi telepítési folyamat
+
+Dátum: 2026-09-21 · Státusz: **vázlat, az első próbafuttatás még nem erősítette meg**
+Forrás: [`../01-megvalositasi-terv.md`](../01-megvalositasi-terv.md) 2.5 pont ·
+Protokoll: [`../00-terv.md`](../00-terv.md) 7. pont
+Ez a fájl a 3.2 alfejezet („A kiindulási, kézi telepítési folyamat") nyersanyaga,
+és egyben a mérőeszköz: a 2.6 pontban az emberi beavatkozások számát **ez** a
+lista definiálja.
+
+---
+
+## 1. Mit rögzít ez a lista, és mit nem
+
+A mért folyamat kezdő- és végpontja a 00-terv 7. pontjából jön, és a mérés
+mindkét oldalán azonos:
+
+- **Kezdet:** a változtatás véglegesítve van a forráskódban (a commit megvan a
+  laptopon). A szerkesztés és a commit ideje **nem** része a mérésnek — az
+  fejlesztési idő, nem telepítési.
+- **Vég:** az új verzió fut a fürtön, és az elfogadási ellenőrzés sikeres: a
+  `/version` az új rövid SHA-t adja vissza, és a füstteszt hibátlan.
+
+**Egy emberi beavatkozás definíciója.** Egy beavatkozás az, amikor az operátor
+tesz valamit: kiad egy parancsot, vagy elolvas egy kimenetet és dönt róla. A
+várakozás önmagában nem beavatkozás (a `kubectl rollout status` várakozása egy
+beavatkozás, nem annyi, ahány másodpercig tart). Ez a definíció a 6.1-be is
+bekerül, mert enélkül a lépésszám nem összehasonlítható semmivel.
+
+**Amit a lista nem tartalmaz:** az egyszeri előkészítést (2. pont). Az a gép
+üzembe helyezése, nem telepítés; minden futtatás előtt ugyanúgy adott, tehát a
+mérésbe nem számít bele.
+
+---
+
+## 2. Egyszeri előkészítés (a mérés előtt, egyszer)
+
+Ezek a lépések a mérőgépet hozzák abba az állapotba, amelyből minden futtatás
+indul. A mérés előtt kell megtenni őket, és nem számítanak bele a mért időbe.
+
+| # | Mit | Hol | Miért |
+|---|---|---|---|
+| E1 | `helm` telepítése | mérőgép | A cloud-init csak a k3s-t és a Dockert rakta fel; a `helm upgrade` a gépen fut. |
+| E2 | `git` megléte, a repó klónja `~/projecta`-ba a gépen futó Giteából | mérőgép | A kód a gépre a verziókezelőn át jut, ugyanúgy, ahogy a pipeline-nak. |
+| E3 | A repó létrehozása a gépen futó Giteában, `azure` remote a laptopon, első push | laptop + gép | Enélkül nincs honnan klónozni. |
+| E4 | `db-credentials` Secret létrehozása a fürtben | mérőgép | A chart nem tartalmazza (a jelszó nem megy gitbe), lásd `chart/values.yaml`. |
+| E5 | `export KUBECONFIG=/etc/rancher/k3s/k3s.yaml` a gépen | mérőgép | A k3s 0644-gyel írja ki, tehát sudo nélkül olvasható (cloud-init indoklása). |
+| E6 | **Nulladik telepítés:** a chart egyszer feltelepítve egy kiinduló SHA-val | mérőgép | A mérés *ismételt* telepítést mér, nem elsőt. Mindkét sorozat ugyanebből az állapotból indul. |
+| E7 | A mérési változtatás helyének rögzítése | repó | Lásd a 3. pontot. |
+
+E1 — a `helm` **a futó gépre kézzel kerüljön fel**, ne `terraform destroy` +
+`apply` útján: az a Gitea-adatbázist, a runner regisztrációját és a registry
+tartalmát is elvinné. A `terraform/cloud-init.yaml` viszont ki lett egészítve
+vele, hogy a *következő* gép már tartalmazza — a reprodukálhatóság így marad
+igaz, a most futó gép meg nem sérül.
+
+---
+
+## 3. A változtatás, amit minden futtatásnál telepítünk
+
+Azonos típusú, triviális, viselkedést nem érintő módosítás, hogy a fejlesztési
+idő ne keveredjen a telepítési időbe (00-terv 7.). Konkrétan: az `app/app.py`
+végén álló jelölősor futtatásszámának növelése.
+
+```python
+# meres-jelolo: 007
+```
+
+Miért ez: új commit SHA keletkezik tőle (az elfogadási kritérium erre épül),
+de nem változtat viselkedést, nem bukhat el rajta teszt, lintelés vagy
+lefedettségi kapu — tehát az automatizált sorozatban sem okoz zajt.
+
+---
+
+## 4. Ág- és sorozatválasztás — ez a kísérlet egyetlen változója
+
+A `.gitea/workflows/ci.yml` a `main`, `release/**`, `feature/**` és `hotfix/**`
+ágakra figyel; **minden más ág futtató nélkül marad**.
+
+- **Kézi sorozat:** `meres/kezi-NN` ágra push. A pipeline nem indul, a telepítést
+  végig az operátor végzi.
+- **Automatizált sorozat (3.5):** `release/meres` ágra push, ugyanazzal a
+  változtatással. A pipeline elvégzi ugyanezt.
+
+Így a két sorozat között egyetlen különbség van: melyik ágnévre ment a push.
+Ugyanaz a gép, ugyanaz a registry, ugyanaz a fürt, ugyanaz a chart, ugyanaz az
+elfogadási kritérium. A 6.4-ben ezt ki kell mondani, mert ez az, ami a
+összehasonlítást érvényessé teszi.
+
+---
+
+## 5. A kézi telepítés lépései
+
+Jelölés: **(L)** = laptop, **(G)** = mérőgép SSH-munkamenetben.
+A stopper az 1. lépés előtt indul, és a 13. lépés kimenetének elfogadásakor áll meg.
+
+| # | Hol | Parancs / művelet | Mit várunk |
+|---|---|---|---|
+| 1 | L | `git push azure meres/kezi-NN` | a push átmegy |
+| 2 | L | `ssh azureuser@$(terraform -chdir=terraform output -raw public_ip)` | belépés |
+| 3 | G | `cd ~/projecta && git fetch --all && git checkout meres/kezi-NN && git pull` | a commit a gépen van |
+| 4 | G | `SHA=$(git rev-parse --short HEAD); echo $SHA` | a telepítendő verzió azonosítója |
+| 5 | G | `docker build -t localhost:5001/projecta-flask:$SHA --build-arg GIT_SHA=$SHA .` | a backend képe megépül |
+| 6 | G | `docker build -t localhost:5001/projecta-frontend:$SHA frontend/` | a frontend képe megépül |
+| 7 | G | `docker push localhost:5001/projecta-flask:$SHA` | a kép a registryben |
+| 8 | G | `docker push localhost:5001/projecta-frontend:$SHA` | a kép a registryben |
+| 9 | G | `helm upgrade --install projecta ~/projecta/chart --set image.tag=$SHA` | `STATUS: deployed` |
+| 10 | G | `kubectl rollout status deploy/backend --timeout=5m` | `successfully rolled out` |
+| 11 | G | `kubectl rollout status deploy/frontend --timeout=5m` | `successfully rolled out` |
+| 12 | G | `curl -s http://localhost/api/version` | a válasz a 4. lépés SHA-ja |
+| 13 | G | `~/projecta/scripts/smoke.sh http://localhost/api` | minden ellenőrzés a várt státusszal |
+
+**Emberi beavatkozások száma: 13.** Az automatizált oldalon definíció szerint
+**1** (a push).
+
+Megjegyzések a lépésekhez:
+
+- **4. lépés.** A SHA-t változóba olvassuk, nem kézzel másoljuk át négy
+  parancsba. Ez **a kézi oldalnak kedvez** — a pipeline ezt ingyen kapja
+  (`github.sha`), a valóságos kézi munkában pedig a kimásolás jellemző
+  hibaforrás. Tudatos, konzervatív döntés: a kimutatott javulás így alsó becslés
+  marad (6.5).
+- **5–8. lépés.** A build és a push **a mérőgépen** történik, nem a laptopon.
+  Indok: a pipeline is ott épít, és ha a kézi oldal a laptopon építene, a mérés
+  a laptop és a felhős gép teljesítménykülönbségét is tartalmazná, nem csak az
+  automatizálás hatását.
+- **9. lépés.** A `--set image.tag` mindkét képre hat, mert a chart egy közös
+  tagot használ (`chart/values.yaml`). A registry előtagja a chartban van
+  (`image.registry: localhost:5001`), nem a parancsban.
+- **12. lépés.** A `localhost:80` a k3s Traefik bejárata; onnan az Ingress a
+  frontend nginx-éhez megy, az `/api/` előtagot az nginx vágja le
+  (`frontend/nginx.conf`).
+- **10–11. lépés.** Két külön parancs, mert két külön Deployment. Ez a kézi
+  oldal egyik jellegzetes költsége: minden komponens külön figyelmet kér.
+
+---
+
+## 6. A hibainjektálásos helyreállítási mérés (kézi oldal)
+
+A 2.6-ban három futtatás méri, mennyi idő visszaállni egy hibás telepítés után.
+
+**A beinjektált hiba.** Olyan változtatás, amely **átmegy** az indulási és
+készenléti ellenőrzésen, de **megbukik** az elfogadási kritériumon: az `/echo`
+végpont érvényes kérésre 500-at ad. Miért így: ha a hiba a podot
+összeomlásba vinné (`CrashLoopBackOff`), a hibás verzió sosem lenne „élő",
+és a „mikor ment ki a hibás verzió" időpont értelmezhetetlen lenne. Így viszont
+a telepítés sikeresnek *látszik*, és a füstteszt az, ami elbuktatja — vagyis
+mindkét sorozatban ugyanaz az út fut le: telepítés → ellenőrzés → visszaállítás.
+
+**A mért időszakaszok.** Kimenetel: a 11. lépés befejeződése (a hibás verzió él)
+→ a 13. lépés bukása (észlelés) → a visszaállítás vége (a szolgáltatás újra jó).
+
+| # | Hol | Parancs | Mit várunk |
+|---|---|---|---|
+| V1 | G | a 13. lépés kimenetének elbírálása | a füstteszt bukik |
+| V2 | G | `helm rollback projecta` | `Rollback was a success` |
+| V3 | G | `kubectl rollout status deploy/backend --timeout=5m` | `successfully rolled out` |
+| V4 | G | `kubectl rollout status deploy/frontend --timeout=5m` | `successfully rolled out` |
+| V5 | G | `curl -s http://localhost/api/version` | az **előző** SHA |
+| V6 | G | `~/projecta/scripts/smoke.sh http://localhost/api` | hibátlan |
+
+**Korlát, amit a 6.5-ben ki kell mondani:** itt az észlelés azonnali, mert az
+operátor közvetlenül a telepítés után ellenőriz. A valóságban a hibás verzió
+észrevétele órákig is tarthat. A mérés tehát **nem** az észlelést hasonlítja
+össze, hanem a javítást — a két sorozat ebben a tekintetben azonos feltételű.
+
+---
+
+## 7. Amit rögzíteni kell minden futtatásnál
+
+A 01-megvalositasi-terv 4. pontja szerint, azonnal, nem utólag:
+
+futtatás sorszáma · kézi/automatizált · kezdés és befejezés időbélyege
+(másodperc pontossággal) · emberi beavatkozások száma (e lista alapján) ·
+az elfogadási ellenőrzés sikeres-e · megjegyzés.
+
+---
+
+## 8. A kész-feltétel
+
+> *Kész, ha:* a lista alapján valaki más is végig tudná csinálni.
+
+Állapot: **még nem teljesült.** A lista megvan, de egy próbafuttatás még nem
+igazolta vissza. A próbafuttatás az, ami eldönti:
+
+1. minden parancs úgy fut-e le, ahogy itt áll (különösen az E1–E6 előkészítés
+   után a 9–13. lépés);
+2. a 12. lépés tényleg az új SHA-t adja-e vissza;
+3. kell-e a listába lépés, ami most hiányzik.
+
+A próbafuttatás **nem mérési adat** — a nulladik futtatás célja a lista
+hitelesítése. A mért sorozat csak utána kezdődik, és ezt a 6.1-ben is le kell
+írni, mert a lista első végigjátszása a leglassabb futtatás lenne, és torzítaná
+a tanulási görbét.

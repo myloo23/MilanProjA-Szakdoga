@@ -14,6 +14,10 @@ packages:
   - docker.io
   - docker-compose-v2
   - curl
+  # A kézi telepítési folyamat (2.5) a gépen zajlik: a kódot a gépen futó
+  # Giteából klónozzuk, a képet itt építjük. A pipeline (3.1) ugyanitt fog
+  # futni, tehát a két oldal ugyanazt az eszközkészletet használja.
+  - git
 
 # A k3s registry-beállítása szándékosan NINCS itt, és ez mérési eredmény, nem
 # feledékenység.
@@ -51,6 +55,13 @@ runcmd:
   - |
     curl -sfL https://get.k3s.io | \
       INSTALL_K3S_EXEC="--tls-san ${public_ip} --write-kubeconfig-mode 0644" sh -
+
+  # helm — a telepítés eszköze a mérés mindkét oldalán (chart/). Nem a k3s
+  # része, külön kell. A hivatalos telepítőszkript a legutolsó stabil verziót
+  # rakja fel; a dolgozatban használt verziót a 04-kezi-telepitesi-folyamat.md
+  # rögzíti, hogy a mérés megismételhető legyen.
+  - |
+    curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
   # Jelzőfájl: erről tudja a Terraform-kimenet ellenőrzése és te is, hogy a
   # cloud-init végigfutott, nem csak a gép indult el.

@@ -67,18 +67,27 @@ pf_restart() {
 json_field() { python3 -c "import json,sys;print(json.load(sys.stdin)[\"$1\"])"; }
 version_now() { curl -sf "${BASE}/api/version" | json_field version; }
 
+# A képnevek azonosak a mérőgépen használtakkal (chart/values.yaml:
+# image.registry + <repository>), hogy a fejlesztői és a mért környezet
+# ugyanazokkal a chart-értékekkel menjen. A `localhost:5001/` előtag itt csak
+# név: a k3d-be kézzel töltjük be a képet, és az imagePullPolicy IfNotPresent
+# miatt a fürt nem fordul registryhez.
+REG="${REG:-localhost:5001}"
+BACKEND_IMAGE="${REG}/projecta-flask"
+FRONTEND_IMAGE="${REG}/projecta-frontend"
+
 build_and_import() {
   local tag="$1"
   info "backend build (GIT_SHA=${tag}) …"
-  docker build -q -t "flaskapp:${tag}" --build-arg "GIT_SHA=${tag}" . >/dev/null \
+  docker build -q -t "${BACKEND_IMAGE}:${tag}" --build-arg "GIT_SHA=${tag}" . >/dev/null \
     || die "A backend képe nem épült meg."
   info "frontend build …"
-  docker build -q -t "frontend:${tag}" frontend/ >/dev/null \
+  docker build -q -t "${FRONTEND_IMAGE}:${tag}" frontend/ >/dev/null \
     || die "A frontend képe nem épült meg."
   # A k3d fürt saját konténer-futtatókörnyezetet használ: a gépeden meglévő kép
   # nem látszik benne automatikusan. Enélkül ImagePullBackOff lenne a vége.
   info "képek betöltése a fürtbe …"
-  k3d image import "flaskapp:${tag}" "frontend:${tag}" -c "$CLUSTER" >/dev/null 2>&1 \
+  k3d image import "${BACKEND_IMAGE}:${tag}" "${FRONTEND_IMAGE}:${tag}" -c "$CLUSTER" >/dev/null 2>&1 \
     || die "A k3d image import elbukott."
 }
 

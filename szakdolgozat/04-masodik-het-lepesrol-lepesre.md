@@ -313,3 +313,212 @@ visszaáll.
    tényleg ott fut, ez már nem elméleti: a build terheli a fürtöt. A 6.5-ben ezt
    ki kell mondani, és a mérésben az a helyes érvelés, hogy ez a *kézi* oldalnak
    kedvez, tehát a kimutatott javulás alsó becslés marad.
+
+
+---
+
+## 2.5 — A kézi telepítési folyamat rögzítése
+
+**Mit csinálunk.** A chart a registryre mutat, a mérőgép megkapja azt a néhány
+eszközt, ami a kézi telepítéshez kell, és a kézi folyamat számozott listává
+válik. A lista maga a
+[`bizonyitek/04-kezi-telepitesi-folyamat.md`](bizonyitek/04-kezi-telepitesi-folyamat.md)
+fájlban van — ez a 3.2 alfejezet nyersanyaga és egyben a mérőeszköz.
+
+**Mit NEM csinálunk.** Nem mérünk. A 2.5 vége egy *próbafuttatás*, aminek az a
+célja, hogy a lista hiteles legyen; a mért sorozat a 2.6.
+
+---
+
+### 1. lépés — A chart a registryre mutat *(kész, laptop)*
+
+A `chart/values.yaml` mostantól előtagot is tartalmaz:
+
+```yaml
+image:
+  registry: localhost:5001
+  tag: dev
+
+backend:
+  image:
+    repository: projecta-flask
+frontend:
+  image:
+    repository: projecta-frontend
+```
+
+A két Deployment-sablon a `{{ with .Values.image.registry }}{{ . }}/{{ end }}`
+alakot használja, tehát üres `registry` esetén előtag nélküli nevet ad — így a
+k3d-s fejlesztés sem tört el. A nevek (`projecta-flask`, `projecta-frontend`)
+azonosak azzal, amit a `ci.yml` már most is push-ol, tehát a pipeline
+átállításakor (3.1) nem lesz névütközés.
+
+A `scripts/verify-k3d.sh` ugyanezeket a neveket építi és tölti be a k3d-be; a
+`localhost:5001/` előtag ott puszta név, mert a kép kézzel kerül a fürtbe, és az
+`imagePullPolicy: IfNotPresent` miatt nincs registry-hívás.
+
+Ellenőrzés, mielőtt bármi mást csinálnál *(laptop)*:
+
+```bash
+helm template projecta chart/ --set image.tag=abc123 | grep 'image:'
+```
+
+Négy sort kell látni: a két saját kép a `localhost:5001/` előtaggal és az
+`abc123` taggel, valamint a `postgres:17-alpine` kétszer (a migrate init
+container és a Postgres).
+
+---
+
+### 2. lépés — `helm` és `git` a mérőgépre *(gép)*
+
+A cloud-init eddig csak a Dockert és a k3s-t rakta fel. A kézi telepítés a gépen
+zajlik (a pipeline is ott fog), tehát a `helm` oda kell.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+helm version
+git --version || sudo apt-get install -y git
+```
+
+A `terraform/cloud-init.yaml` ki lett egészítve ugyanezzel, hogy a **következő**
+gép már így épüljön. A most futó gépen viszont **ne** csinálj `terraform
+destroy` + `apply`-t emiatt: az elvinné a Gitea adatbázisát, a runner
+regisztrációját és a registry tartalmát. A kézi felrakás és a cloud-init együtt
+azt jelenti, hogy a gép reprodukálható, a mostani munkád meg megmarad.
+
+---
+
+### 3. lépés — A repó a gépen futó Giteába *(laptop + gép)*
+
+A kézi telepítés is a verziókezelőn át kapja a kódot, ugyanúgy, mint a pipeline.
+Ehhez a repónak léteznie kell az Azure-os Giteában.
+
+Alagút a laptopról (amíg ez az ablak nyitva van, a `localhost:3000` a gépen futó
+Gitea):
+
+```bash
+ssh -L 3000:127.0.0.1:3000 -L 5001:127.0.0.1:5001 \
+  azureuser@$(terraform -chdir=terraform output -raw public_ip)
+```
+
+A Gitea felületén hozz létre egy üres `MilanProjA-Szakdoga` repót, majd a
+laptopon, a repó gyökerében:
+
+```bash
+git remote add azure http://localhost:3000/milan/MilanProjA-Szakdoga.git
+git push azure main
+```
+
+A gépen ebből lesz a munkapéldány:
+
+```bash
+git clone http://localhost:3000/milan/MilanProjA-Szakdoga.git ~/projecta
+```
+
+A klón a gépről a saját `localhost:3000`-ére megy, alagút nélkül.
+
+---
+
+### 4. lépés — Secret és kubeconfig a fürtben *(gép)*
+
+```bash
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+kubectl get nodes
+
+kubectl create secret generic db-credentials \
+  --from-literal=POSTGRES_USER=projecta \
+  --from-literal=POSTGRES_DB=projecta \
+  --from-literal=POSTGRES_PASSWORD='ide-egy-erős-jelszót'
+```
+
+A `KUBECONFIG` sort tedd be a `~/.bashrc`-be is, különben minden új
+SSH-munkamenetben újra kell. (A cloud-init azért írta a kubeconfigot 0644-gyel,
+hogy ez sudo nélkül menjen — a mérőgépen ez vállalható, megosztott gépen nem
+lenne az.)
+
+---
+
+### 5. lépés — A nulladik telepítés *(gép)*
+
+A mérés **ismételt** telepítést mér, nem elsőt. Ezért a mérés előtt egyszer
+telepíteni kell, hogy legyen mit felülírni, és mindkét sorozat ugyanabból az
+állapotból induljon.
+
+```bash
+cd ~/projecta
+SHA=$(git rev-parse --short HEAD)
+docker build -t localhost:5001/projecta-flask:$SHA --build-arg GIT_SHA=$SHA .
+docker build -t localhost:5001/projecta-frontend:$SHA frontend/
+docker push localhost:5001/projecta-flask:$SHA
+docker push localhost:5001/projecta-frontend:$SHA
+helm upgrade --install projecta ~/projecta/chart --set image.tag=$SHA
+kubectl rollout status deploy/backend  --timeout=5m
+kubectl rollout status deploy/frontend --timeout=5m
+curl -s http://localhost/api/version; echo
+~/projecta/scripts/smoke.sh http://localhost/api
+```
+
+Ha a `/version` a `$SHA`-t adja vissza és a füstteszt tiszta, a rendszer a
+mérés kiindulási állapotában van.
+
+*Ha a pod `ImagePullBackOff`-ba megy:* a 2.4 megállapítása szerint a letöltés a
+containerd loopback-kivételén múlik — ellenőrizd, hogy a kép neve tényleg
+`localhost:5001/`-gyel kezdődik-e (`kubectl describe pod ...`), mert bármi más
+előtaggal a kivétel nem érvényes.
+
+---
+
+### 6. lépés — A próbafuttatás *(mindkettő)*
+
+Ez az, ami a listát hitelesíti. Vedd elő a
+[`bizonyitek/04-kezi-telepitesi-folyamat.md`](bizonyitek/04-kezi-telepitesi-folyamat.md)
+5. pontját, és játszd végig **pontosan úgy, ahogy le van írva**, a 3. pont
+jelölősorának növelésével, a `meres/kezi-00` ágon.
+
+A próbafuttatás **nem mérési adat**: a lista első végigjátszása a leglassabb
+futtatás lenne, és torzítaná a tanulási görbét. Amit hoz: kiderül, hiányzik-e
+lépés a listából, és hol pontatlan.
+
+Ha bármi eltért, a listát javítsd, ne a futtatást igazítsd a listához.
+
+---
+
+### 7. lépés — Rögzítés *(laptop)*
+
+A `04-kezi-telepitesi-folyamat.md` 8. pontjában írd át a kész-feltétel státuszát,
+és commitold a változásokat (`chart/values.yaml`, `chart/templates/backend.yaml`,
+`chart/templates/frontend.yaml`, `scripts/verify-k3d.sh`,
+`terraform/cloud-init.yaml`, a két szakdolgozat-fájl).
+
+---
+
+### Amit a 2.5-ből tudnod kell — védésre, szóban
+
+**1. Miért a mérőgépen épül a kép a kézi oldalon is.** Mert a pipeline is ott
+épít. Ha a kézi oldal a laptopon építene, a mérés a laptop és a felhős gép
+teljesítménykülönbségét is tartalmazná — a 00-terv 5. pontja pont ezt tiltja:
+a különbség csak az automatizálásból jöhet.
+→ 6.1, 6.5.
+
+**2. Mi a kísérlet egyetlen változója.** Az ágnév. A `ci.yml` a `main`,
+`release/**`, `feature/**` és `hotfix/**` ágakra figyel; a `meres/kezi-NN` ág
+futtató nélkül marad, tehát ugyanaz a commit ugyanarra a gépre, ugyanabba a
+registrybe, ugyanarra a fürtre kerül — csak egyszer emberi kézzel, egyszer a
+pipeline-nal.
+→ 6.1, 6.4.
+
+**3. Mi számít egy emberi beavatkozásnak.** Egy kiadott parancs, vagy egy
+kimenet elolvasása és elbírálása. A várakozás nem az. Enélkül a „13 kontra 1"
+szám önkényes lenne, és a védésen az elsőre megkérdezett dolog.
+→ 6.1.
+
+**4. Miért kedvez a lista a kézi oldalnak.** A SHA változóba olvasása, a kész
+füstteszt-szkript és az, hogy a folyamatot a rendszer ismeretében játsszuk
+újra, mind gyorsítja a kézi oldalt. Ez tudatos: a kimutatott javulás így alsó
+becslés.
+→ 6.5, és a 00-terv 8. pontja.
+
+**5. Miért olyan a beinjektált hiba, amilyen.** Átmegy a készenléti
+ellenőrzésen, de megbukik a füstteszten. Ha összeomlásba vinné a podot, a hibás
+verzió sosem lenne élő, és nem lenne mihez képest mérni a helyreállítást.
+→ 6.1, és az 5.4 alfejezet.

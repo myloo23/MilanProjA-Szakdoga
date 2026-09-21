@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: "{{ .Values.frontend.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ with .Values.image.registry }}{{ . }}/{{ end }}{{ .Values.frontend.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsNonRoot: true
