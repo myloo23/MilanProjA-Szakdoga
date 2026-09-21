@@ -15,17 +15,28 @@ packages:
   - docker-compose-v2
   - curl
 
-write_files:
-  # A k3s-nek meg kell mondani, hogy a gépen futó registry sima HTTP-t beszél,
-  # különben a képletöltés TLS-hibával bukna. Ez a fájl a k3s telepítése ELŐTT
-  # jön létre, így nem kell utána újraindítani a szolgáltatást.
-  - path: /etc/rancher/k3s/registries.yaml
-    permissions: "0644"
-    content: |
-      mirrors:
-        "localhost:5001":
-          endpoint:
-            - "http://localhost:5001"
+# A k3s registry-beállítása szándékosan NINCS itt, és ez mérési eredmény, nem
+# feledékenység.
+#
+# Korábban ez a fájl kiírt egy /etc/rancher/k3s/registries.yaml-t, amely a
+# localhost:5001 címet sima HTTP-s tükörként hirdette meg. A 2.4 pont
+# ellenőrzésekor kiderült, hogy nem csinál semmit: k3s v1.36.4 alatt a fájlból
+# egyetlen sor sem került a generált containerd-konfigurációba (a
+# /var/lib/rancher/k3s/agent/etc/ fában sehol nem szerepelt az 5001-es port),
+# a fürt mégis lehúzta a képet a gépen futó registryből. A fájl átnevezése és
+# a k3s újraindítása után is lehúzta — ez a negatív próba, és ez dönti el.
+# Bizonyíték: szakdolgozat/bizonyitek/03-platform-koltoztetes.md.
+#
+# A magyarázat a containerd alapértelmezése: a loopback-címre mutató registryt
+# (localhost, adott porton) kivételként kezeli, és TLS nélkül is elfogadja. A
+# fürt tehát nem attól éri el a registryt, hogy itt beállítanánk, hanem attól,
+# hogy ugyanazon a gépen fut — vagyis a D5 döntés következménye, nem külön
+# konfigurációé.
+#
+# Mikor kell mégis vissza: ha a képhivatkozás valaha nem localhost-előtagú lesz
+# (a gép nevére vagy privát IP-címére vált), a kivétel nem érvényes. Akkor
+# viszont nem elég visszatenni a fájlt, hanem ellenőrizni is kell, hogy az adott
+# k3s-verzió tényleg átvezeti-e a containerdbe — mert ez a verzió nem tette.
 
 runcmd:
   - [ systemctl, enable, --now, docker ]

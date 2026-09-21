@@ -146,6 +146,19 @@ committed. Data lives in the named volumes `projecta-{gitea,runner,registry}-dat
 so containers can be recreated safely. Adding `-v` to `down` **deletes them** —
 only for testing the clean-machine path.
 
+**On the Azure measurement VM the same file runs with an overlay.**
+`platform/compose.azure.yaml` turns off Gitea's web installer (the VM is
+rebuilt by `terraform apply`, so a click-through step would have to be repeated
+every time) and puts the observability services behind an `observability`
+profile — they move to the cluster in a later step, and their current cAdvisor
+and node-exporter settings are written for Docker Desktop's macOS VM, not
+Linux. Copy the directory up with `scripts/platform-sync.sh`, then:
+
+```bash
+docker compose -f compose.yaml -f compose.azure.yaml up -d   # gitea, registry, act-runner
+./verify-azure-platform.sh                                   # proves the cluster can pull from the registry
+```
+
 ---
 
 ## 6. CI pipeline

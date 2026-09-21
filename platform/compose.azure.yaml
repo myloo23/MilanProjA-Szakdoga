@@ -1,0 +1,60 @@
+# A platform Azure-os rétege — a 01-megvalositasi-terv.md 2.4 pontja.
+#
+# Ez NEM önálló compose-fájl, hanem a `compose.yaml` fölé húzott réteg:
+#
+#   docker compose -f compose.yaml -f compose.azure.yaml up -d
+#
+# Két dolgot csinál, és semmi mást.
+#
+# 1. **A Gitea telepítővarázslóját kikapcsolja.** A laptopon a Gitea a webes
+#    telepítőn keresztül állt be — az egy böngészős kattintássorozat, amit a
+#    mérőgépen minden `terraform destroy` + `apply` után újra kellene csinálni.
+#    A fürt egésze azért készül kódból, hogy ne legyen benne ilyen lépés, így a
+#    platform sem lehet kivétel. Az INSTALL_LOCK mellé a `sqlite3` és az
+#    adatbázis útvonala azért kerül ki kimondva, mert telepítő nélkül nincs, ami
+#    beírja őket az app.ini-be; ez ugyanaz az elrendezés, amit a varázsló
+#    alapértelmezésben választott volna. Az admin felhasználó és a runner
+#    regisztrációs tokenje utána a `gitea` parancssori felületéről jön
+#    (szakdolgozat/04-masodik-het-lepesrol-lepesre.md, 2.4).
+#
+# 2. **A megfigyelhetőségi szolgáltatásokat profil mögé teszi.** A 2.4 pont
+#    hatóköre a Gitea, a runner és a registry; a Prometheus/Grafana/Loki a 3.4
+#    pontban kerül át, és akkor nem is ebben a formában: a mostani cAdvisor- és
+#    node-exporter-beállítások a Docker Desktop macOS-beli VM-jéhez vannak
+#    igazítva (lásd a compose.yaml kommentjeit), Linuxon mások kellenek. Addig
+#    a `docker compose up -d` itt hármat indít, nem kilencet — és a 8 GB-os
+#    gépen, amin a k3s és maguk a buildek is futnak, ez nem esztétikai kérdés.
+#    Ha valakinek mégis kell: `--profile observability`.
+#
+# Amit szándékosan NEM állít: a publikált portok kötése. Mind a 127.0.0.1-en
+# marad, ahogy a compose.yaml eleji indoklás kéri — a gépen kívülről a Gitea
+# felülete SSH-alagúton át érhető el, nem a tűzfalon át. A registrynek pedig
+# továbbra sincs hitelesítése, és most már egy publikus IP-vel rendelkező gépen
+# fut: a loopback-kötés az egyetlen dolog, ami elválasztja az internettől.
+
+name: projecta
+
+services:
+  gitea:
+    environment:
+      GITEA__security__INSTALL_LOCK: "true"
+      GITEA__database__DB_TYPE: "sqlite3"
+      GITEA__database__PATH: "/data/gitea/gitea.db"
+
+  prometheus:
+    profiles: ["observability"]
+
+  cadvisor:
+    profiles: ["observability"]
+
+  node-exporter:
+    profiles: ["observability"]
+
+  loki:
+    profiles: ["observability"]
+
+  alloy:
+    profiles: ["observability"]
+
+  grafana:
+    profiles: ["observability"]

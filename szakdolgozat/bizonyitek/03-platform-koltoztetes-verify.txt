@@ -1,0 +1,29 @@
+
+[1m▸ 1. A platform konténerei[0m
+  [32m✓[0m projecta-gitea fut
+  [32m✓[0m projecta-registry fut
+  [32m✓[0m projecta-act-runner fut
+
+[1m▸ 2. Végpontok a gépen[0m
+  [32m✓[0m Gitea /api/healthz
+  [32m✓[0m registry /v2/
+
+[1m▸ 3. A k3s registry-beállítása[0m
+  [33m![0m a localhost:5001 nincs a generált containerd-konfigurációban (/var/lib/rancher/k3s/agent/etc)
+  [2mmegvan-e egyáltalán a forrás: -rw-r--r-- 1 root root 75 Sep 21 10:05 /etc/rancher/k3s/registries.yaml[0m
+  [2maz 5. lépés dönti el, hogy ez számít-e[0m
+
+[1m▸ 4. Kép feltöltése a registrybe[0m
+  [32m✓[0m docker push localhost:5001/registry-proba:proba-1789986652
+  [2mkatalógus: {"repositories":["registry-proba"]}[0m
+  [2mcímkék:    {"name":"registry-proba","tags":["proba-1789986313","proba-1789986652"]}[0m
+
+[1m▸ 5. A fürt lehúzza a képet[0m
+  [32m✓[0m a pod fut a localhost:5001/registry-proba:proba-1789986652 képből
+    Pulling     Pulling image "localhost:5001/registry-proba:proba-1789986313"
+    Pulled      Successfully pulled image "localhost:5001/registry-proba:proba-1789986313" in 302ms (302ms including waiting). Image size: 2207471 bytes.
+    Pulling     Pulling image "localhost:5001/registry-proba:proba-1789986652"
+    Pulled      Successfully pulled image "localhost:5001/registry-proba:proba-1789986652" in 87ms (87ms including waiting). Image size: 2207471 bytes.
+
+[32m✓ A 2.4 pont kész-feltétele teljesül.[0m [33m(1 figyelmeztetés — olvasd el, mielőtt továbbmész.)[0m
+
