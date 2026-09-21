@@ -47,6 +47,20 @@ indul. A mérés előtt kell megtenni őket, és nem számítanak bele a mért i
 | E6 | **Nulladik telepítés:** a chart egyszer feltelepítve egy kiinduló SHA-val | mérőgép | A mérés *ismételt* telepítést mér, nem elsőt. Mindkét sorozat ugyanebből az állapotból indul. |
 | E7 | A mérési változtatás helyének rögzítése | repó | Lásd a 3. pontot. |
 
+**A mérőgép eszközverziói** (2026-09-21, a mérés megismételhetőségéhez):
+
+| Eszköz | Verzió | Honnan |
+|---|---|---|
+| k3s | v1.36.4+k3s1 | cloud-init |
+| helm | v3.22.0 | a hivatalos `get-helm-3` szkript |
+| git | 2.43.0 | Ubuntu 24.04 csomag |
+| Docker | a `docker.io` csomagból | cloud-init |
+
+A `get-helm-3` mindig a legutolsó stabil kiadást rakja fel, tehát egy későbbi
+`terraform destroy` + `apply` más helm-verziót adhat. Ha a mérés menet közben
+megismétlődne, a fenti verziót kell visszaállítani (`get-helm-3 --version
+v3.22.0`), különben a telepítés eszköze változna a két sorozat között.
+
 E1 — a `helm` **a futó gépre kézzel kerüljön fel**, ne `terraform destroy` +
 `apply` útján: az a Gitea-adatbázist, a runner regisztrációját és a registry
 tartalmát is elvinné. A `terraform/cloud-init.yaml` viszont ki lett egészítve
@@ -172,6 +186,38 @@ A 01-megvalositasi-terv 4. pontja szerint, azonnal, nem utólag:
 futtatás sorszáma · kézi/automatizált · kezdés és befejezés időbélyege
 (másodperc pontossággal) · emberi beavatkozások száma (e lista alapján) ·
 az elfogadási ellenőrzés sikeres-e · megjegyzés.
+
+---
+
+## 7.b A nulladik telepítés — megtörtént
+
+2026-09-21, `szakdoga2-vm`, commit `438647b`. Az E1–E6 előkészítés után a
+chart elsőre feltelepült, kézi javítás nélkül:
+
+| Lépés | Eredmény |
+|---|---|
+| backend kép buildje (gyorsítótár nélkül) | 27,4 s |
+| frontend kép buildje (gyorsítótár nélkül) | 35,7 s |
+| `helm upgrade --install` | `STATUS: deployed`, `REVISION: 1` |
+| `kubectl rollout status` (backend, frontend) | `successfully rolled out` |
+| `/version` | `{"version":"438647b"}` |
+| füstteszt | mind a hét ellenőrzés a várt státusszal |
+
+Két dolog, ami ebből a dolgozatba megy:
+
+1. **A build nem domináns tétel.** Együtt sem éri el a másfél percet, ráadásul
+   ez a *leglassabb* eset (üres réteg-gyorsítótár, minden alapkép letöltve).
+   A 6.4-ben ez azért fontos, mert kizárja azt az ellenvetést, hogy a kézi és
+   az automatizált oldal közti különbség valójában build-időkülönbség.
+2. **A `localhost:5001` előtag a fürtben is működik.** A kép a Docker
+   gyorsítótárából került a registrybe, a fürt onnan húzta le — a 2.4
+   megállapítása (containerd loopback-kivétel) a valódi alkalmazásképekre is
+   áll, nem csak a próbaképre.
+
+Megjegyzés: a `docker build` a régi (legacy) építőt használja, mert a gépen
+nincs buildx. A pipeline is ugyanezt fogja használni, tehát a két oldal ebben
+sem tér el — ha a runner konténerében mégis buildx lenne, azt a 3.1-ben
+egyeztetni kell, különben a build-idők nem összemérhetők.
 
 ---
 
