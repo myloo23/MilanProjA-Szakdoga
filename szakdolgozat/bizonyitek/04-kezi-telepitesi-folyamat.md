@@ -26,6 +26,14 @@ várakozás önmagában nem beavatkozás (a `kubectl rollout status` várakozás
 beavatkozás, nem annyi, ahány másodpercig tart). Ez a definíció a 6.1-be is
 bekerül, mert enélkül a lépésszám nem összehasonlítható semmivel.
 
+**A lépéseket egyesével kell kiadni.** A mért futtatásokban minden parancs külön
+megy el, az operátor elolvassa a kimenetét, és csak utána jön a következő. Egy
+előre összeállított, egyben beillesztett parancsblokk valójában *egy*
+beavatkozás — vagyis a kézi oldal titokban szkriptelve lenne, és pontosan azt
+mérnénk el, amit vizsgálni akarunk. A 01-megvalositasi-terv D3 döntése ugyanezt
+mondja ki a fejlesztői ellenőrzésről: a kézi oldalt szándékosan nem szabad
+szkriptelni, mert ott az emberi lépések száma a mérőszám.
+
 **Amit a lista nem tartalmaz:** az egyszeri előkészítést (2. pont). Az a gép
 üzembe helyezése, nem telepítés; minden futtatás előtt ugyanúgy adott, tehát a
 mérésbe nem számít bele.
@@ -105,7 +113,36 @@ elfogadási kritérium. A 6.4-ben ezt ki kell mondani, mert ez az, ami a
 ## 5. A kézi telepítés lépései
 
 Jelölés: **(L)** = laptop, **(G)** = mérőgép SSH-munkamenetben.
-A stopper az 1. lépés előtt indul, és a 13. lépés kimenetének elfogadásakor áll meg.
+
+**Az időmérés módja.** Nem stopperrel, hanem időbélyeges parancssorral: minden
+futtatás előtt, mindkét gépen be kell állítani, hogy a prompt kiírja a pontos
+időt. Így a terminál kimenete maga a mérési jegyzőkönyv, és nincs kézi
+óraleolvasás, ami elfelejthető vagy pontatlan.
+
+```bash
+# laptop (zsh)
+PROMPT='[%D{%H:%M:%S}] '$PROMPT
+
+# mérőgép (bash)
+PS1='[\D{%H:%M:%S}] '$PS1
+```
+
+A prompt időbélyege akkor jelenik meg, amikor az előző parancs befejeződött.
+Két egymást követő prompt különbsége tehát egy lépés teljes emberi költsége:
+gondolkodás, gépelés és futásidő együtt. Ez helyes így — a gépelés a kézi
+folyamat valódi költsége, és a pipeline-nak nincs ilyen tétele.
+
+A futtatás ideje az **1. lépés előtti** prompt időbélyegétől a **13. lépés utáni**
+prompt időbélyegéig tart. A teljes terminálkimenetet minden futtatásnál el kell
+menteni (`bizonyitek/meres/kezi-NN.txt`), mert ez az elsődleges forrás; a
+táblázat ebből készül, nem fordítva. A mentés a laptopon, az 1. lépés *előtt*
+indított munkamenet-rögzítővel történik, tehát nem tartozik a mért lépésekhez:
+
+```bash
+script -q ~/meres/kezi-NN.txt     # innentől minden rögzül, az ssh-munkamenettel együtt
+#   ... az 1–13. lépés ...
+exit                               # a rögzítés lezárása
+```
 
 | # | Hol | Parancs / művelet | Mit várunk |
 |---|---|---|---|
@@ -221,19 +258,41 @@ egyeztetni kell, különben a build-idők nem összemérhetők.
 
 ---
 
+## 7.c A próbafuttatás — megtörtént
+
+2026-09-21, ág `meres/kezi-00`, commit `8f40012`. A lista mind a tizenhárom
+lépése végigment, kézi javítás és kiegészítő lépés nélkül; a `/version` a
+`{"version":"8f40012"}` választ adta, a füstteszt mind a hét ellenőrzésen
+átment. A `helm upgrade` a 2. revíziót hozta létre, a két Deployment gördülő
+cserével állt át.
+
+**Amit a próbafuttatás kimutatott, és ami emiatt bekerült a protokollba:**
+
+1. **Az időmérés módja.** Az első próbafuttatás alatt nem készült időadat, mert
+   a stopperes mérés kézi mozzanat, és pont az veszett el. Ezért lett belőle
+   időbélyeges parancssor (5. pont) — a mérőeszköz nem függhet attól, hogy az
+   operátor emlékszik-e megnyomni valamit.
+2. **A parancsok egyesével adandók ki.** A próbafuttatás alatt több parancs
+   egyben, beillesztve ment el. A mérésben ez elfogadhatatlan, mert a
+   lépésszámot értelmetlenné teszi (1. pont).
+3. **A frontend képe nem épül újra.** A mérési változtatás az `app/app.py`-t
+   érinti, a frontend forrása változatlan, és a frontend képe nem hordoz
+   `GIT_SHA`-t, tehát bitre azonos marad: a build végig gyorsítótárból jön
+   (azonos kép-azonosító), a push pedig csak egy új taget ír be (`Layer already
+   exists`). A 6. és 8. lépés költsége ezért közel nulla minden futtatásban.
+   Ez **nem torzít**, mert mindkét sorozatban ugyanígy lesz, de a 6.5-ben ki
+   kell mondani: a mérés a frontend buildjét nem terheli, tehát az eredmény egy
+   egykomponensű változtatás telepítésére vonatkozik.
+
+A próbafuttatás **nem mérési adat**: a lista első végigjátszása a leglassabb
+futtatás lenne, és torzítaná a tanulási görbét. Ezt a 6.1-ben is le kell írni.
+
+---
+
 ## 8. A kész-feltétel
 
 > *Kész, ha:* a lista alapján valaki más is végig tudná csinálni.
 
-Állapot: **még nem teljesült.** A lista megvan, de egy próbafuttatás még nem
-igazolta vissza. A próbafuttatás az, ami eldönti:
-
-1. minden parancs úgy fut-e le, ahogy itt áll (különösen az E1–E6 előkészítés
-   után a 9–13. lépés);
-2. a 12. lépés tényleg az új SHA-t adja-e vissza;
-3. kell-e a listába lépés, ami most hiányzik.
-
-A próbafuttatás **nem mérési adat** — a nulladik futtatás célja a lista
-hitelesítése. A mért sorozat csak utána kezdődik, és ezt a 6.1-ben is le kell
-írni, mert a lista első végigjátszása a leglassabb futtatás lenne, és torzítaná
-a tanulási görbét.
+Állapot: **teljesült** (2026-09-21). A lista a próbafuttatáson kiegészítés
+nélkül végigvihető volt, a három fenti megállapítás pedig a protokollt
+pontosította, nem a lépéssort. A 2.6 (a mért sorozat) indulhat.
