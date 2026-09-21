@@ -54,6 +54,8 @@ indul. A mérés előtt kell megtenni őket, és nem számítanak bele a mért i
 | E5 | `export KUBECONFIG=/etc/rancher/k3s/k3s.yaml` a gépen | mérőgép | A k3s 0644-gyel írja ki, tehát sudo nélkül olvasható (cloud-init indoklása). |
 | E6 | **Nulladik telepítés:** a chart egyszer feltelepítve egy kiinduló SHA-val | mérőgép | A mérés *ismételt* telepítést mér, nem elsőt. Mindkét sorozat ugyanebből az állapotból indul. |
 | E7 | A mérési változtatás helyének rögzítése | repó | Lásd a 3. pontot. |
+| E8 | SSH-alagút nyitva a laptopon (3000, 5001) | laptop | Az 1. lépés ezen megy; ha futtatás közben szakad meg, az a sor nem használható. |
+| E9 | A mérés alatt **semmilyen push nem megy a `main` ágra** | laptop | A `ci.yml` figyeli a `main`-t, a futtató pedig a mérőgépen van: egy idegen build a mért fürtöt terheli (D5). |
 
 **A mérőgép eszközverziói** (2026-09-21, a mérés megismételhetőségéhez):
 
