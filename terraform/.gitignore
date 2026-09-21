@@ -1,0 +1,9 @@
+# A state a létrehozott erőforrások leképezése. Titkokat is tartalmazhat, és
+# két gépről szerkesztve összeakadna — nem megy verziókövetésbe.
+*.tfstate
+*.tfstate.*
+.terraform/
+# A .terraform.lock.hcl SZÁNDÉKOSAN nincs itt: a provider ellenőrzőösszegét
+# rögzíti, ugyanazzal a céllal, mint a requirements.txt hash-ei. Commitold.
+# A saját IP-címed és az előfizetés-azonosító.
+terraform.tfvars

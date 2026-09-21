@@ -1,0 +1,44 @@
+#cloud-config
+# A gép első indulásakor fut le, egyszer. A Terraform tölti ki a ${...}
+# helyeket (templatefile), tehát ez a fájl önmagában nem futtatható.
+
+package_update: true
+package_upgrade: false
+
+packages:
+  # A Gitea, az act_runner és a registry ezen a Docker-motoron fog futni
+  # (platform/compose.yaml). A k3s ettől függetlenül a saját containerd-jét
+  # használja — a kettő egymás mellett fut, nem egymáson.
+  - docker.io
+  - docker-compose-v2
+  - curl
+
+write_files:
+  # A k3s-nek meg kell mondani, hogy a gépen futó registry sima HTTP-t beszél,
+  # különben a képletöltés TLS-hibával bukna. Ez a fájl a k3s telepítése ELŐTT
+  # jön létre, így nem kell utána újraindítani a szolgáltatást.
+  - path: /etc/rancher/k3s/registries.yaml
+    permissions: "0644"
+    content: |
+      mirrors:
+        "localhost:5001":
+          endpoint:
+            - "http://localhost:5001"
+
+runcmd:
+  - [ systemctl, enable, --now, docker ]
+  - [ usermod, -aG, docker, "${admin_username}" ]
+
+  # k3s telepítése.
+  #   --tls-san <publikus IP>: a fürt API-tanúsítványa erre a címre is
+  #     érvényes legyen, különben a laptopodról a kubectl tanúsítványhibát kap.
+  #   --write-kubeconfig-mode 0644: a kubeconfig olvasható legyen sudo nélkül,
+  #     hogy egy scp-vel le tudd hozni. Egyfelhasználós mérőgépen vállalható;
+  #     megosztott gépen nem lenne az, és ezt a dolgozatban ki kell mondani.
+  - |
+    curl -sfL https://get.k3s.io | \
+      INSTALL_K3S_EXEC="--tls-san ${public_ip} --write-kubeconfig-mode 0644" sh -
+
+  # Jelzőfájl: erről tudja a Terraform-kimenet ellenőrzése és te is, hogy a
+  # cloud-init végigfutott, nem csak a gép indult el.
+  - [ touch, /var/lib/cloud/instance/k3s-ready ]
