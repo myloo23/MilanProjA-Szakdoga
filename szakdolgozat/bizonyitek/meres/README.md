@@ -226,3 +226,126 @@ beavatkozás (vagy a tényleges szám, ha eltérés volt), az elfogadás eredmé
 
 A `~/meres/kezi-NN.txt` jegyzőkönyvek a laptopon vannak, ide másolandók a
 sorozat végén a többivel együtt.
+
+---
+
+# Az automatizált sorozat — állapot
+
+Protokoll: [`../04-kezi-telepitesi-folyamat.md`](../04-kezi-telepitesi-folyamat.md)
+4. pont (ágválasztás) · Adatsor: [`auto-sorozat.csv`](auto-sorozat.csv) ·
+Joblogok: [`workflowlogok/`](workflowlogok/)
+
+## Hol tartunk (2026-09-22) — **a telepítési sorozat kész**
+
+Tíz érvényes futtatás a `release/meres` ágon, mindegyik zöld, az elfogadási
+ellenőrzés 10/10 sikeres. A helyreállítási sorozat (három hibainjektálásos
+futtatás) **még hátravan**.
+
+## Mi változott a pipeline-ban a sorozat előtt
+
+A `ci.yml` `deploy` jobja a sorozat előtt Ansible-lel egy Docker konténert
+telepített a gazdagépre — vagyis **nem arra a rendszerre, amit a kézi sorozat
+mér**. Ha így maradt volna, a 6.4 állítása („az egyetlen különbség az ágnév")
+hamis lett volna. Az ADR-0009 döntését követve a job most `helm upgrade
+--install`-lal telepít a k3s-fürtre, `--wait`-tel vár, az ingressen át ellenőriz,
+és bukás esetén `helm rollback`-kel áll vissza. A részletek és az indoklás az
+ADR-0009 kiegészítésében.
+
+Két hiányosság is a sorozat előtt derült ki, és mindkettő a mérést érintette
+volna:
+
+- a pipeline **nem építette a frontend képet**, pedig a chart egy közös taggel
+  mindkét Deploymentre hat — a frontend pod `ImagePullBackOff`-ba futott volna;
+- a `docker build` nem kapta meg a `GIT_SHA` build-argumentumot, így a `/version`
+  `dev`-et adott volna, és az automatizált oldal nem tudta volna teljesíteni azt
+  az elfogadási kritériumot, amit a kézi oldal igen.
+
+## Az eredmény
+
+| | Kézi (beállt szakasz, 4–10.) | Automatizált (10 futtatás) |
+|---|---:|---:|
+| teljes idő, medián | 71 mp | 129,5 mp |
+| teljes idő, sáv | 64–79 mp | 115–144 mp |
+| **telepítési szakasz, medián** | **31 mp** | **24 mp** |
+| telepítési szakasz, sáv | 29–40 mp | 23–26 mp |
+| emberi beavatkozás | 13 | 1 |
+| elfogadási ellenőrzés | 7/7 sikeres | 10/10 sikeres |
+
+A „telepítési szakasz" a kézi oldalon a 9–13. lépés összege, az automatizált
+oldalon a `MERES deploy-start` → `MERES accepted` ablak. Ez a két mennyiség fedi
+ugyanazt a munkát; a teljes idők nem, mert az automatizált oldal teljes ideje
+tartalmazza a lintelést, a teszteket és a szkenneléseket, amelyekből a kézi oldal
+egyet sem végez.
+
+**A `lepesidok.md` előrejelzése beigazolódott.** Ott az áll, hogy a gördülő csere
+kivárása az automatizált oldalon sem lesz gyorsabb: a kézi 10+11. lépés 19–21 mp,
+a `helm upgrade --wait` 19–22 mp. Ugyanaz a tétel, ugyanaz a nagyságrend. A 24
+mp-es automatizált szakaszból tehát ~20 mp az, amit a kézi oldal is fizet, és a
+javulás a maradékból jön. Ugyanott az is szerepel, hogy lényegesen nagyobb
+javulás esetén a mérés felállását kell megnézni — nem lett nagyobb: 31 → 24 mp.
+
+## A mérés menete
+
+Futtatásonként: a jelölősor `2NN`-re állítása és a commit (nem mért idő,
+a protokoll 2. pontja szerint), majd `script`-tel rögzített, időbélyeges
+prompttal egyetlen parancs, a `git push azure release/meres`.
+
+A mért ablak kezdete a push előtti prompt időbélyege a laptopon, vége a
+`MERES accepted` sor a `deploy` job logjában. A pipeline négy mérföldkövet ír a
+logba: `pipeline-start`, `deploy-start`, `live`, `accepted` (hibás futtatásnál
+`detect` és `restored`). Minden időbélyeg UTC.
+
+**Az adatok visszavezethetők.** A CSV mind a 40 pipeline-időbélyege egyezik a
+`workflowlogok/` alatti joblogokkal, a 10 push-időbélyeg pedig a laptop
+`auto-NN.txt` jegyzőkönyveivel. A joblogok neve a Gitea belső feladatszámát
+viseli: a `ci-build-test-push-<n>` és a `ci-deploy-<n+1>` páros egy futtatás,
+(12,13) az 1., (30,31) a 10.
+
+## A szórás forrása — mérve, nem feltételezve
+
+A teljes idő sávja (115–144 mp) tágabb, mint a kézi sorozat beállt szakaszáé.
+A szórás teljes egészében a `build-test-push` jobban van (72–97 mp), és azon
+belül **egyetlen szakaszban**: a `pytest` kezdetétől a Galaxy-telepítés
+kezdetéig tartó rész 9–37 mp között ingadozik (27,5 mp terjedelem), miközben a
+build minden más lépése együtt 56–68 mp (12,1 mp).
+
+Ebben a szakaszban az `Install the Ansible control node and collections` lépés
+pip-telepítése fut. A `requirements-lint.txt` csomagjai **nincsenek
+gyorsítótárazva**: a `setup-python` `cache-dependency-path`-ja csak a
+`requirements-dev.txt`-et nevezi meg, tehát ezek minden futtatásban a PyPI-ról
+töltődnek le.
+
+Elvetett magyarázat, mérés alapján: a Trivy adatbázis-letöltése (6,8–8,5 mp) és
+a runner image pullja (2,9–3,6 mp) mindkettő állandó, tehát a szórást nem ők
+adják.
+
+**A `cache-dependency-path` bővítése nem a mérés előtt esedékes**, mert
+megváltoztatná azt a pipeline-t, amelyen a tíz futtatás lefutott. A
+továbbfejlesztési fejezetbe tartozik, mért számmal alátámasztva.
+
+## Közben kiderült: a zöld szkennelésnek szavatossági ideje van
+
+Az első `release/meres` előtti bemelegítő futtatás **elbukott** a Trivy
+image-szkennelésen: 43 találat (40 HIGH, 3 CRITICAL) a `python:3.12-slim`
+alapkép Debian-csomagjaiban, egy olyan commiton, amely sem a Dockerfile-t, sem
+egyetlen függőséget nem érintett. A Trivy frissítette az adatbázisát.
+
+A szkenner verziója pinelve van, az adatbázisa nem — és nem is lehet. A
+reprodukálható build és a tiszta szkennelés tehát **két különböző garancia**: az
+elsőt a digest-pin feltétel nélkül adja, a másodikat újra és újra ki kell
+érdemelni. A kézi telepítési út nem bukik el ezen; csak sosem teszi fel a
+kérdést. A javítás az alapkép digestjének léptetése Debian 13.7-re (a friss kép
+szkennelése 0 találat); a részletek a `docs/sbom/README.md` végén.
+
+## Ami még hátravan
+
+1. Három automatizált helyreállítási futtatás, ugyanazzal a hibainjektálással,
+   mint a `meres/hiba-*` ágakon. Adatsor: [`auto-hiba-sorozat.csv`](auto-hiba-sorozat.csv)
+   (fejléc kész, sorok még nincsenek).
+2. A `auto-lepesidok.md` — a `lepesidok.md` párja, a szakaszbontással.
+3. Az `SBOM`-ok újragenerálása: a `projecta-flask-a6a4d33.cdx.json` más
+   alapképről készült.
+4. A 6.1-be: melyik két számot közöljük mindkét oldalra (teljes és telepítési
+   szakasz), és beavatkozás-e a kimenet elolvasása — a V1-kérdés az automatizált
+   oldalon úgy jelenik meg, hogy a pipeline zöld/piros eredményének elbírálása
+   is beavatkozás-e. **Ugyanazt a szabályt kell alkalmazni mindkét sorozatra.**
