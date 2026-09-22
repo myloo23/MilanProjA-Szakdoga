@@ -15,8 +15,13 @@ Adatsor: [`kezi-sorozat.csv`](kezi-sorozat.csv) · lépésenkénti bontás: [`le
 | **3.** | `meres/kezi-04` | **érvényes, 86 mp, 13 beavatkozás**, eltérés nélkül |
 | **4.** | `meres/kezi-05` | **érvényes, 67 mp, 13 beavatkozás**, eltérés nélkül |
 | — | `meres/kezi-06` | **érvénytelen**: a rögzítés alatt egy korábbi terminálkimenet lett beillesztve promptokkal együtt, három `command not found`, a 2. lépés el sem indult; jegyzőkönyv: `kezi-06-ervenytelen.txt` |
-| **5.** | `meres/kezi-07` | előkészítve (ág és commit kész), futtatásra vár |
-| 6–9. | `meres/kezi-08` … `kezi-11` | hátravan |
+| **5.** | `meres/kezi-07` | **érvényes, 75 mp, 13 beavatkozás**, eltérés nélkül |
+| **6.** | `meres/kezi-08` | előkészítve (ág és commit kész), futtatásra vár |
+| 7–10. | `meres/kezi-09` … `kezi-12` | hátravan |
+
+A cél **tíz érvényes futtatás** (00-terv 7., 04-kezi 7.d). Az érvénytelen
+futtatások miatt az ágnevek elcsúsztak a sorszámoktól; a CSV `futtatas` oszlopa
+a mérvadó.
 
 Az ágnév számozása a `kezi-02`-vel elrontott sorozatból maradt így: a 2. érvényes
 futtatás ága a `kezi-03`. Az ág neve azonosító, nem sorszám; a CSV `futtatas`
