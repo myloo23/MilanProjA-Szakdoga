@@ -52,7 +52,7 @@ protokoll: ha a pod összeomlana, a „mikor ment ki a hibás verzió" időpont
 
 **Mind a három futtatás megvan.** Észlelés 16–20 mp (medián 17), helyreállítás
 34–39 mp (medián 37), a teljes kiesés 50–57 mp (medián 56), mindhárom futtatásban
-18 emberi beavatkozás, a V5 mindháromszor a `be36f74`-et adta, a V6 füstteszt
+19 emberi beavatkozás (a V1 külön elbírálás — a 2026-09-22-i döntés szerint, naplo.md), a V5 mindháromszor a `be36f74`-et adta, a V6 füstteszt
 mindháromszor tiszta. A kiértékelés: [`hiba-lepesidok.md`](hiba-lepesidok.md).
 
 ¹ A 11. lépés a 10. futása alatt lett előregépelve, így a két lépés prompt-ideje
@@ -268,7 +268,7 @@ volna:
 | teljes idő, sáv | 64–79 mp | 115–144 mp |
 | **telepítési szakasz, medián** | **31 mp** | **24 mp** |
 | telepítési szakasz, sáv | 29–40 mp | 23–26 mp |
-| emberi beavatkozás | 13 | 1 |
+| emberi beavatkozás | 13 | 2 |
 | elfogadási ellenőrzés | 7/7 sikeres | 10/10 sikeres |
 
 A „telepítési szakasz" a kézi oldalon a 9–13. lépés összege, az automatizált
@@ -345,7 +345,8 @@ szkennelése 0 találat); a részletek a `docs/sbom/README.md` végén.
 2. A `auto-lepesidok.md` — a `lepesidok.md` párja, a szakaszbontással.
 3. Az `SBOM`-ok újragenerálása: a `projecta-flask-a6a4d33.cdx.json` más
    alapképről készült.
-4. A 6.1-be: melyik két számot közöljük mindkét oldalra (teljes és telepítési
-   szakasz), és beavatkozás-e a kimenet elolvasása — a V1-kérdés az automatizált
-   oldalon úgy jelenik meg, hogy a pipeline zöld/piros eredményének elbírálása
-   is beavatkozás-e. **Ugyanazt a szabályt kell alkalmazni mindkét sorozatra.**
+4. A 6.1 két kérdése **eldöntve** (naplo.md, 2026-09-22): mindkét oldalra két
+   időt közlünk (teljes és telepítési szakasz), és a kimenet elolvasása
+   beavatkozás. Az utóbbi átvezetve: az automatizált sorozat 2 beavatkozás
+   (push + a verdikt elbírálása), a kézi helyreállítási sorozat 18 helyett 19
+   (a V1 külön elbírálás). A `hiba-lepesidok.md` szövegét még át kell vezetni.

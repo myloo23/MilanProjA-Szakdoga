@@ -105,36 +105,162 @@ mp-ből jöhet, és ha lényegesen több jönne ki, a mérés felállását kell
 
 ---
 
-## Hol tartok (2026-09-22)
+## 2.7 — Az automatizált telepítési sorozat (2026-09-22)
 
-**Kész:** 2.5 (a kézi telepítési folyamat), a kézi mérési sorozat tíz érvényes
-futtatással, és a 2.6 kézi helyreállítási mérése három futtatással.
+**Mit csináltam.** Megépítettem a pipeline telepítő, ellenőrző és visszaállító
+szakaszát, majd lefuttattam a tíz mért futtatást a `release/meres` ágon.
 
-**Következik:**
+**Mi lett volna nélküle.** Nem a mérés maradt volna el, hanem ennél rosszabb: a
+mérés lefutott volna, és rossz számot adott volna. A `deploy` job addig
+Ansible-lel egy Docker konténert telepített a gazdagépre — vagyis **nem arra a
+rendszerre, amit a kézi sorozat mér**. Ugyanaz az ágnév, ugyanaz a gép, csak épp
+két különböző célpont. A 6.4 központi mondata („az egyetlen különbség az
+ágnév") hamis lett volna, és ezt a táblázatból senki nem látta volna.
 
-1. A pipeline telepítő, ellenőrző és visszaállító szakaszának megépítése. Most
-   csak a build van meg; a `.gitea/workflows/ci.yml` `deploy` jobja a kiindulás.
-   Az ellenőrző lépéshez nem kell újat írni: a `smoke.yml` szerep már buktat.
-   A `helm rollback` beépítése a hiányzó darab.
-2. A 3.5 automatizált sorozata **tíz** futtatással (nem hússzal — így szimmetrikus
-   a kézi sorozattal), `release/meres` ágra pusholva. Döntési szabály előre: ha az
-   első tíz futtatás terjedelme néhány másodpercen belül marad, kész; ha szétszórt,
-   megy tovább, amíg be nem áll.
-3. Három automatizált helyreállítási futtatás, ugyanazzal a hibainjektálással.
+Ehhez jött két hiányosság, amelyek külön-külön is megbuktatták volna a
+sorozatot: a pipeline nem építette a frontend képet (a chart egy közös taggel
+mindkét Deploymentre hat, tehát a frontend pod `ImagePullBackOff`-ba futott
+volna), és a `docker build` nem kapta meg a `GIT_SHA` argumentumot, így a
+`/version` `dev`-et adott volna — az automatizált oldal nem tudta volna
+teljesíteni azt az elfogadási kritériumot, amit a kézi oldal igen.
 
-**Feltétel mindkét automatizált sorozatra:** bemelegedett réteg-gyorsítótárral
-kell futniuk, különben a különbség egy részét a build adná — pont az az
-ellenvetés, amit a 6.4-ben ki akarunk zárni. A fürtön a `be36f74` fut, a
-gyorsítótár meleg; `terraform destroy` nem jöhet szóba, mert elvinné a
-Gitea-adatbázist, a runner regisztrációját és a registry tartalmát.
+**Az eredmény.** Tíz érvényes futtatás, mind zöld, az elfogadás 10/10. Teljes
+idő 115–144 mp (medián 129,5), telepítési szakasz 23–26 mp (medián 24), egy
+emberi beavatkozás. A kézi beállt szakasz ugyanezekre: 64–79 mp (medián 71),
+29–40 mp (medián 31), tizenhárom beavatkozás. Adatsor: `bizonyitek/meres/auto-sorozat.csv`,
+kiértékelés: `bizonyitek/meres/README.md`, joblogok: `bizonyitek/meres/workflowlogok/`.
 
-**Két eldöntetlen kérdés, mielőtt a szám a 6.4-be kerül:**
+**Mit bizonyít.** Hogy a `lepesidok.md` előrejelzése állt. Azt írtam benne, hogy
+a gördülő csere kivárása az automatizált oldalon sem lesz gyorsabb, és hogy ha
+lényegesen nagyobb javulás jönne ki, a mérés felállását kell megnézni. A kézi
+10+11. lépés 19–21 mp, a `helm upgrade --wait` 19–22 mp — ugyanaz a tétel. A
+javulás 31 → 24 mp, vagyis a telepítési szakaszból az a rész javult, ami
+gépelés és kimenetolvasás volt, a gépi rész nem. **Az előrejelzés teljesülése
+itt erősebb bizonyíték, mint maga a szám**, mert azt mutatja, hogy a mérés azt
+méri, aminek a mechanizmusát előre le tudtam írni.
 
-- Beavatkozás-e a V1? A kézi sorozatban a 13 a kiadott parancsok száma, eszerint
-  a helyreállítás 18. Az 1. pont definíciója szerint („elolvas egy kimenetet és
-  dönt róla") 19. A CSV most 18-cal van kitöltve; mindkét sorozatban ugyanazt
-  kell alkalmazni, és a 6.1-ben ki kell mondani, melyiket.
-- A „hibás verzió él" mérföldkő a 11. lépés vége (így van rögzítve), pedig a hiba
-  a backendben van, tehát szigorúan a 10. lépés végén él. A 11. mellett a
-  szimmetria szól (az automatizált oldalon is a teljes telepítés a kész-pont).
-  Egy mondat a 6.1-ben.
+**Amit közben megtanultam.** Hármat.
+
+1. *Az automatizálás a teljes falióraidőben lassabb, és ezt előre ki kell
+   mondani.* 129,5 mp a 71 mp-pel szemben. A különbség nem rejtély: a 93 mp-es
+   build ruffot, Trivy secret-szkennelést, hadolintot, pytestet lefedettségi
+   kapuval, ansible-lintet, két image-buildet és Trivy image-szkennelést futtat,
+   amiből a kézi oldal egyet sem. A két teljes idő nem ugyanazt a munkát fedi, a
+   telepítési szakasz viszont igen. Ha ezt a 6.1 nem mondja ki előre, a 6.4-ben
+   végig magyarázkodás lesz belőle.
+
+2. *A zöld sérülékenység-szkennelésnek szavatossági ideje van.* A bemelegítő
+   futtatás elbukott 43 találattal a `python:3.12-slim` Debian-csomagjaiban, egy
+   olyan commiton, amely sem a Dockerfile-t, sem egyetlen függőséget nem
+   érintett. A Trivy frissítette az adatbázisát. A szkenner verzióját pineltem,
+   az adatbázisát nem tudom — és nem is szabad: egy sérülékenység-adatbázis, ami
+   nem változik, hibás. **A reprodukálható build és a tiszta szkennelés két
+   különböző garancia**: az elsőt a digest-pin feltétel nélkül adja, a másodikat
+   újra és újra ki kell érdemelni, és az egyetlen mechanizmus, ami kiérdemli,
+   egy pipeline, ami minden commitra lefuttatja. A kézi út nem bukik el ezen;
+   csak sosem teszi fel a kérdést. Ez a 6.4-be az időadatok mellé tartozik,
+   ugyanúgy, mint a `psycopg`-eset.
+
+3. *A szórás okát meg kell mérni, nem megtippelni.* Az első magyarázatom a
+   72–97 mp-es build-sávra a hálózatfüggő tételek voltak: a Trivy
+   adatbázis-letöltése és a runner image pullja. Kimértem őket a joblogokból, és
+   mindkettő állandó (6,8–8,5 mp, illetve 2,9–3,6 mp) — a hipotézisem tehát
+   téves volt. A valódi forrás egyetlen szakasz: a `pytest` kezdetétől a
+   Galaxy-telepítés kezdetéig tartó rész 9–37 mp között ingadozik, miközben a
+   build minden más lépése együtt 56–68 mp. Ott a `requirements-lint.txt`
+   pip-telepítése fut, és annak a csomagjai nincsenek gyorsítótárazva: a
+   `setup-python` `cache-dependency-path`-ja csak a `requirements-dev.txt`-et
+   nevezi meg. Ugyanaz a módszer, amivel a kézi sorozat szórását bontottam
+   tételekre — és ugyanaz a tanulság, mint a 2.4-ben a `registries.yaml`-nál:
+   **egy magyarázat akkor magyarázat, ha megpróbáltam megcáfolni.**
+
+**Amit nem javítottam, és miért.** A `cache-dependency-path` bővítése
+csökkentené az átlagot és a szórást is. Nem nyúltam hozzá: megváltoztatná azt a
+pipeline-t, amelyen a tíz futtatás lefutott. A továbbfejlesztési fejezetbe megy,
+mért számmal. Ugyanez a frontend képre: nincs rajta hadolint és Trivy, mert egy
+új kapu a mérési sorozat előtt vörösre tud menni egy alap-image-riasztástól,
+ami nem a vizsgált változtatásról szól — és az mérési futtatásokat éget el.
+
+---
+
+## Hol tartok (2026-09-22, este)
+
+**Kész:** a kézi telepítési sorozat (tíz futtatás), a kézi helyreállítási mérés
+(három futtatás), a pipeline telepítő–ellenőrző–visszaállító szakasza, és az
+automatizált telepítési sorozat (tíz futtatás).
+
+**Következik:** három automatizált helyreállítási futtatás, ugyanazzal a
+hibainjektálással, mint a `meres/hiba-*` ágakon. Az adatsor fejléce kész
+(`bizonyitek/meres/auto-hiba-sorozat.csv`), a sorok még nincsenek. Utána a
+`auto-lepesidok.md` (a `lepesidok.md` párja) és az SBOM-ok újragenerálása — az
+alapkép-bump miatt a `projecta-flask-a6a4d33.cdx.json` már más képről szól.
+
+**A rollback útja igazolva van, de még nem mérve.** A tíz zöld futtatásban a
+visszaállító lépés definíció szerint kimaradt. Amit tudok róla: az `if:
+failure()` működik ezen a runneren (ADR-0005 kiegészítés), a védőfeltétel
+működik (a `deploy` job egy korai hibájánál a rollback lefutott, megnézte, hogy
+nem telepített semmit, és nem görgetett vissza egy egészséges release-t), és a
+`helm rollback` a kézi sorozatban háromszor a hibás revízió előttire lépett. A
+három futtatás ezt méri, nem bizonyítja először.
+
+---
+
+## A két nyitott kérdés — eldöntve (2026-09-22)
+
+Mindkettő azért volt nyitva, mert a választás **mindkét sorozatra** hat, és a
+kézi oldal számait már rögzítettem. Most, hogy az automatizált oldal is megvan,
+eldönthető, és a 6.1-be így megy.
+
+### 1. Melyik időt közlöm
+
+**Kettőt, mindkét oldalra: a teljes időt és a telepítési szakaszt.**
+
+A teljes idő a protokoll szerinti ablak: a commit megvan → a működő telepítés
+elfogadva. Kézi oldalon a 13 lépés, automatizált oldalon a push-tól a
+`MERES accepted`-ig. Ez a becsületes szám, és ez az, amiben az automatizálás
+**lassabb** (129,5 mp a 71 mp-pel szemben).
+
+A telepítési szakasz a kézi 9–13. lépés, illetve a `deploy-start → accepted`
+ablak. Ez a két mennyiség fedi ugyanazt a munkát — telepítés, kivárás,
+ellenőrzés —, és ebben az automatizálás gyorsabb (24 mp a 31 mp-pel szemben).
+
+Miért nem elég az egyik. Ha csak a teljeset közlöm, azt állítom, hogy az
+automatizálás 1,8-szer lassabb, miközben a két szám nem ugyanazt a munkát fedi:
+a pipeline lintel, tesztel és szkennel, a kézi út nem. Ha csak a szakaszt, akkor
+elhallgatom, hogy a változtatás valójában kétszer annyi idő alatt ér a fürtre —
+és azt joggal kérdezik meg. **A kettő együtt az igaz állítás**, és a kettő
+különbsége maga az eredmény: az automatizálás nem gyorsabb, hanem *többet
+csinál ugyanabban a nagyságrendben, egy beavatkozással tizenhárom helyett.*
+
+### 2. Beavatkozás-e a kimenet elolvasása
+
+**Igen, és mindkét sorozatban ugyanúgy.** A 04-es protokoll 1. pontja így
+definiálja: „egy beavatkozás az, amikor az operátor tesz valamit: kiad egy
+parancsot, **vagy elolvas egy kimenetet és dönt róla**". Ezt a definíciót nem
+írom felül utólag azért, mert kényelmetlen.
+
+Következmények, végigvezetve:
+
+- A kézi **telepítési** sorozat 13 kiadott parancs, és a 13. lépés kimenetének
+  elbírálása nem külön tétel, mert a 13. parancs és az elbírálása ugyanaz a
+  lépés. Marad **13**.
+- A kézi **helyreállítási** sorozat 13 + V1–V6. A V1 nem parancs, hanem kizárólag
+  elbírálás (a `scripts/smoke.sh` kilépési kódja mindig 0, tehát a bukást az
+  operátor állapítja meg). A definíció szerint tehát beavatkozás: **19**, nem 18.
+  A CSV-t és a `hiba-lepesidok.md`-t javítani kell, és a javítás tényét
+  megjegyzésben rögzíteni — nem csendben átírni.
+- Az automatizált **telepítési** sorozat a push, plusz a pipeline zöld/piros
+  eredményének elolvasása és elbírálása: **2**, nem 1.
+- Az automatizált **helyreállítási** sorozat ugyanígy **2** lesz.
+
+A 2 a 13 ellen ugyanazt mondja, mint az 1 a 13 ellen, és cserébe belső
+ellentmondás nélkül. Ha az egyik oldalon beszámítom az olvasást, a másikon nem,
+az a mérés legtámadhatóbb pontja lenne — pont az a fajta, amit egy bíráló
+egyetlen kérdéssel kinyit.
+
+**Egy különbséget viszont ki kell mondani a 6.4-ben:** a két oldalon ugyanaz az
+ellenőrzéskészlet fut, de nem ugyanaz dönt. A kézi oldalon az operátor olvassa a
+státuszokat és ítél; az automatizált oldalon a `smoke.yml` minden feladata
+elbuktatja a playt, és az ember csak a kész verdiktet veszi tudomásul. A
+beavatkozásszám ezt nem mutatja — mindkettő „egy olvasás" —, pedig a kettő nem
+ugyanaz a kockázat. Ez a különbség szövegben tartozik a 6.4-be, nem számban.
