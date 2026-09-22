@@ -522,20 +522,30 @@ jobs:
       - name: Resolve the address of the Docker host
         # The verification below reaches the cluster's ingress on the host's
         # port 80. From this job container that is not localhost: the container
-        # sits on the projecta-platform bridge, and the host is its default
-        # gateway. Read from the routing table rather than hard-coded, because
-        # the bridge subnet is Docker's to choose and a literal here would be a
-        # value that works until Docker renumbers the network.
+        # sits on the projecta-platform bridge, and the host is that bridge's
+        # gateway.
         #
-        # If this ever comes back empty, the fallback is a fixed address: add
-        # `--add-host=host.docker.internal:host-gateway` to container.options
-        # in platform/config.yaml, restart the runner — no re-registration —
-        # and use that name. Kept as a note rather than as the default, because
-        # it edits the platform for something the routing table already knows.
+        # Asked of Docker rather than derived, and this is the third answer to
+        # the same question. `ip -4 route show default` was the first and it
+        # exits 127: the runner image has no iproute2. Parsing /proc/net/route
+        # was the second, and it is only as reliable as the container having an
+        # IPv4 default route in that file. The network's gateway is not a value
+        # to infer from the container's own view at all — it is a property of
+        # the network, and the daemon that owns the network will state it.
+        #
+        # The fallback stays, for a container whose network Docker cannot
+        # describe. If both come back empty, the last resort is a fixed name:
+        # add `--add-host=host.docker.internal:host-gateway` to
+        # container.options in platform/config.yaml and restart the runner — no
+        # re-registration needed.
         run: |
           set -eu
-          addr=$(ip -4 route show default | awk '{print $3; exit}')
-          test -n "$addr" || { echo "no default route: cannot reach the Docker host"; exit 1; }
+          addr=$(docker network inspect projecta-platform \
+                   --format '{{(index .IPAM.Config 0).Gateway}}' 2>/dev/null || true)
+          if [ -z "$addr" ]; then
+            addr=$(python -c "import socket,struct;r=[l.split() for l in open('/proc/net/route').readlines()[1:]];g=[x[2] for x in r if x[1]=='00000000'];print(socket.inet_ntoa(struct.pack('<L',int(g[0],16))) if g else '')" 2>/dev/null || true)
+          fi
+          test -n "$addr" || { echo "could not determine the Docker host address"; exit 1; }
           echo "DOCKER_HOST_ADDR=$addr" >> "$GITHUB_ENV"
           echo "Docker host reachable at $addr"
 
