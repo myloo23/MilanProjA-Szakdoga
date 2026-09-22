@@ -146,8 +146,8 @@ table is the actual answer to "what software versions is the project using".
 | Component | Version | Source file | Pinning |
 |---|---|---|---|
 | Python (runtime + CI) | 3.12 | `Dockerfile`, `.gitea/workflows/ci.yml` | minor version |
-| Base image `python:3.12-slim` | digest `sha256:57cd7c3a…710de` | `Dockerfile` | **digest** |
-| Debian (in base image) | 13.6 | derived | inherited from digest |
+| Base image `python:3.12-slim` | digest `sha256:2f17fc04…06a9` | `Dockerfile` | **digest** |
+| Debian (in base image) | 13.7 | derived | inherited from digest |
 | Gitea | 1.27.0 | `platform/.env.example` | exact tag |
 | Gitea act_runner | 0.2.12 | `platform/.env.example` | exact tag |
 | Docker Registry | 2 | `platform/.env.example` | **floating major tag** |
@@ -234,3 +234,43 @@ last-but-one column.
 Adding an SBOM step to `.gitea/workflows/ci.yml` on a `schedule:` trigger would
 keep this inventory current without anyone remembering to run it. Deliberately
 out of scope for this task, which is a point-in-time inventory.
+
+## Base-image bump — 2026-09-22
+
+The digest above was `sha256:57cd7c3a…710de` (Debian 13.6) until this date. It
+was not changed for a new feature; it was changed because the image scan in
+`ci.yml` failed on a commit that touched neither the Dockerfile nor any
+dependency.
+
+**What happened.** Trivy 0.72.0 refreshed its vulnerability database and
+reported 43 findings against the pinned base image — 40 HIGH, 3 CRITICAL, all
+of them Debian packages (`util-linux`, `perl-base`, `libpcre2`, `libsqlite3`,
+`openssl`, `gzip`) and all with a fixed version available, which is why
+`--ignore-unfixed` did not filter them. Nothing in the application's own
+dependency set was implicated: every `python-pkg` target came back clean.
+
+`python:3.12-slim` had meanwhile been rebuilt on Debian 13.7, and a scan of
+that image returns zero findings, so the fix is the digest bump and nothing
+else.
+
+**Why it is worth writing down.** The pipeline pins the scanner precisely so a
+build cannot fail for a reason unrelated to its own change — that argument is
+in `.gitea/workflows/ci.yml` on both Trivy steps and in ADR-0005. Pinning the
+scanner does not pin its database, and it cannot: a vulnerability database that
+does not change is a vulnerability database that is wrong. So a green image
+scan is not a property of the artifact alone. It is a statement about the
+artifact *and the day it was scanned*, and its shelf life is however long it
+takes for the next advisory to land against the base image.
+
+The practical consequence for this project is that a reproducible build and a
+clean scan are different guarantees. The digest pin delivers the first
+unconditionally; the second has to be re-earned, and the only mechanism that
+re-earns it is a pipeline that runs the scan on every commit. A deployment
+route without that gate does not fail — it simply never asks the question.
+
+**Not covered by this bump:** the frontend image (`node:22-alpine`,
+`nginxinc/nginx-unprivileged:1.27-alpine`) is pinned by tag rather than by
+digest and is not scanned in CI. That is a known gap, recorded with the
+frontend build step in `ci.yml`, and it is not closed here: introducing a new
+gate immediately before a measurement series is how a series gets burned by a
+failure that has nothing to do with what is being measured.

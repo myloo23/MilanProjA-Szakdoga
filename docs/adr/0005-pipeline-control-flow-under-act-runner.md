@@ -39,6 +39,7 @@ Findings, with evidence in
 | Construct | Result |
 |---|:--:|
 | `if:` with `startsWith()`, `contains()`, `success()`, `always()` | works |
+| `if: failure()` | works — probed separately, 2026-09-22 |
 | `timeout-minutes` on a step | works — killed at 1m04s against a 180s sleep |
 | `continue-on-error` on a step | works — job green, later steps ran |
 | Retry via shell loop | works |
@@ -116,3 +117,29 @@ GitHub docs does what the docs say.
 **Version-bound.** Every result above is v0.2.12 on ARM64. Re-run the probe
 after a runner upgrade before relying on any of it — the workflow is deleted,
 but it is recoverable from the `spike/act-runner-capabilities` history.
+
+## Addendum — 2026-09-22: `if: failure()`
+
+Round 1 tested `success()` and `always()` and did not test `failure()`. That
+became load-bearing when `ci.yml` grew a rollback stage: the step has to run
+when the verification before it fails, and must not run when the deploy is
+green. A conditional that silently never fires would have meant a measurement
+series in which no rollback ever happened and every run still looked correct
+from the workflow file.
+
+Probed on its own, `.gitea/workflows/spike-if-failure.yml` on
+`spike/if-failure`, run #5, act_runner v0.2.12, `RUNNER_ARCH=X64`. A step that
+exits 1, followed by three steps conditioned on `failure()`, `success()` and
+`always()`.
+
+Result: the job failed, `FAILURE-BRANCH-RAN` and `ALWAYS-BRANCH-RAN` were
+printed, and the `success()` step produced no output — it was not run. All
+three conditions behaved as GitHub documents them.
+
+`failure()` is therefore used in `ci.yml`'s rollback step. The fallback it
+displaces — collapsing deploy, verify and rollback into one step's shell
+script, which needs no expression support — is recorded here rather than kept
+in the file, so a future runner version that regresses has a known way back.
+
+The probe workflow is deleted now that the finding is written down. The
+measurement branch does not need a workflow that exists to fail.
