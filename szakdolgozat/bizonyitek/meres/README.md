@@ -14,8 +14,9 @@ Adatsor: [`kezi-sorozat.csv`](kezi-sorozat.csv) · lépésenkénti bontás: [`le
 | **2.** | `meres/kezi-03` | **érvényes, 144 mp, 13 beavatkozás** (a kezdő időbélyeg a `script`-fájl létrehozási idejéből) |
 | **3.** | `meres/kezi-04` | **érvényes, 86 mp, 13 beavatkozás**, eltérés nélkül |
 | **4.** | `meres/kezi-05` | **érvényes, 67 mp, 13 beavatkozás**, eltérés nélkül |
-| **5.** | `meres/kezi-06` | előkészítve (ág és commit kész), futtatásra vár |
-| 6–9. | `meres/kezi-07` … `kezi-10` | hátravan |
+| — | `meres/kezi-06` | **érvénytelen**: a rögzítés alatt egy korábbi terminálkimenet lett beillesztve promptokkal együtt, három `command not found`, a 2. lépés el sem indult; jegyzőkönyv: `kezi-06-ervenytelen.txt` |
+| **5.** | `meres/kezi-07` | előkészítve (ág és commit kész), futtatásra vár |
+| 6–9. | `meres/kezi-08` … `kezi-11` | hátravan |
 
 Az ágnév számozása a `kezi-02`-vel elrontott sorozatból maradt így: a 2. érvényes
 futtatás ága a `kezi-03`. Az ág neve azonosító, nem sorszám; a CSV `futtatas`
@@ -102,8 +103,18 @@ lépés; a 3. lépés ideje az utána megjelenő promptól számít.
 
 Ezután a protokoll 5. pontjának 1–13. lépése, egyesével, előregépelés nélkül,
 `clear` nélkül. A parancsokat úgy kell beilleszteni, hogy **csak a parancs**
-kerüljön a sorba: a protokoll táblázatának „Mit várunk" oszlopa nem része a
-parancsnak (a `kezi-03` 12. lépésébe így került bele a várt kimenet szövege).
+kerüljön a sorba, és semmi más:
+
+- a protokoll táblázatának „Mit várunk" oszlopa nem része a parancsnak
+  (a `kezi-03` 12. lépésébe így került bele a várt kimenet szövege);
+- **soha ne a terminál kimenetéből másolj vissza parancsot**, mert a promptot is
+  viszi magával, és a beillesztett blokk több sorban elindul (ez buktatta meg a
+  `kezi-06`-ot). Mindig a protokollból vagy a lépéslistából másolj.
+
+Ha mégis elszállt a futtatás: a `script`-et `exit`-tel kell lezárni, a
+jegyzőkönyvet `kezi-NN-ervenytelen.txt` néven megtartjuk, és a futtatást **új
+ágon** kell megismételni — a már felpusholt ágon az 1. lépés „Everything
+up-to-date" lenne, ami a `kezi-02` hibáját hozná vissza.
 
 A végén `exit` (a `script` lezárása), majd a jegyzőkönyv másolása ide:
 `szakdolgozat/bizonyitek/meres/kezi-NN.txt`.
