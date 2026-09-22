@@ -16,8 +16,9 @@ Adatsor: [`kezi-sorozat.csv`](kezi-sorozat.csv) · lépésenkénti bontás: [`le
 | **4.** | `meres/kezi-05` | **érvényes, 67 mp, 13 beavatkozás**, eltérés nélkül |
 | — | `meres/kezi-06` | **érvénytelen**: a rögzítés alatt egy korábbi terminálkimenet lett beillesztve promptokkal együtt, három `command not found`, a 2. lépés el sem indult; jegyzőkönyv: `kezi-06-ervenytelen.txt` |
 | **5.** | `meres/kezi-07` | **érvényes, 75 mp, 13 beavatkozás**, eltérés nélkül |
-| **6.** | `meres/kezi-08` | előkészítve (ág és commit kész), futtatásra vár |
-| 7–10. | `meres/kezi-09` … `kezi-12` | hátravan |
+| **6.** | `meres/kezi-08` | **érvényes, 71 mp, 13 beavatkozás**, eltérés nélkül |
+| **7.** | `meres/kezi-09` | előkészítve (ág és commit kész), futtatásra vár |
+| 8–10. | `meres/kezi-10` … `kezi-12` | hátravan |
 
 A cél **tíz érvényes futtatás** (00-terv 7., 04-kezi 7.d). Az érvénytelen
 futtatások miatt az ágnevek elcsúsztak a sorszámoktól; a CSV `futtatas` oszlopa

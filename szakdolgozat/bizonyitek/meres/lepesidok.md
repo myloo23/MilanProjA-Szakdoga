@@ -6,23 +6,23 @@ gondolkodás, gépelés és futásidő együtt (04-kezi-telepitesi-folyamat.md 5
 
 Ez a fájl a 6.4 alfejezet nyersanyaga. A CSV az összesített adat, ez a bontás.
 
-| # | Lépés | 1. (`kezi-NN`) | 2. (`kezi-03`) | 3. (`kezi-04`) | 4. (`kezi-05`) | 5. (`kezi-07`) |
-|---|---|---:|---:|---:|---:|---:|
-| 1 | push | 7 mp | 30 mp¹ | 8 mp | 4 mp | 5 mp |
-| 2 | ssh | 6 mp² | (az 1-gyel együtt)¹ | 6 mp | 4 mp | 9 mp |
-| — | *prompt beállítása (műszer, nem lépés)* | (a 2-vel együtt)² | 9 mp | 4 mp | 2 mp | 3 mp |
-| 3 | fetch + checkout | 7 mp | 8 mp | 5 mp | 4 mp | 4 mp |
-| 4 | SHA | 6 mp | 11 mp | 8 mp | 3 mp | 4 mp |
-| 5 | backend build | 35 mp | 24 mp | 12 mp | 11 mp | 11 mp |
-| 6 | frontend build | 3 mp | 4 mp | 2 mp | 2 mp | 2 mp |
-| 7 | backend push | 9 mp | 8 mp | 5 mp | 3 mp | 4 mp |
-| 8 | frontend push | 7 mp | 7 mp | 3 mp | 3 mp | 3 mp |
-| 9 | helm upgrade | 6 mp | 6 mp | 4 mp | 4 mp | 3 mp |
-| 10 | rollout backend | 16 mp | 17 mp | 16 mp | 16 mp | 18 mp |
-| 11 | rollout frontend | 4 mp | 6 mp | 3 mp | 3 mp | 2 mp |
-| 12 | /version | 6 mp | 6 mp | 5 mp | 4 mp | 4 mp |
-| 13 | füstteszt | 9 mp | 8 mp | 5 mp | 4 mp | 3 mp |
-| | **összesen** | **121 mp** | **144 mp** | **86 mp** | **67 mp** | **75 mp** |
+| # | Lépés | 1. (`kezi-NN`) | 2. (`kezi-03`) | 3. (`kezi-04`) | 4. (`kezi-05`) | 5. (`kezi-07`) | 6. (`kezi-08`) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 1 | push | 7 mp | 30 mp¹ | 8 mp | 4 mp | 5 mp | 5 mp |
+| 2 | ssh | 6 mp² | (az 1-gyel együtt)¹ | 6 mp | 4 mp | 9 mp | 5 mp |
+| — | *prompt beállítása (műszer, nem lépés)* | (a 2-vel együtt)² | 9 mp | 4 mp | 2 mp | 3 mp | 3 mp |
+| 3 | fetch + checkout | 7 mp | 8 mp | 5 mp | 4 mp | 4 mp | 5 mp |
+| 4 | SHA | 6 mp | 11 mp | 8 mp | 3 mp | 4 mp | 4 mp |
+| 5 | backend build | 35 mp | 24 mp | 12 mp | 11 mp | 11 mp | 11 mp |
+| 6 | frontend build | 3 mp | 4 mp | 2 mp | 2 mp | 2 mp | 2 mp |
+| 7 | backend push | 9 mp | 8 mp | 5 mp | 3 mp | 4 mp | 3 mp |
+| 8 | frontend push | 7 mp | 7 mp | 3 mp | 3 mp | 3 mp | 3 mp |
+| 9 | helm upgrade | 6 mp | 6 mp | 4 mp | 4 mp | 3 mp | 3 mp |
+| 10 | rollout backend | 16 mp | 17 mp | 16 mp | 16 mp | 18 mp | 17 mp |
+| 11 | rollout frontend | 4 mp | 6 mp | 3 mp | 3 mp | 2 mp | 3 mp |
+| 12 | /version | 6 mp | 6 mp | 5 mp | 4 mp | 4 mp | 4 mp |
+| 13 | füstteszt | 9 mp | 8 mp | 5 mp | 4 mp | 3 mp | 3 mp |
+| | **összesen** | **121 mp** | **144 mp** | **86 mp** | **67 mp** | **75 mp** | **71 mp** |
 
 ¹ A `kezi-03`-ban a laptop promptja nem volt időbélyeges (a `PROMPT` a `script`
 előtt lett beállítva, így az új héj nem örökölte), ezért az 1. és a 2. lépés nem
@@ -57,11 +57,13 @@ két futtatásban a különbség egyetlen másodperc.
 
 ## A sorozat beállt — mit jelent ez a kiértékelésre
 
-121 / 144 / 86 / 67 / 75 mp. Az első három futtatás a tanulási görbe és a hideg
-réteg-gyorsítótár együttes hatását mutatja; a 4. és az 5. futtatás már egy szűk
-sávban van (67 és 75 mp), és a két érték közti eltérés is azonosítható tételekre
+121 / 144 / 86 / **67 / 75 / 71** mp. Az első három futtatás a tanulási görbe és
+a hideg réteg-gyorsítótár együttes hatását mutatja; a 4. futtatástól a sor egy
+67–75 mp-es sávban mozog, és a sávon belüli eltérés is azonosítható tételekre
 bontható: az 5. futtatásban az SSH-kapcsolódás 9 mp volt 4 helyett, a gördülő
-csere pedig 18 mp 16 helyett — mindkettő gépi ingadozás, nem az operátoré.
+csere pedig 18 mp 16 helyett — mindkettő gépi ingadozás, nem az operátoré. A
+gépelt lépések összege a három futtatásban 21 / 22 / 22 mp, a backend buildje
+mindháromszor 11 mp.
 
 Amit a 6.1-nek ki kell mondania, és amire a 6.4 kiértékelésének épülnie kell:
 
