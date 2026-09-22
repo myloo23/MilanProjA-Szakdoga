@@ -13,8 +13,9 @@ Adatsor: [`kezi-sorozat.csv`](kezi-sorozat.csv) · lépésenkénti bontás: [`le
 | **1.** | `meres/kezi-NN` | **érvényes, 121 mp, 13 beavatkozás** |
 | **2.** | `meres/kezi-03` | **érvényes, 144 mp, 13 beavatkozás** (a kezdő időbélyeg a `script`-fájl létrehozási idejéből) |
 | **3.** | `meres/kezi-04` | **érvényes, 86 mp, 13 beavatkozás**, eltérés nélkül |
-| **4.** | `meres/kezi-05` | előkészítve (ág és commit kész), futtatásra vár |
-| 5–9. | `meres/kezi-06` … `kezi-10` | hátravan |
+| **4.** | `meres/kezi-05` | **érvényes, 67 mp, 13 beavatkozás**, eltérés nélkül |
+| **5.** | `meres/kezi-06` | előkészítve (ág és commit kész), futtatásra vár |
+| 6–9. | `meres/kezi-07` … `kezi-10` | hátravan |
 
 Az ágnév számozása a `kezi-02`-vel elrontott sorozatból maradt így: a 2. érvényes
 futtatás ága a `kezi-03`. Az ág neve azonosító, nem sorszám; a CSV `futtatas`
