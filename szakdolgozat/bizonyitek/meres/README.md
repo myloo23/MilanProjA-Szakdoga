@@ -26,8 +26,38 @@ Adatsor: [`kezi-sorozat.csv`](kezi-sorozat.csv) · lépésenkénti bontás: [`le
 átlag 71,6 mp, medián 71 mp, minden futtatásban 13 emberi beavatkozás, az
 elfogadási ellenőrzés 10/10 sikeres. A kiértékelés a `lepesidok.md`-ben.
 
-Ami a 2.6-ból még hátravan: a hibainjektálásos helyreállítási mérés (a protokoll
-6. pontja, három futtatás).
+## A helyreállítási mérés — előkészítve, futtatásra vár
+
+Protokoll: [`../04-kezi-telepitesi-folyamat.md`](../04-kezi-telepitesi-folyamat.md)
+6. pont (V1–V6), három futtatás.
+
+**A három ág elő van készítve**, mindháromban ugyanaz a beinjektált hiba: az
+`/echo` érvényes JSON-kérésre 500-at ad, minden más viselkedés változatlan.
+A `/health` és a `/ready` érintetlen, tehát a pod elindul és készenlétbe kerül —
+a telepítés *sikeresnek látszik*, és a füstteszt harmadik ellenőrzése az, ami
+elbuktatja. Pontosan ezt kéri a protokoll: ha a pod összeomlana, a „mikor ment
+ki a hibás verzió" időpont értelmezhetetlen lenne.
+
+| Futtatás | Ág | Commit |
+|---|---|---|
+| H1 | `meres/hiba-01` | lásd a lentebbi parancsot |
+| H2 | `meres/hiba-02` | |
+| H3 | `meres/hiba-03` | |
+
+A commit-azonosítókat `git rev-parse --short meres/hiba-01` stb. adja meg.
+
+A `meres/hiba-*` névminta nincs a `ci.yml` figyelt ágai között, tehát ezekre sem
+indul futtató — ugyanaz a feltétel, mint a kézi sorozatban.
+
+Minden futtatás menete: a protokoll 5. pontjának 1–13. lépése (a 13. **bukni
+fog**, ez a V1), majd a V2–V6. A visszaállítás a `be36f74` verzióra tér vissza,
+mert a kézi sorozat utolsó futtatása ez volt, és a `helm rollback` az előző
+revízióra lép.
+
+Az időmérés és a rögzítés módja változatlan (`script`, időbélyeges prompt,
+`kezi-NN.txt` mintájára `hiba-NN.txt`). A mért időszakaszok: a 11. lépés vége
+(a hibás verzió él) → a 13. lépés bukása (észlelés) → a V6 vége (a szolgáltatás
+újra jó).
 
 A cél **tíz érvényes futtatás** (00-terv 7., 04-kezi 7.d). Az érvénytelen
 futtatások miatt az ágnevek elcsúsztak a sorszámoktól; a CSV `futtatas` oszlopa
