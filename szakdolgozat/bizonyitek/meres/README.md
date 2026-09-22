@@ -78,19 +78,32 @@ se máshol. A B ablakban a `git branch --show-current` a mérési ágat adja vis
 
 ## A mért futtatás indítása
 
+**A sorrend kötött, és nem cserélhető fel:** előbb a `script`, és csak utána a
+`TZ` meg a `PROMPT`. A `script` új héjat indít, amely a beállításokat nem
+örökli: ha a prompt a `script` *előtt* lesz időbélyeges, a rögzítésben a laptop
+lépései időbélyeg nélkül maradnak (ez buktatta meg a `kezi-03` időadatát).
+
+A B ablakban (L):
+
 ```bash
-export TZ=UTC                      # a CSV időbélyegei UTC-ben vannak
-PROMPT='[%D{%H:%M:%S}] '$PROMPT    # laptop (zsh)
-script -q ~/meres/kezi-NN.txt      # innentől minden rögzül
+script -q ~/meres/kezi-NN.txt
+export TZ=UTC
+PROMPT='[%D{%H:%M:%S}] '$PROMPT
 ```
+
+A harmadik parancs után megjelenő időbélyeges prompt az 1. lépés kezdete.
 
 A mérőgépen, az SSH-belépés (2. lépés) **után**, még a 3. lépés előtt:
 `PS1='[\D{%H:%M:%S}] '$PS1`. Ez a prompt beállítása, nem a listán szereplő
 lépés; a 3. lépés ideje az utána megjelenő promptól számít.
 
 Ezután a protokoll 5. pontjának 1–13. lépése, egyesével, előregépelés nélkül,
-`clear` nélkül. A végén `exit` (a `script` lezárása), majd a jegyzőkönyv
-másolása ide: `szakdolgozat/bizonyitek/meres/kezi-NN.txt`.
+`clear` nélkül. A parancsokat úgy kell beilleszteni, hogy **csak a parancs**
+kerüljön a sorba: a protokoll táblázatának „Mit várunk" oszlopa nem része a
+parancsnak (a `kezi-03` 12. lépésébe így került bele a várt kimenet szövege).
+
+A végén `exit` (a `script` lezárása), majd a jegyzőkönyv másolása ide:
+`szakdolgozat/bizonyitek/meres/kezi-NN.txt`.
 
 ## A futtatás után rögzítendő
 
