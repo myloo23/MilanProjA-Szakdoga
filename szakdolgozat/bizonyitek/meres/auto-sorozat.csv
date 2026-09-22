@@ -1,0 +1,11 @@
+futtatas,ag,commit,push_utc,pipeline_start_utc,deploy_start_utc,live_utc,accepted_utc,teljes_mp,telepitesi_szakasz_mp,beavatkozasok,elfogadas,megjegyzes
+1,release/meres,d63eb00,10:49:06,10:49:19,10:50:43,10:51:02,10:51:06,120,23,1,sikeres,
+2,release/meres,5550474,11:06:00,11:06:12,11:07:58,11:08:20,11:08:24,144,26,1,sikeres,"a sorozat leghosszabb buildje (106 mp); a telepitesi szakasz ettol fuggetlenul a sav kozepen"
+3,release/meres,9f4f6e2,11:12:27,11:12:40,11:14:05,11:14:25,11:14:29,122,24,1,sikeres,
+4,release/meres,206b3cd,11:15:58,11:16:08,11:17:47,11:18:06,11:18:10,132,23,1,sikeres,
+5,release/meres,815171d,11:22:10,11:22:21,11:23:49,11:24:09,11:24:12,122,23,1,sikeres,
+6,release/meres,ed6ef98,11:25:21,11:25:32,11:26:52,11:27:12,11:27:16,115,24,1,sikeres,"a sorozat legrovidebb futtatasa; a build 80 mp"
+7,release/meres,cc208d2,11:28:21,11:28:33,11:30:03,11:30:24,11:30:28,127,25,1,sikeres,
+8,release/meres,5c52e11,11:31:07,11:31:18,11:33:00,11:33:20,11:33:24,137,24,1,sikeres,
+9,release/meres,a876e07,11:35:48,11:35:59,11:37:37,11:37:56,11:38:00,132,23,1,sikeres,
+10,release/meres,e4da1d9,11:38:43,11:38:54,11:40:34,11:40:55,11:40:58,135,24,1,sikeres,

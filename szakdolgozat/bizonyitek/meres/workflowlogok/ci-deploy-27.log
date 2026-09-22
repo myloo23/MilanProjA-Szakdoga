@@ -1,0 +1,260 @@
+2026-09-22T11:32:49.5154264Z projecta-azure-runner(version:v0.2.12) received task 27 of job deploy, be triggered by event: push
+2026-09-22T11:32:49.5158960Z workflow prepared
+2026-09-22T11:32:49.5159345Z evaluating expression 'success()'
+2026-09-22T11:32:49.5159994Z expression 'success()' evaluated to 'true'
+2026-09-22T11:32:49.5160287Z 'runs-on' key not defined in Pipeline/build-test-push
+2026-09-22T11:32:49.5160391Z No steps found
+2026-09-22T11:32:49.5161156Z evaluating expression 'needs.build-test-push.outputs.ships == 'true''
+2026-09-22T11:32:49.5161727Z expression 'needs.build-test-push.outputs.ships == 'true'' evaluated to 'true'
+2026-09-22T11:32:49.5161976Z 🚀  Start image=docker.gitea.com/runner-images:ubuntu-latest
+2026-09-22T11:32:49.5242323Z   🐳  docker pull image=docker.gitea.com/runner-images:ubuntu-latest platform= username= forcePull=true
+2026-09-22T11:32:49.5242522Z   🐳  docker pull docker.gitea.com/runner-images:ubuntu-latest
+2026-09-22T11:32:49.5242889Z pulling image 'docker.gitea.com/runner-images:ubuntu-latest' ()
+2026-09-22T11:32:50.7297197Z Pulling from runner-images :: ubuntu-latest
+2026-09-22T11:32:52.4049067Z Digest: sha256:fd911d7417bfbf0f454530e447da95b58001e1df41bbc5e1a8dd35d432575aae :: 
+2026-09-22T11:32:52.4049728Z Status: Image is up to date for docker.gitea.com/runner-images:ubuntu-latest :: 
+2026-09-22T11:32:52.4411119Z   🐳  docker create image=docker.gitea.com/runner-images:ubuntu-latest platform= entrypoint=["/bin/sleep" "10800"] cmd=[] network="projecta-platform"
+2026-09-22T11:32:52.8804855Z Created container name=GITEA-ACTIONS-TASK-27_WORKFLOW-Pipeline_JOB-deploy id=a131f7552bff30b524d3dae55a2f20d4ee56b5f59b92b1c99a77c92904e45bbc from image docker.gitea.com/runner-images:ubuntu-latest (platform: )
+2026-09-22T11:32:52.8805758Z ENV ==> [RUNNER_TOOL_CACHE=/opt/hostedtoolcache RUNNER_OS=Linux RUNNER_ARCH=X64 RUNNER_TEMP=/tmp LANG=C.UTF-8]
+2026-09-22T11:32:52.8806185Z   🐳  docker run image=docker.gitea.com/runner-images:ubuntu-latest platform= entrypoint=["/bin/sleep" "10800"] cmd=[] network="projecta-platform"
+2026-09-22T11:32:52.8806624Z Starting container: a131f7552bff30b524d3dae55a2f20d4ee56b5f59b92b1c99a77c92904e45bbc
+2026-09-22T11:32:53.0656575Z Started container: a131f7552bff30b524d3dae55a2f20d4ee56b5f59b92b1c99a77c92904e45bbc
+2026-09-22T11:32:53.1634381Z Writing entry to tarball workflow/event.json len:4761
+2026-09-22T11:32:53.1634990Z Writing entry to tarball workflow/envs.txt len:0
+2026-09-22T11:32:53.1635216Z Extracting content to '/var/run/act/'
+2026-09-22T11:32:53.1920196Z   ☁  git clone 'https://github.com/actions/checkout' # ref=v4
+2026-09-22T11:32:53.1920587Z   cloning https://github.com/actions/checkout to /root/.cache/act/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab
+2026-09-22T11:32:53.8358458Z Unable to pull refs/heads/v4: non-fast-forward update
+2026-09-22T11:32:53.8358967Z Cloned https://github.com/actions/checkout to /root/.cache/act/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab
+2026-09-22T11:32:53.8631801Z Checked out v4
+2026-09-22T11:32:53.8715545Z   ☁  git clone 'https://github.com/actions/setup-python' # ref=v5
+2026-09-22T11:32:53.8715756Z   cloning https://github.com/actions/setup-python to /root/.cache/act/8dd8b1aead80a801f9b34ee6d45c001ae20a6c2abfe4c7037c4803578f162558
+2026-09-22T11:32:54.1923702Z Non-terminating error while running 'git clone': some refs were not updated
+2026-09-22T11:32:54.2181231Z evaluating expression ''
+2026-09-22T11:32:54.2183905Z expression '' evaluated to 'true'
+2026-09-22T11:32:54.2184285Z ⭐ Run Main Checkout repository
+2026-09-22T11:32:54.2184598Z Writing entry to tarball workflow/outputcmd.txt len:0
+2026-09-22T11:32:54.2185499Z Writing entry to tarball workflow/statecmd.txt len:0
+2026-09-22T11:32:54.2186066Z Writing entry to tarball workflow/pathcmd.txt len:0
+2026-09-22T11:32:54.2186346Z Writing entry to tarball workflow/envs.txt len:0
+2026-09-22T11:32:54.2186639Z Writing entry to tarball workflow/SUMMARY.md len:0
+2026-09-22T11:32:54.2186889Z Extracting content to '/var/run/act'
+2026-09-22T11:32:54.2291353Z expression '${{ github.repository }}' rewritten to 'format('{0}', github.repository)'
+2026-09-22T11:32:54.2291676Z evaluating expression 'format('{0}', github.repository)'
+2026-09-22T11:32:54.2292245Z expression 'format('{0}', github.repository)' evaluated to '%!t(string=milan/MilanProjA-Szakdoga)'
+2026-09-22T11:32:54.2292785Z expression '${{ github.token }}' rewritten to 'format('{0}', github.token)'
+2026-09-22T11:32:54.2292967Z evaluating expression 'format('{0}', github.token)'
+2026-09-22T11:32:54.2293318Z expression 'format('{0}', github.token)' evaluated to '%!t(string=***)'
+2026-09-22T11:32:54.2294006Z type=remote-action actionDir=/root/.cache/act/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab actionPath= workdir=/workspace/milan/MilanProjA-Szakdoga actionCacheDir=/root/.cache/act actionName=c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab containerActionDir=/var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab
+2026-09-22T11:32:54.2294345Z /var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab
+2026-09-22T11:32:54.2294732Z Removing /root/.cache/act/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/.gitignore before docker cp
+2026-09-22T11:32:54.2295605Z   🐳  docker cp src=/root/.cache/act/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/ dst=/var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/
+2026-09-22T11:32:54.2296371Z Writing tarball /tmp/act2751627694 from /root/.cache/act/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/
+2026-09-22T11:32:54.2296572Z Stripping prefix:/root/.cache/act/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/ src:/root/.cache/act/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/
+2026-09-22T11:32:54.3058462Z Extracting content from '/tmp/act2751627694' to '/var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/'
+2026-09-22T11:32:54.4737388Z executing remote job container: [node /var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/index.js]
+2026-09-22T11:32:54.4737909Z   🐳  docker exec cmd=[node /var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/index.js] user= workdir=
+2026-09-22T11:32:54.4738113Z Exec command '[node /var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/index.js]'
+2026-09-22T11:32:54.4738513Z Working directory '/workspace/milan/MilanProjA-Szakdoga'
+2026-09-22T11:32:54.6123771Z ::add-matcher::/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/problem-matcher.json
+2026-09-22T11:32:54.6124042Z ::add-matcher::/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/problem-matcher.json
+2026-09-22T11:32:54.6127976Z Syncing repository: milan/MilanProjA-Szakdoga
+2026-09-22T11:32:54.6132048Z ::group::Getting Git version info
+2026-09-22T11:32:54.6133123Z Working directory is '/workspace/milan/MilanProjA-Szakdoga'
+2026-09-22T11:32:54.6168725Z [command]/usr/bin/git version
+2026-09-22T11:32:54.6212113Z git version 2.55.0
+2026-09-22T11:32:54.6234028Z ::endgroup::
+2026-09-22T11:32:54.6285732Z Temporarily overriding HOME='/tmp/86b875f5-ad2e-4744-b544-10474302a427' before making global git config changes
+2026-09-22T11:32:54.6286937Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-22T11:32:54.6291425Z [command]/usr/bin/git config --global --add safe.directory /workspace/milan/MilanProjA-Szakdoga
+2026-09-22T11:32:54.6325878Z Deleting the contents of '/workspace/milan/MilanProjA-Szakdoga'
+2026-09-22T11:32:54.6329252Z ::group::Initializing the repository
+2026-09-22T11:32:54.6333040Z [command]/usr/bin/git init /workspace/milan/MilanProjA-Szakdoga
+2026-09-22T11:32:54.6375231Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-09-22T11:32:54.6375582Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-09-22T11:32:54.6375697Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-09-22T11:32:54.6375785Z hint: call:
+2026-09-22T11:32:54.6375864Z hint:
+2026-09-22T11:32:54.6375943Z hint: 	git config --global init.defaultBranch <name>
+2026-09-22T11:32:54.6376042Z hint:
+2026-09-22T11:32:54.6376114Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-09-22T11:32:54.6376384Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-09-22T11:32:54.6376473Z hint:
+2026-09-22T11:32:54.6376543Z hint: 	git branch -m <name>
+2026-09-22T11:32:54.6376627Z hint:
+2026-09-22T11:32:54.6376699Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-09-22T11:32:54.6379664Z Initialized empty Git repository in /workspace/milan/MilanProjA-Szakdoga/.git/
+2026-09-22T11:32:54.6392234Z [command]/usr/bin/git remote add origin http://gitea:3000/milan/MilanProjA-Szakdoga
+2026-09-22T11:32:54.6421144Z ::endgroup::
+2026-09-22T11:32:54.6421983Z ::group::Disabling automatic garbage collection
+2026-09-22T11:32:54.6427530Z [command]/usr/bin/git config --local gc.auto 0
+2026-09-22T11:32:54.6454162Z ::endgroup::
+2026-09-22T11:32:54.6454511Z ::group::Setting up auth
+2026-09-22T11:32:54.6460852Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-22T11:32:54.6490356Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-22T11:32:54.6728636Z [command]/usr/bin/git config --local --name-only --get-regexp http\.http\:\/\/gitea\:3000\/\.extraheader
+2026-09-22T11:32:54.6756859Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.http\:\/\/gitea\:3000\/\.extraheader' && git config --local --unset-all 'http.http://gitea:3000/.extraheader' || :"
+2026-09-22T11:32:54.6974406Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-22T11:32:54.7004488Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-22T11:32:54.7203956Z [command]/usr/bin/git config --local http.http://gitea:3000/.extraheader AUTHORIZATION: basic ***
+2026-09-22T11:32:54.7234602Z ::endgroup::
+2026-09-22T11:32:54.7234986Z ::group::Fetching the repository
+2026-09-22T11:32:54.7243510Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +5c52e115197a1cfc254663d453ff010d1e0df834:refs/remotes/origin/release/meres
+2026-09-22T11:32:54.9736054Z From http://gitea:3000/milan/MilanProjA-Szakdoga
+2026-09-22T11:32:54.9736575Z  * [new ref]         5c52e115197a1cfc254663d453ff010d1e0df834 -> origin/release/meres
+2026-09-22T11:32:54.9737501Z ::endgroup::
+2026-09-22T11:32:54.9737839Z ::group::Determining the checkout info
+2026-09-22T11:32:54.9738093Z ::endgroup::
+2026-09-22T11:32:54.9738250Z [command]/usr/bin/git sparse-checkout disable
+2026-09-22T11:32:54.9771740Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-09-22T11:32:54.9795158Z ::group::Checking out the ref
+2026-09-22T11:32:54.9798609Z [command]/usr/bin/git checkout --progress --force -B release/meres refs/remotes/origin/release/meres
+2026-09-22T11:32:55.0349538Z Switched to a new branch 'release/meres'
+2026-09-22T11:32:55.0352439Z branch 'release/meres' set up to track 'origin/release/meres'.
+2026-09-22T11:32:55.0359739Z ::endgroup::
+2026-09-22T11:32:55.0398245Z [command]/usr/bin/git log -1 --format=%H
+2026-09-22T11:32:55.0419384Z 5c52e115197a1cfc254663d453ff010d1e0df834
+2026-09-22T11:32:55.0435054Z ::remove-matcher owner=checkout-git::
+2026-09-22T11:32:55.5030001Z ::group::Installed versions
+2026-09-22T11:32:55.5078313Z (node:141) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-22T11:32:55.5078670Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-22T11:32:55.5080356Z Successfully set up CPython (3.12.14)
+2026-09-22T11:32:55.5082274Z ::endgroup::
+2026-09-22T11:32:55.5346518Z [command]/opt/hostedtoolcache/Python/3.12.14/x64/bin/pip cache dir
+2026-09-22T11:32:55.7200630Z /root/.cache/pip
+2026-09-22T11:32:55.7980854Z Cache Size: ~3 MB (2634947 B)
+2026-09-22T11:32:55.8002197Z [command]/usr/bin/tar -xf /tmp/ad053add-9a69-4d24-b6d6-dbd3ae15953b/cache.tzst -P -C /workspace/milan/MilanProjA-Szakdoga --use-compress-program unzstd
+2026-09-22T11:32:55.8226696Z Cache restored successfully
+2026-09-22T11:32:55.8234083Z Cache restored from key: setup-python-linux-x64-24.04-ubuntu-python-3.12.14-pip-94c521edf4586f05b2ab831524b95038a274dd1a61270bc00fbccaa711815f02
+2026-09-22T11:32:55.8235703Z ##[add-matcher]/run/act/actions/8dd8b1aead80a801f9b34ee6d45c001ae20a6c2abfe4c7037c4803578f162558/.github/python.json
+2026-09-22T11:32:56.2638046Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (26.1.2)
+2026-09-22T11:32:56.4300500Z Collecting pip
+2026-09-22T11:32:56.4320741Z   Using cached pip-26.2.1-py3-none-any.whl.metadata (4.6 kB)
+2026-09-22T11:32:56.4368944Z Using cached pip-26.2.1-py3-none-any.whl (1.8 MB)
+2026-09-22T11:32:56.5004565Z Installing collected packages: pip
+2026-09-22T11:32:56.5005864Z   Attempting uninstall: pip
+2026-09-22T11:32:56.5026570Z     Found existing installation: pip 26.1.2
+2026-09-22T11:32:56.5338928Z     Uninstalling pip-26.1.2:
+2026-09-22T11:32:56.5398319Z       Successfully uninstalled pip-26.1.2
+2026-09-22T11:32:57.4129353Z Successfully installed pip-26.2.1
+2026-09-22T11:32:57.4132443Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-09-22T11:32:57.7747760Z Requirement already satisfied: ansible-core==2.21.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-ansible.txt (line 7)) (2.21.2)
+2026-09-22T11:32:57.7753575Z Requirement already satisfied: certifi==2026.7.22 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-ansible.txt (line 11)) (2026.7.22)
+2026-09-22T11:32:57.7758997Z Requirement already satisfied: cffi==2.1.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-ansible.txt (line 15)) (2.1.0)
+2026-09-22T11:32:57.7763889Z Requirement already satisfied: charset-normalizer==3.4.9 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-ansible.txt (line 117)) (3.4.9)
+2026-09-22T11:32:57.7768677Z Requirement already satisfied: cryptography==50.0.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-ansible.txt (line 212)) (50.0.0)
+2026-09-22T11:32:57.7773432Z Requirement already satisfied: idna==3.18 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-ansible.txt (line 260)) (3.18)
+2026-09-22T11:32:57.7777936Z Requirement already satisfied: jinja2==3.1.6 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-ansible.txt (line 264)) (3.1.6)
+2026-09-22T11:32:57.7782732Z Requirement already satisfied: markupsafe==3.0.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-ansible.txt (line 268)) (3.0.3)
+2026-09-22T11:32:57.7787298Z Requirement already satisfied: packaging==26.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-ansible.txt (line 359)) (26.2)
+2026-09-22T11:32:57.7791703Z Requirement already satisfied: pycparser==3.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-ansible.txt (line 363)) (3.0)
+2026-09-22T11:32:57.7796313Z Requirement already satisfied: pyyaml==6.0.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-ansible.txt (line 367)) (6.0.3)
+2026-09-22T11:32:57.7800790Z Requirement already satisfied: requests==2.33.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-ansible.txt (line 442)) (2.33.0)
+2026-09-22T11:32:57.7805302Z Requirement already satisfied: resolvelib==1.2.1 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-ansible.txt (line 446)) (1.2.1)
+2026-09-22T11:32:57.7809884Z Requirement already satisfied: urllib3==2.7.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-ansible.txt (line 450)) (2.7.0)
+2026-09-22T11:32:57.8434623Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-09-22T11:32:58.0151294Z Docker host reachable at 172.18.0.1
+2026-09-22T11:33:00.7286831Z currently deployed: cc208d2
+2026-09-22T11:33:00.8503536Z MERES deploy-start 2026-09-22T11:33:00Z
+2026-09-22T11:33:19.9187677Z Release "projecta" has been upgraded. Happy Helming!
+2026-09-22T11:33:19.9190637Z NAME: projecta
+2026-09-22T11:33:19.9190827Z LAST DEPLOYED: Tue Sep 22 11:33:01 2026
+2026-09-22T11:33:19.9191015Z NAMESPACE: default
+2026-09-22T11:33:19.9191160Z STATUS: deployed
+2026-09-22T11:33:19.9191297Z REVISION: 29
+2026-09-22T11:33:19.9191438Z TEST SUITE: None
+2026-09-22T11:33:20.5241276Z MERES live 2026-09-22T11:33:20Z
+2026-09-22T11:33:21.2391082Z 
+2026-09-22T11:33:21.2391783Z PLAY [Verify a deployed Project A] *********************************************
+2026-09-22T11:33:21.2737596Z 
+2026-09-22T11:33:21.2738041Z TASK [Run the post-deploy checks] **********************************************
+2026-09-22T11:33:21.2738245Z included: deploy_app for docker-host
+2026-09-22T11:33:21.7557750Z 
+2026-09-22T11:33:21.7558249Z TASK [deploy_app : Wait for the application to report healthy] *****************
+2026-09-22T11:33:21.7558444Z ok: [docker-host]
+2026-09-22T11:33:22.1301559Z 
+2026-09-22T11:33:22.1302072Z TASK [deploy_app : Check readiness] ********************************************
+2026-09-22T11:33:22.1302617Z ok: [docker-host]
+2026-09-22T11:33:22.4855808Z 
+2026-09-22T11:33:22.4856294Z TASK [deploy_app : Ask the running application which commit it was built from] ***
+2026-09-22T11:33:22.4856550Z ok: [docker-host]
+2026-09-22T11:33:22.5190528Z 
+2026-09-22T11:33:22.5191262Z TASK [deploy_app : Assert the deployed version is the one this deploy meant to ship] ***
+2026-09-22T11:33:22.5191518Z ok: [docker-host]
+2026-09-22T11:33:22.8841420Z 
+2026-09-22T11:33:22.8842018Z TASK [deploy_app : Echo a valid payload] ***************************************
+2026-09-22T11:33:22.8842258Z ok: [docker-host]
+2026-09-22T11:33:22.9148152Z 
+2026-09-22T11:33:22.9148682Z TASK [deploy_app : Assert the payload came back intact] ************************
+2026-09-22T11:33:22.9148900Z ok: [docker-host]
+2026-09-22T11:33:23.2939579Z 
+2026-09-22T11:33:23.2940180Z TASK [deploy_app : Assert a wrong Content-Type still returns 400, not 500] *****
+2026-09-22T11:33:23.2940458Z ok: [docker-host]
+2026-09-22T11:33:23.6541934Z 
+2026-09-22T11:33:23.6542459Z TASK [deploy_app : Assert deeply nested JSON never returns 5xx] ****************
+2026-09-22T11:33:23.6542679Z ok: [docker-host]
+2026-09-22T11:33:24.0099703Z 
+2026-09-22T11:33:24.0100366Z TASK [deploy_app : Assert an oversized body is refused with 413, not absorbed] ***
+2026-09-22T11:33:24.0100667Z ok: [docker-host]
+2026-09-22T11:33:24.0100879Z 
+2026-09-22T11:33:24.0101031Z PLAY RECAP *********************************************************************
+2026-09-22T11:33:24.0101200Z docker-host                : ok=10   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-09-22T11:33:24.0101362Z 
+2026-09-22T11:33:24.0710745Z MERES accepted 2026-09-22T11:33:24Z
+2026-09-22T11:33:24.2262077Z Deployed 5c52e11 (previous revision was cc208d2)
+2026-09-22T11:33:24.2264714Z Roll back by hand on the host with: helm rollback projecta
+2026-09-22T11:33:24.2550359Z evaluating expression 'success()'
+2026-09-22T11:33:24.2550763Z expression 'success()' evaluated to 'true'
+2026-09-22T11:33:24.2550901Z ⭐ Run Post Set up Python
+2026-09-22T11:33:24.2551066Z Writing entry to tarball workflow/outputcmd.txt len:0
+2026-09-22T11:33:24.2551203Z Writing entry to tarball workflow/statecmd.txt len:0
+2026-09-22T11:33:24.2551310Z Writing entry to tarball workflow/pathcmd.txt len:0
+2026-09-22T11:33:24.2551473Z Writing entry to tarball workflow/envs.txt len:0
+2026-09-22T11:33:24.2551561Z Writing entry to tarball workflow/SUMMARY.md len:0
+2026-09-22T11:33:24.2551655Z Extracting content to '/var/run/act'
+2026-09-22T11:33:24.2571011Z run post step for 'Set up Python'
+2026-09-22T11:33:24.2571631Z executing remote job container: [node /var/run/act/actions/8dd8b1aead80a801f9b34ee6d45c001ae20a6c2abfe4c7037c4803578f162558/dist/cache-save/index.js]
+2026-09-22T11:33:24.2783034Z   🐳  docker exec cmd=[node /var/run/act/actions/8dd8b1aead80a801f9b34ee6d45c001ae20a6c2abfe4c7037c4803578f162558/dist/cache-save/index.js] user= workdir=
+2026-09-22T11:33:24.2783280Z Exec command '[node /var/run/act/actions/8dd8b1aead80a801f9b34ee6d45c001ae20a6c2abfe4c7037c4803578f162558/dist/cache-save/index.js]'
+2026-09-22T11:33:24.2783750Z Working directory '/workspace/milan/MilanProjA-Szakdoga'
+2026-09-22T11:33:24.4628968Z (node:491) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-22T11:33:24.4630397Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-22T11:33:24.4815455Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /workspace/milan/MilanProjA-Szakdoga --files-from manifest.txt --use-compress-program zstdmt
+2026-09-22T11:33:24.5426850Z Cache Size: ~3 MB (2634960 B)
+2026-09-22T11:33:24.5508842Z Cache saved successfully
+2026-09-22T11:33:24.5515350Z Cache saved with the key: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.14-pip-94c521edf4586f05b2ab831524b95038a274dd1a61270bc00fbccaa711815f02
+2026-09-22T11:33:24.5578114Z   ✅  Success - Post Set up Python
+2026-09-22T11:33:24.5904537Z evaluating expression 'always()'
+2026-09-22T11:33:24.5905039Z expression 'always()' evaluated to 'true'
+2026-09-22T11:33:24.5905170Z ⭐ Run Post Checkout repository
+2026-09-22T11:33:24.5905462Z Writing entry to tarball workflow/outputcmd.txt len:0
+2026-09-22T11:33:24.5905615Z Writing entry to tarball workflow/statecmd.txt len:0
+2026-09-22T11:33:24.5905730Z Writing entry to tarball workflow/pathcmd.txt len:0
+2026-09-22T11:33:24.5905818Z Writing entry to tarball workflow/envs.txt len:0
+2026-09-22T11:33:24.5905897Z Writing entry to tarball workflow/SUMMARY.md len:0
+2026-09-22T11:33:24.5907616Z Extracting content to '/var/run/act'
+2026-09-22T11:33:24.5950548Z run post step for 'Checkout repository'
+2026-09-22T11:33:24.5951215Z executing remote job container: [node /var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/index.js]
+2026-09-22T11:33:24.6162297Z   🐳  docker exec cmd=[node /var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/index.js] user= workdir=
+2026-09-22T11:33:24.6162642Z Exec command '[node /var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/index.js]'
+2026-09-22T11:33:24.6163043Z Working directory '/workspace/milan/MilanProjA-Szakdoga'
+2026-09-22T11:33:24.7416560Z [command]/usr/bin/git version
+2026-09-22T11:33:24.7455262Z git version 2.55.0
+2026-09-22T11:33:24.7480146Z ***
+2026-09-22T11:33:24.7495542Z Temporarily overriding HOME='/tmp/abee25c3-1c8d-4297-b1cd-f9b56c3e23ca' before making global git config changes
+2026-09-22T11:33:24.7496096Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-22T11:33:24.7501025Z [command]/usr/bin/git config --global --add safe.directory /workspace/milan/MilanProjA-Szakdoga
+2026-09-22T11:33:24.7535835Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-22T11:33:24.7569364Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-22T11:33:24.7779079Z [command]/usr/bin/git config --local --name-only --get-regexp http\.http\:\/\/gitea\:3000\/\.extraheader
+2026-09-22T11:33:24.7800438Z http.http://gitea:3000/.extraheader
+2026-09-22T11:33:24.7811776Z [command]/usr/bin/git config --local --unset-all http.http://gitea:3000/.extraheader
+2026-09-22T11:33:24.7841967Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.http\:\/\/gitea\:3000\/\.extraheader' && git config --local --unset-all 'http.http://gitea:3000/.extraheader' || :"
+2026-09-22T11:33:24.8039629Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-22T11:33:24.8066364Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-22T11:33:24.8338206Z   ✅  Success - Post Checkout repository
+2026-09-22T11:33:24.8409793Z Cleaning up container for job deploy
+2026-09-22T11:33:25.4270675Z Removed container: a131f7552bff30b524d3dae55a2f20d4ee56b5f59b92b1c99a77c92904e45bbc
+2026-09-22T11:33:25.4280919Z   🐳  docker volume rm GITEA-ACTIONS-TASK-27_WORKFLOW-Pipeline_JOB-deploy
+2026-09-22T11:33:25.4395300Z   🐳  docker volume rm GITEA-ACTIONS-TASK-27_WORKFLOW-Pipeline_JOB-deploy-env
+2026-09-22T11:33:25.5014031Z 🏁  Job succeeded
