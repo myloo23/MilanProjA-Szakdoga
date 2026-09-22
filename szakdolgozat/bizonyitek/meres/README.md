@@ -1,7 +1,7 @@
 # A kézi mérési sorozat — állapot
 
 Protokoll: [`../04-kezi-telepitesi-folyamat.md`](../04-kezi-telepitesi-folyamat.md) 5. pont.
-Adatsor: [`kezi-sorozat.csv`](kezi-sorozat.csv).
+Adatsor: [`kezi-sorozat.csv`](kezi-sorozat.csv) · lépésenkénti bontás: [`lepesidok.md`](lepesidok.md).
 
 ## Hol tartunk (2026-09-22)
 
@@ -11,8 +11,9 @@ Adatsor: [`kezi-sorozat.csv`](kezi-sorozat.csv).
 | — | `meres/kezi-01` | módszertani próba, eldobva (`clear`, előregépelés, ismételt lépések) |
 | — | `meres/kezi-02` | **érvénytelen**: az 1. és 3. lépés a `kezi-01` ágat használta, így a már futó verzió települt újra; az elfogadási ellenőrzés emiatt önmagát igazolta vissza |
 | **1.** | `meres/kezi-NN` | **érvényes, 121 mp, 13 beavatkozás** |
-| **2.** | `meres/kezi-03` | előkészítve (ág és commit kész), futtatásra vár |
-| 3–9. | `meres/kezi-04` … `kezi-10` | hátravan |
+| **2.** | `meres/kezi-03` | **érvényes, 144 mp, 13 beavatkozás** (a kezdő időbélyeg a `script`-fájl létrehozási idejéből) |
+| **3.** | `meres/kezi-04` | előkészítve (ág és commit kész), futtatásra vár |
+| 4–9. | `meres/kezi-05` … `kezi-10` | hátravan |
 
 Az ágnév számozása a `kezi-02`-vel elrontott sorozatból maradt így: a 2. érvényes
 futtatás ága a `kezi-03`. Az ág neve azonosító, nem sorszám; a CSV `futtatas`
