@@ -211,6 +211,41 @@ mindkét sorozatban ugyanaz az út fut le: telepítés → ellenőrzés → viss
 | V5 | G | `curl -s http://localhost/api/version` | az **előző** SHA |
 | V6 | G | `~/projecta/scripts/smoke.sh http://localhost/api` | hibátlan |
 
+**V1 emberi elbírálás, nem gépi kapu.** A `scripts/smoke.sh` minden ellenőrzés
+HTTP-státuszát kiírja, de nem állít semmit, és a kilépési kódja mindig 0 (`set -u`,
+nincs `set -e`, a `check()` nem hasonlít össze). A bukást tehát az operátor
+állapítja meg a kimenetből — ezért önálló lépés, és ezért számít beavatkozásnak.
+Az automatizált oldalon ugyanezeket az ellenőrzéseket a
+`ansible/roles/deploy_app/tasks/smoke.yml` végzi, amelynek minden feladata
+elbuktatja a playt: ugyanaz az ellenőrzéskészlet, de gépi döntéssel. Ez a
+különbség a 6.4-be tartozik, nem korrekcióra szoruló mérési hiba.
+
+**A hiba hatóköre mérve van.** Az injektálás nem érintheti a füstteszt többi
+ellenőrzését, különben a 6.5 „minimálisan invazív hiba" állítása nem áll meg. Az
+első változat ezt megsértette: a `request.get_json(silent=True)` a mélyen
+egymásba ágyazott törzsön `RecursionError`-t dob, amit a `silent=True` nem nyel
+el (csak a `BadRequest`-et), így a „mélyen ágyazott JSON → sosem 5xx" ellenőrzés
+is 500-at adott volna. A javítás egy `try/except RecursionError` az injektálás
+körül; a hibás verzió ezután pontosan egy ellenőrzésen bukik
+(`POST /echo · valid JSON` → 500), a többi hat változatlan. A mérés a
+`meres/README.md` helyreállítási szakaszában.
+
+**Amit futtatásonként rögzíteni kell** (`meres/hiba-sorozat.csv`): a futtatás
+sorszáma, az ág, a 4. lépésben kiírt SHA, a 11. lépés utáni prompt időbélyege
+(a hibás verzió él), a 13. lépés utáni prompt időbélyege (észlelés), a V6 utáni
+prompt időbélyege (helyreállt), a két szakasz és a teljes idő másodpercben, a
+beavatkozások száma, a V5 által visszaadott SHA, és minden eltérés
+megjegyzésben.
+
+**Eldöntendő, mielőtt a szám a 6.4-be kerül: beavatkozás-e a V1?** A kézi
+sorozatban a 13 a *kiadott parancsok* száma, vagyis a kimenet elolvasása minden
+lépésnél bele van értve a lépésbe. Ezt az elszámolást követve a helyreállítás
+13 + V2–V6 = **18** beavatkozás, és a V1 időmérési mérföldkő, nem külön tétel.
+Az 1. pont definíciója viszont („kiad egy parancsot, **vagy** elolvas egy
+kimenetet és dönt róla") önálló beavatkozássá teszi — így **19**. A kettő közül
+bármelyik védhető, de a két sorozatban ugyanazt kell alkalmazni, és a 6.1-ben ki
+kell mondani, melyiket. A CSV-be a választott elszámolás szerinti szám kerül.
+
 **Korlát, amit a 6.5-ben ki kell mondani:** itt az észlelés azonnali, mert az
 operátor közvetlenül a telepítés után ellenőriz. A valóságban a hibás verzió
 észrevétele órákig is tarthat. A mérés tehát **nem** az észlelést hasonlítja

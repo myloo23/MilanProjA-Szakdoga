@@ -1,0 +1,305 @@
+[1m[7m%[27m[1m[0m                                                                                                                      ]7;file://Takacss-MacBook-Pro.local/Users/takacsmilan/Documents/Szakdolgozat/MilanProjA-Szakdoga[0m[27m[24m[Jtakacsmilan@Takacss-MacBook-Pro MilanProjA-Szakdoga % [K[?2004h[7mexport TZ=UTC[27m[13D[27me[27mx[27mp[27mo[27mr[27mt[27m [27mT[27mZ[27m=[27mU[27mT[27mC[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                      ]7;file://Takacss-MacBook-Pro.local/Users/takacsmilan/Documents/Szakdolgozat/MilanProjA-Szakdoga[0m[27m[24m[Jtakacsmilan@Takacss-MacBook-Pro MilanProjA-Szakdoga % [K[?2004h[7mPROMPT='[%D{%H:%M:%S}] '$PROMPT[27m[31D[27mP[27mR[27mO[27mM[27mP[27mT[27m=[27m'[27m[[27m%[27mD[27m{[27m%[27mH[27m:[27m%[27mM[27m:[27m%[27mS[27m}[27m][27m [27m'[27m$[27mP[27mR[27mO[27mM[27mP[27mT[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                      ]7;file://Takacss-MacBook-Pro.local/Users/takacsmilan/Documents/Szakdolgozat/MilanProjA-Szakdoga[0m[27m[24m[J[09:41:51] takacsmilan@Takacss-MacBook-Pro MilanProjA-Szakdoga % [K[?2004h[7mgit push azure meres/hiba-02[27m[28D[27mg[27mi[27mt[27m [27mp[27mu[27ms[27mh[27m [27ma[27mz[27mu[27mr[27me[27m [27mm[27me[27mr[27me[27ms[27m/[27mh[27mi[27mb[27ma[27m-[27m0[27m2[?2004l
+Enumerating objects: 7, done.
+Counting objects:  14% (1/7)Counting objects:  28% (2/7)Counting objects:  42% (3/7)Counting objects:  57% (4/7)Counting objects:  71% (5/7)Counting objects:  85% (6/7)Counting objects: 100% (7/7)Counting objects: 100% (7/7), done.
+Delta compression using up to 12 threads
+Compressing objects:  25% (1/4)Compressing objects:  50% (2/4)Compressing objects:  75% (3/4)Compressing objects: 100% (4/4)Compressing objects: 100% (4/4), done.
+Writing objects:  25% (1/4)Writing objects:  50% (2/4)Writing objects:  75% (3/4)Writing objects: 100% (4/4)Writing objects: 100% (4/4), 998 bytes | 998.00 KiB/s, done.
+Total 4 (delta 3), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: 
+remote: Create a new pull request for 'meres/hiba-02':[K
+remote:   http://localhost:3000/milan/MilanProjA-Szakdoga/pulls/new/meres/hiba-02[K
+remote: 
+To http://localhost:3000/milan/MilanProjA-Szakdoga.git
+ * [new branch]      meres/hiba-02 -> meres/hiba-02
+[1m[7m%[27m[1m[0m                                                                                                                      ]7;file://Takacss-MacBook-Pro.local/Users/takacsmilan/Documents/Szakdolgozat/MilanProjA-Szakdoga[0m[27m[24m[J[09:41:54] takacsmilan@Takacss-MacBook-Pro MilanProjA-Szakdoga % [K[?2004h[7mssh azureuser@$(terraform -chdir=terraform output -ra[7mw[7m public_ip)[27m[K[A[53C[27ms[27ms[27mh[27m [27ma[27mz[27mu[27mr[27me[27mu[27ms[27me[27mr[27m@[27m$[27m([27mt[27me[27mr[27mr[27ma[27mf[27mo[27mr[27mm[27m [27m-[27mc[27mh[27md[27mi[27mr[27m=[27mt[27me[27mr[27mr[27ma[27mf[27mo[27mr[27mm[27m [27mo[27mu[27mt[27mp[27mu[27mt[27m [27m-[27mr[27maw[27m [27mp[27mu[27mb[27ml[27mi[27mc[27m_[27mi[27mp[27m)[?2004l
+Welcome to Ubuntu 24.04.4 LTS (GNU/Linux 6.17.0-1022-azure x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Tue Sep 22 09:41:59 UTC 2026
+
+  System load:  0.15               Processes:             201
+  Usage of /:   18.5% of 45.45GB   Users logged in:       1
+  Memory usage: 20%                IPv4 address for eth0: 10.42.1.4
+  Swap usage:   0%
+
+
+1 device has a firmware upgrade available.
+Run `fwupdmgr get-upgrades` for more information.
+
+
+Expanded Security Maintenance for Applications is not enabled.
+
+15 updates can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+1 additional security update can be applied with ESM Apps.
+Learn more about enabling ESM Apps service at https://ubuntu.com/esm
+
+
+*** System restart required ***
+
+1 device has a firmware upgrade available.
+Run `fwupdmgr get-upgrades` for more information.
+
+Last login: Tue Sep 22 09:37:47 2026 from 5.187.172.249
+[?2004h[09:41:59] ]0;azureuser@szakdoga2-vm: ~[01;32mazureuser@szakdoga2-vm[00m:[01;34m~[00m$ [7mPS1='[\D{%H:%M:%S}] '$PS1[27mPS1='[\D{%H:%M:%S}] '$PS1
+[?2004l[?2004h[09:42:01] [09:42:01] ]0;azureuser@szakdoga2-vm: ~[01;32mazureuser@szakdoga2-vm[00m:[01;34m~[00m$ [7mcd ~/projecta && git fetch --all && git checkout meres/hiba-02 && git [27m[7mp[27m[7mull[27m[A[09:42:01] [09:42:01] ]0;azureuser@szakdoga2-vm: ~[01;32mazureuser@szakdoga2-vm[00m:[01;34m~[00m$ cd ~/projecta && git fetch --all && git checkout meres/hiba-02 && git pull
+[?2004lremote: Enumerating objects: 7, done.[K
+remote: Counting objects:  14% (1/7)[Kremote: Counting objects:  28% (2/7)[Kremote: Counting objects:  42% (3/7)[Kremote: Counting objects:  57% (4/7)[Kremote: Counting objects:  71% (5/7)[Kremote: Counting objects:  85% (6/7)[Kremote: Counting objects: 100% (7/7)[Kremote: Counting objects: 100% (7/7), done.[K
+remote: Compressing objects:  25% (1/4)[Kremote: Compressing objects:  50% (2/4)[Kremote: Compressing objects:  75% (3/4)[Kremote: Compressing objects: 100% (4/4)[Kremote: Compressing objects: 100% (4/4), done.[K
+remote: Total 4 (delta 3), reused 0 (delta 0), pack-reused 0 (from 0)[K
+Unpacking objects:  25% (1/4)Unpacking objects:  50% (2/4)Unpacking objects:  75% (3/4)Unpacking objects: 100% (4/4)Unpacking objects: 100% (4/4), 978 bytes | 978.00 KiB/s, done.
+From http://localhost:3000/milan/MilanProjA-Szakdoga
+ * [new branch]      meres/hiba-02 -> origin/meres/hiba-02
+branch 'meres/hiba-02' set up to track 'origin/meres/hiba-02'.
+Switched to a new branch 'meres/hiba-02'
+Already up to date.
+[?2004h[09:42:04] [09:42:04] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ [7mSHA=$(git rev-parse --short HEAD); echo $SHA[27mSHA=$(git rev-parse --short HEAD); echo $SHA
+[?2004lce56582
+[?2004h[09:42:10] [09:42:10] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ [7mdocker build -t localhost:5001/projecta-flask:$SHA --build-ar[27m[7mg[27m[7m GIT_SHA=$SHA .[27m[A[09:42:10] [09:42:10] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ docker build -t localhost:5001/projecta-flask:$SHA --build-arg GIT_SHA=$SHA .
+[?2004lDEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon   59.9kB
+Step 1/20 : FROM python:3.12-slim@sha256:57cd7c3a7a273101a6485ba99423ee568157882804b1124b4dd04266317710de AS builder
+ ---> 57cd7c3a7a27
+Step 2/20 : ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ ---> Using cache
+ ---> 89ad60642f36
+Step 3/20 : WORKDIR /app
+ ---> Using cache
+ ---> 7044a46f6d2f
+Step 4/20 : COPY requirements.txt .
+ ---> Using cache
+ ---> 7e87b1b805f4
+Step 5/20 : RUN pip install --no-cache-dir --require-hashes --prefix=/install -r requirements.txt
+ ---> Using cache
+ ---> 4092349b2d21
+Step 6/20 : FROM python:3.12-slim@sha256:57cd7c3a7a273101a6485ba99423ee568157882804b1124b4dd04266317710de AS runtime
+ ---> 57cd7c3a7a27
+Step 7/20 : ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ ---> Using cache
+ ---> 89ad60642f36
+Step 8/20 : ENV PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus-multiproc
+ ---> Using cache
+ ---> ecebab830baf
+Step 9/20 : RUN useradd --create-home --uid 10001 appuser     && mkdir -p /tmp/prometheus-multiproc     && chown appuser:appuser /tmp/prometheus-multiproc
+ ---> Using cache
+ ---> 2810ea49ef0c
+Step 10/20 : WORKDIR /app
+ ---> Using cache
+ ---> a40003706684
+Step 11/20 : COPY --from=builder /install /usr/local
+ ---> Using cache
+ ---> 75c1badc76d2
+Step 12/20 : COPY app/ ./app/
+ ---> 8e7510a2b81b
+Step 13/20 : COPY gunicorn.conf.py .
+ ---> 31db3fa5225b
+Step 14/20 : ARG GIT_SHA=dev
+ ---> Running in 53b9d9a83724
+ ---> Removed intermediate container 53b9d9a83724
+ ---> 3d4ef7f4b10f
+Step 15/20 : ENV APP_VERSION=${GIT_SHA}
+ ---> Running in 981fc3c0568f
+ ---> Removed intermediate container 981fc3c0568f
+ ---> fd814938025a
+Step 16/20 : LABEL org.opencontainers.image.revision=${GIT_SHA}       org.opencontainers.image.source="https://github.com/myloo23/MilanProjA-Szakdoga"       org.opencontainers.image.title="ProjectA backend"
+ ---> Running in 19ae83786ec6
+ ---> Removed intermediate container 19ae83786ec6
+ ---> 863b6c84978d
+Step 17/20 : USER appuser
+ ---> Running in b1d749ba3918
+ ---> Removed intermediate container b1d749ba3918
+ ---> 6a1440ee25a5
+Step 18/20 : EXPOSE 8000
+ ---> Running in c755b5d5c8ef
+ ---> Removed intermediate container c755b5d5c8ef
+ ---> 6a988f2d6822
+Step 19/20 : HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3   CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=2)"
+ ---> Running in d19e1101b5a3
+ ---> Removed intermediate container d19e1101b5a3
+ ---> 6ae467d56b9f
+Step 20/20 : CMD ["gunicorn", "--config", "gunicorn.conf.py", "app.app:app"]
+ ---> Running in 55b1324a55d5
+ ---> Removed intermediate container 55b1324a55d5
+ ---> bf6e485d0709
+Successfully built bf6e485d0709
+Successfully tagged localhost:5001/projecta-flask:ce56582
+[?2004h[09:42:22] [09:42:22] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ [7mdocker build -t localhost:5001/projecta-frontend:$SHA fronten[27m[7md[27m[7m/[27m[A[09:42:22] [09:42:22] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ docker build -t localhost:5001/projecta-frontend:$SHA frontend/
+[?2004lDEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  135.7kB
+Step 1/10 : FROM node:22-alpine AS build
+ ---> b6f26b36c8ff
+Step 2/10 : WORKDIR /app
+ ---> Using cache
+ ---> f1d0136d15fd
+Step 3/10 : COPY package*.json ./
+ ---> Using cache
+ ---> 2e8b0e5542dd
+Step 4/10 : RUN npm ci
+ ---> Using cache
+ ---> 39a7b42b580c
+Step 5/10 : COPY . .
+ ---> Using cache
+ ---> c8c2d47b9c6e
+Step 6/10 : RUN npm run build
+ ---> Using cache
+ ---> 53591adacb2a
+Step 7/10 : FROM nginxinc/nginx-unprivileged:1.27-alpine
+ ---> 65e3e85dbaed
+Step 8/10 : COPY --from=build /app/dist /usr/share/nginx/html
+ ---> Using cache
+ ---> 5379c03f60d4
+Step 9/10 : COPY nginx.conf /etc/nginx/conf.d/default.conf
+ ---> Using cache
+ ---> bc9e9377f0f5
+Step 10/10 : EXPOSE 8080
+ ---> Using cache
+ ---> 6d18a75748c2
+Successfully built 6d18a75748c2
+Successfully tagged localhost:5001/projecta-frontend:ce56582
+[?2004h[09:42:24] [09:42:24] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ [7mdocker push localhost:5001/projecta-flask:$SHA[27mdocker push localhost:5001/projecta-flask:$SHA
+[?2004lThe push refers to repository [localhost:5001/projecta-flask]
+
+[1A[2Ke767b65d30c3: Layer already exists [1B
+[1A[2K33e49aaaee6d: Layer already exists [1B
+[1A[2K48347b15c85f: Layer already exists [1B
+[1A[2Kf0cc7867897c: Pushed [1B
+[1A[2K062e450697fa: Layer already exists [1B
+[1A[2Kfd079632edc0: Layer already exists [1B
+[1A[2K40998e1e9387: Layer already exists [1B
+[1A[2K7eb0f868bc53: Pushed [1B
+[1A[2K98db2485a0d0: Layer already exists [1Bce56582: digest: sha256:bf6e485d0709712f678bb0036dbd5e853fadad187061e4b03534561cb269cd5b size: 2278
+[?2004h[09:42:27] [09:42:27] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ [7mdocker push localhost:5001/projecta-frontend:$SHA[27mdocker push localhost:5001/projecta-frontend:$SHA
+[?2004lThe push refers to repository [localhost:5001/projecta-frontend]
+
+[1A[2Kf18232174bc9: Layer already exists [1B
+[1A[2Kf79056b7935e: Layer already exists [1B
+[1A[2K576fe098e846: Layer already exists [1B
+[1A[2K400c1de759f4: Layer already exists [1B
+[1A[2K945f5aaec3d7: Layer already exists [1B
+[1A[2Kd855179730c1: Layer already exists [1B
+[1A[2K3107f6ea7866: Layer already exists [1B
+[1A[2K513bae533eb2: Layer already exists [1B
+[1A[2K048c29a61317: Layer already exists [1B
+[1A[2K8f7ead5f2dc0: Layer already exists [1B
+[1A[2Kb16687ec2b7b: Layer already exists [1Bce56582: digest: sha256:6d18a75748c2b8da74d8c275578f9b187c057ca604fbf3b598c0cce5fcd239d0 size: 2699
+[?2004h[09:42:29] [09:42:29] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ [7mhelm upgrade --install projecta ~/projecta/chart --set image.[27m[7mt[27m[7mag=$SHA[27m[A[09:42:29] [09:42:29] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ helm upgrade --install projecta ~/projecta/chart --set image.tag=$SHA
+[?2004lRelease "projecta" has been upgraded. Happy Helming!
+NAME: projecta
+LAST DEPLOYED: Tue Sep 22 09:42:32 2026
+NAMESPACE: default
+STATUS: deployed
+REVISION: 17
+TEST SUITE: None
+[?2004h[09:42:32] [09:42:32] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ [7mkubectl rollout status deploy/backend --timeout=5m[27mkubectl rollout status deploy/backend --timeout=5m
+[?2004lWaiting for deployment "backend" rollout to finish: 1 out of 2 new replicas have been updated...
+kubectl rollout status deploy/frontend --timeout=5m
+Waiting for deployment "backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "backend" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "backend" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "backend" rollout to finish: 1 old replicas are pending termination...
+deployment "backend" successfully rolled out
+[?2004h[09:42:50] [09:42:50] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ kubectl rollout status deploy/frontend --timeout=5m
+[?2004ldeployment "frontend" successfully rolled out
+[?2004h[09:42:50] [09:42:50] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ [7mcurl -s http://localhost/api/version[27mcurl -s http://localhost/api/version
+[?2004l{"version":"ce56582"}
+[?2004h[09:42:59] [09:42:59] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ [7m~/projecta/scripts/smoke.sh http://localhost/api[27m~/projecta/scripts/smoke.sh http://localhost/api
+[?2004l
+[1mSmoke test · http://localhost/api[0m
+
+[1mGET /health[0m
+{"status":"UP"}
+[2m  → HTTP 200[0m
+
+[1mGET /ready[0m
+{"status":"READY"}
+[2m  → HTTP 200[0m
+
+[1mPOST /echo · valid JSON[0m
+{"error":"internal error"}
+[2m  → HTTP 500[0m
+
+[1mPOST /echo · no Content-Type[0m
+{"error":"Invalid JSON payload"}
+[2m  → HTTP 400[0m
+
+[1mPOST /echo · malformed JSON[0m
+{"error":"Invalid JSON payload"}
+[2m  → HTTP 400[0m
+
+[1mPOST /echo · nested JSON → 200 or 400, never 5xx[0m
+{"error":"Invalid JSON payload"}
+[2m  → HTTP 400[0m
+
+[1mPOST /echo · oversized → 413[0m
+{"error":"Request body too large"}
+[2m  → HTTP 413[0m
+
+[?2004h[09:43:07] [09:43:07] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ 
+[?2004l[?2004h[09:43:07] [09:43:07] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ [7mhelm rollback projecta[27mhelm rollback projecta
+[?2004lRollback was a success! Happy Helming!
+[?2004h[09:43:18] [09:43:18] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ [7mkubectl rollout status deploy/backend --timeout=5m[27mkubectl rollout status deploy/backend --timeout=5m
+[?2004lWaiting for deployment "backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "backend" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "backend" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "backend" rollout to finish: 1 old replicas are pending termination...
+deployment "backend" successfully rolled out
+[?2004h[09:43:35] [09:43:35] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ [7mkubectl rollout status deploy/frontend --timeout=5m[27mkubectl rollout status deploy/frontend --timeout=5m
+[?2004ldeployment "frontend" successfully rolled out
+[?2004h[09:43:37] [09:43:37] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ [7mcurl -s http://localhost/api/version[27mcurl -s http://localhost/api/version
+[?2004l{"version":"be36f74"}
+[?2004h[09:43:41] [09:43:41] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ [7m~/projecta/scripts/smoke.sh http://localhost/api[27m~/projecta/scripts/smoke.sh http://localhost/api
+[?2004l
+[1mSmoke test · http://localhost/api[0m
+
+[1mGET /health[0m
+{"status":"UP"}
+[2m  → HTTP 200[0m
+
+[1mGET /ready[0m
+{"status":"READY"}
+[2m  → HTTP 200[0m
+
+[1mPOST /echo · valid JSON[0m
+{"received":{"hi":"there"}}
+[2m  → HTTP 200[0m
+
+[1mPOST /echo · no Content-Type[0m
+{"error":"Invalid JSON payload"}
+[2m  → HTTP 400[0m
+
+[1mPOST /echo · malformed JSON[0m
+{"error":"Invalid JSON payload"}
+[2m  → HTTP 400[0m
+
+[1mPOST /echo · nested JSON → 200 or 400, never 5xx[0m
+{"error":"Invalid JSON payload"}
+[2m  → HTTP 400[0m
+
+[1mPOST /echo · oversized → 413[0m
+{"error":"Request body too large"}
+[2m  → HTTP 413[0m
+
+[?2004h[09:43:46] [09:43:46] ]0;azureuser@szakdoga2-vm: ~/projecta[01;32mazureuser@szakdoga2-vm[00m:[01;34m~/projecta[00m$ exit
+[?2004llogout
+Connection to 4.165.139.1 closed.
+[1m[7m%[27m[1m[0m                                                                                                                      ]7;file://Takacss-MacBook-Pro.local/Users/takacsmilan/Documents/Szakdolgozat/MilanProjA-Szakdoga[0m[27m[24m[J[09:43:49] takacsmilan@Takacss-MacBook-Pro MilanProjA-Szakdoga % [K[?2004heexit[?2004l
+
+Saving session...
+...copying shared history...
+...saving history...truncating history files...
+...completed.

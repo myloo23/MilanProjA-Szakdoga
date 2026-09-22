@@ -26,46 +26,97 @@ Adatsor: [`kezi-sorozat.csv`](kezi-sorozat.csv) · lépésenkénti bontás: [`le
 átlag 71,6 mp, medián 71 mp, minden futtatásban 13 emberi beavatkozás, az
 elfogadási ellenőrzés 10/10 sikeres. A kiértékelés a `lepesidok.md`-ben.
 
-## A helyreállítási mérés — előkészítve, futtatásra vár
+Az ágnevek nem esnek egybe a sorszámokkal: a `kezi-02` és a `kezi-06` érvénytelen
+lett, a számozás pedig nem lett újrakezdve. **Az ág neve azonosító, nem sorszám;
+a CSV `futtatas` oszlopa a mérvadó.** Ezt a 6.1-ben egy mondattal ki kell mondani.
+
+## A helyreállítási mérés — **kész** (2026-09-22)
 
 Protokoll: [`../04-kezi-telepitesi-folyamat.md`](../04-kezi-telepitesi-folyamat.md)
-6. pont (V1–V6), három futtatás.
+6. pont (V1–V6). **Három futtatás**, nem tíz: a 00-terv 7. pontja a futtatásszámot
+a telepítési sorozatra írja elő, a hibainjektálásos mérésre nem.
 
-**A három ág elő van készítve**, mindháromban ugyanaz a beinjektált hiba: az
-`/echo` érvényes JSON-kérésre 500-at ad, minden más viselkedés változatlan.
-A `/health` és a `/ready` érintetlen, tehát a pod elindul és készenlétbe kerül —
-a telepítés *sikeresnek látszik*, és a füstteszt harmadik ellenőrzése az, ami
-elbuktatja. Pontosan ezt kéri a protokoll: ha a pod összeomlana, a „mikor ment
-ki a hibás verzió" időpont értelmezhetetlen lenne.
+**A beinjektált hiba.** Mindhárom ágon ugyanaz: az `/echo` végpont érvényes
+JSON-kérésre 500-at ad. A `/health` és a `/ready` érintetlen, tehát a pod elindul
+és készenlétbe kerül — a telepítés *sikeresnek látszik*, és a füstteszt harmadik
+ellenőrzése (`POST /echo · valid JSON`) az, ami elbuktatja. Pontosan ezt kéri a
+protokoll: ha a pod összeomlana, a „mikor ment ki a hibás verzió" időpont
+értelmezhetetlen lenne.
 
-| Futtatás | Ág | Commit |
+| Futtatás | Ág | Commit | Jelölősor | Állapot |
+|---|---|---|---|---|
+| H1 | `meres/hiba-01` | `ae354e8` | `101` | **érvényes**, 17/34/50 mp |
+| H2 | `meres/hiba-02` | `ce56582` | `102` | **érvényes**, 17/39/56 mp¹ |
+| H3 | `meres/hiba-03` | `84c46ae` | `103` | **érvényes**, 20/37/57 mp |
+| — | `meres/hiba-04` | `138c660` | `104` | tartalék pótág, felhasználatlan |
+
+**Mind a három futtatás megvan.** Észlelés 16–20 mp (medián 17), helyreállítás
+34–39 mp (medián 37), a teljes kiesés 50–57 mp (medián 56), mindhárom futtatásban
+18 emberi beavatkozás, a V5 mindháromszor a `be36f74`-et adta, a V6 füstteszt
+mindháromszor tiszta. A kiértékelés: [`hiba-lepesidok.md`](hiba-lepesidok.md).
+
+¹ A 11. lépés a 10. futása alatt lett előregépelve, így a két lépés prompt-ideje
+összecsúszott (együtt 18 mp), és lépésenkénti bontásuk nem nyerhető ki. **A mért
+helyreállítási ablakot ez nem érinti:** az előregépelés a telepítési szakaszban
+történt, a „hibás verzió él" mérföldkő (a 11. lépés befejeződése, 09:42:50) valós
+időpont, és onnantól minden lépés szabályosan, a prompt bevárásával ment. A
+futtatás ezért érvényes, a lépésbontásban pedig lábjegyzetet kap — ugyanúgy,
+ahogy a `kezi-03` az 1–2. lépés hiányzó időbélyege miatt. A 13. lépés után egy
+üres Enter is rögzült; nem parancs, tehát nem beavatkozás.
+
+A commitokat `git rev-parse --short meres/hiba-01` stb. is megadja; a 4. lépés
+kimenete ezekkel kell egyezzen.
+
+**A hiba hatóköre mérve van, nem feltételezve.** Az injektálás első változata a
+füstteszt *két* ellenőrzését törte el: a `request.get_json(silent=True)` a mélyen
+egymásba ágyazott törzsön `RecursionError`-t dob, azt pedig a `silent=True` nem
+nyeli el (csak a `BadRequest`-et), tehát a „mélyen ágyazott JSON → sosem 5xx"
+ellenőrzés is 500-at kapott volna 400 helyett. Ez a Flask 3.1.3 /
+Werkzeug alatt reprodukálva lett a füstteszt öt törzsével; a javítás egy
+`try/except RecursionError` az injektálás köré (`app/app.py`). A javítás után a
+mért viselkedés:
+
+| Füstteszt-ellenőrzés | Hibás verzió | Ép verzió |
 |---|---|---|
-| H1 | `meres/hiba-01` | lásd a lentebbi parancsot |
-| H2 | `meres/hiba-02` | |
-| H3 | `meres/hiba-03` | |
+| `GET /health` | 200 | 200 |
+| `GET /ready` | 200 | 200 |
+| `POST /echo · valid JSON` | **500** | 200 |
+| `POST /echo · no Content-Type` | 400 | 400 |
+| `POST /echo · malformed JSON` | 400 | 400 |
+| `POST /echo · nested JSON` | 400 | 400 |
+| `POST /echo · oversized` | 413 | 413 |
 
-A commit-azonosítókat `git rev-parse --short meres/hiba-01` stb. adja meg.
+Ez azért nem kozmetika: a 6.5-ben azt állítjuk, hogy a beinjektált hiba
+minimálisan invazív, és a mérés a *javítást* méri, nem a hiba természetét. Két
+eltört ellenőrzés mellett ez az állítás nem állna meg.
 
-A `meres/hiba-*` névminta nincs a `ci.yml` figyelt ágai között, tehát ezekre sem
-indul futtató — ugyanaz a feltétel, mint a kézi sorozatban.
+**A `scripts/smoke.sh` kilépési kódja mindig 0.** A szkript kiírja az egyes
+ellenőrzések HTTP-státuszát, de nem állít semmit (`set -u`, nincs `set -e`, a
+`check()` nem hasonlít össze). A 13. lépés tehát **nem gépi kapu, hanem emberi
+elbírálás** — pontosan ezért van V1 külön lépésként a protokollban, és ezért
+számít beavatkozásnak. A 6.1-ben ki kell mondani. Az automatizált oldalon ez nem
+így lesz: ott a `ansible/roles/deploy_app/tasks/smoke.yml` fut, amelynek minden
+feladata elbuktatja a playt — a két oldal ugyanazt ellenőrzi, de csak az
+automatizált oldalon gépi a döntés. Ez a különbség önmagában is eredmény, nem
+mérési hiba.
 
-Minden futtatás menete: a protokoll 5. pontjának 1–13. lépése (a 13. **bukni
-fog**, ez a V1), majd a V2–V6. A visszaállítás a `be36f74` verzióra tér vissza,
-mert a kézi sorozat utolsó futtatása ez volt, és a `helm rollback` az előző
-revízióra lép.
+**A `meres/hiba-*` névminta nincs a `ci.yml` figyelt ágai között**, tehát ezekre
+sem indul futtató — ugyanaz a feltétel, mint a kézi sorozatban.
 
-Az időmérés és a rögzítés módja változatlan (`script`, időbélyeges prompt,
-`kezi-NN.txt` mintájára `hiba-NN.txt`). A mért időszakaszok: a 11. lépés vége
-(a hibás verzió él) → a 13. lépés bukása (észlelés) → a V6 vége (a szolgáltatás
-újra jó).
+**Minden futtatás menete:** a protokoll 5. pontjának 1–13. lépése (a 13. **bukni
+fog**, ennek elbírálása a V1), majd a V2–V6. A három futtatás teljes, parancsra
+bontott lépéssora: [`hiba-lepessor.md`](hiba-lepessor.md) — **abból kell másolni**,
+nem a terminál kimenetéből. Az előkészítés, az időmérés és a
+rögzítés módja a lenti szakasz szerint, `kezi-NN` helyett `hiba-NN` névvel.
 
-A cél **tíz érvényes futtatás** (00-terv 7., 04-kezi 7.d). Az érvénytelen
-futtatások miatt az ágnevek elcsúsztak a sorszámoktól; a CSV `futtatas` oszlopa
-a mérvadó.
+**A visszaállítás célja mindhárom futtatásban a `be36f74`** (a kézi sorozat
+10. futtatása, ez fut most a fürtön). A `helm rollback` az előző revízióra lép,
+és a visszaállítás maga is új revíziót hoz létre, tehát a H2 és a H3 előtti
+állapot is a `be36f74` — az V5 mindhárom futtatásban ezt a SHA-t kell adja.
 
-Az ágnév számozása a `kezi-02`-vel elrontott sorozatból maradt így: a 2. érvényes
-futtatás ága a `kezi-03`. Az ág neve azonosító, nem sorszám; a CSV `futtatas`
-oszlopa a mérvadó. Ezt a 6.1-ben egy mondattal ki kell mondani.
+**A mért időszakaszok:** a 11. lépés vége (a hibás verzió él) → a 13. lépés
+bukása (észlelés) → a V6 vége (a szolgáltatás újra jó). Az adatsor:
+[`hiba-sorozat.csv`](hiba-sorozat.csv), a jegyzőkönyvek `hiba-NN.txt` néven.
 
 ## Az előkészítés (nem mért, a rögzítés előtt)
 

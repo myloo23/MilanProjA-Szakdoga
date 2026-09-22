@@ -1,0 +1,4 @@
+futtatas,ag,commit,hibas_el_utc,eszleles_utc,helyreallt_utc,eszlelesi_mp,helyreallitasi_mp,teljes_mp,beavatkozasok,v5_sha,elfogadas,megjegyzes
+1,meres/hiba-01,ae354e8,09:38:46,09:39:02,09:39:36,16,34,50,18,be36f74,sikeres,"elteres nelkul; a fusztteszt pontosan egy ellenorzesen bukott (valid JSON 500), a tobbi hat a vart statusz; a telepites 1-13. lepese 86 mp; a V1 nincs kulon beavatkozaskent szamolva"
+2,meres/hiba-02,ce56582,09:42:50,09:43:07,09:43:46,17,39,56,18,be36f74,sikeres,"a 11. lepes elore lett gepelve a 10. futasa alatt, igy a ket lepes ideje osszecsuszott (egyutt 18 mp); ez a telepitesi szakaszban van, a mert helyreallitasi ablakot nem erinti; a 13. lepes utan egy ures Enter (nem parancs, nem beavatkozas); a telepites 1-13. lepese 76 mp"
+3,meres/hiba-03,84c46ae,09:47:48,09:48:08,09:48:45,20,37,57,18,be36f74,sikeres,"elteres nelkul; a 13. lepes 12 mp (a sorozat leghosszabb fusztteszt-lepese), a V2 rollback 6 mp; a telepites 1-13. lepese 79 mp"
