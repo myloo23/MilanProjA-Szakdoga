@@ -59,8 +59,20 @@ jobs:
     # re-deriving it. One definition of "this ref ships", two consumers.
     outputs:
       ships: ${{ steps.ref_gate.outputs.ships }}
+      # The tag every downstream consumer uses. Published from the same step as
+      # `ships` for the same reason: one definition, several consumers.
+      sha_short: ${{ steps.ref_gate.outputs.sha_short }}
 
     steps:
+      - name: Mark the start of the run
+        # The measurement's machine-readable clock. Gitea timestamps every step
+        # anyway, but those live in the web UI and have to be read by hand; a
+        # line in the log can be grepped out of a saved run and pasted into the
+        # CSV. Same reasoning as the timestamped prompt on the manual side: a
+        # measurement that depends on someone reading a clock is not a
+        # measurement.
+        run: echo "MERES pipeline-start $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
       - name: Checkout repository
         timeout-minutes: 3
         uses: actions/checkout@v4
@@ -91,15 +103,27 @@ jobs:
         # ever sees it, so a branch named with shell metacharacters would run as
         # code here. Branch names come from whoever can push — treat them as
         # input, not as trusted values.
+        #
+        # This step also publishes the image tag, which is the **short** SHA
+        # and not `github.sha`. The measurement is why. The manual series tags
+        # with `git rev-parse --short HEAD` and checks acceptance by comparing
+        # /version against that string; a pipeline tagging with the full 40
+        # characters would put two tag shapes in the registry for the same
+        # artifact and two spellings of the same version in the acceptance
+        # check. Derived once, here, so the image tag, the GIT_SHA build
+        # argument, the Helm value and the assertion cannot disagree.
         env:
           REF: ${{ github.ref }}
+          SHA: ${{ github.sha }}
         run: |
           case "$REF" in
             refs/heads/main|refs/heads/release/*) ships=true ;;
             *)                                    ships=false ;;
           esac
+          sha_short=$(printf '%s' "$SHA" | cut -c1-7)
           echo "ships=$ships" >> "$GITHUB_OUTPUT"
-          echo "$REF -> ships=$ships"
+          echo "sha_short=$sha_short" >> "$GITHUB_OUTPUT"
+          echo "$REF -> ships=$ships, tag=$sha_short"
 
       - name: Set up Python
         timeout-minutes: 5
@@ -275,10 +299,37 @@ jobs:
         # lock. Ten minutes is generous against an observed ~90s warm, which is
         # the point — a bound that fires on a slow day trains you to raise it.
         timeout-minutes: 10
+        # GIT_SHA is not decoration: the Dockerfile turns it into APP_VERSION,
+        # which is what /version reports, which is what the deploy's acceptance
+        # check compares against. Without it the image defaults to "dev" and
+        # the automated side cannot satisfy the criterion the manual side does.
+        # It sits after the dependency install in the Dockerfile, so a value
+        # that changes every commit invalidates no expensive layer.
         run: |
           docker build \
-            --tag localhost:5001/projecta-flask:${{ github.sha }} \
+            --build-arg GIT_SHA=${{ steps.ref_gate.outputs.sha_short }} \
+            --tag localhost:5001/projecta-flask:${{ steps.ref_gate.outputs.sha_short }} \
             .
+
+      - name: Build the frontend image
+        # The chart deploys two images from one commit under one tag
+        # (chart/values.yaml), so a pipeline that builds only the backend
+        # publishes half a release: `helm upgrade --set image.tag` would point
+        # the frontend Deployment at a tag that was never pushed, and the
+        # rollout would sit in ImagePullBackOff until the wait timed out.
+        #
+        # Neither linted nor scanned, unlike the backend image, and that is a
+        # deliberate omission rather than an oversight: hadolint and Trivy on a
+        # Dockerfile that has never been through either are new gates, and a
+        # new gate introduced days before a measurement series can go red on a
+        # base-image advisory that has nothing to do with the change under
+        # test. That burns measurement runs. Tracked for the hardening pass —
+        # the argument goes in the same commit as the gate, per ADR-0005.
+        timeout-minutes: 10
+        run: |
+          docker build \
+            --tag localhost:5001/projecta-frontend:${{ steps.ref_gate.outputs.sha_short }} \
+            frontend/
 
       - name: Run container
         timeout-minutes: 2
@@ -286,7 +337,7 @@ jobs:
           docker run -d \
             --name flask-test \
             --network projecta-platform \
-            localhost:5001/projecta-flask:${{ github.sha }}
+            localhost:5001/projecta-flask:${{ steps.ref_gate.outputs.sha_short }}
 
       - name: Wait for the container to report healthy
         # The loop already bounds itself at 30 iterations. This is not that
@@ -356,7 +407,7 @@ jobs:
             --exit-code 1 \
             --severity HIGH,CRITICAL \
             --ignore-unfixed \
-            localhost:5001/projecta-flask:${{ github.sha }}
+            localhost:5001/projecta-flask:${{ steps.ref_gate.outputs.sha_short }}
 
       - name: Cleanup container
         timeout-minutes: 2
@@ -372,7 +423,8 @@ jobs:
         # artifacts only, and nothing is deployable before review.
         if: steps.ref_gate.outputs.ships == 'true'
         run: |
-          docker push localhost:5001/projecta-flask:${{ github.sha }}
+          docker push localhost:5001/projecta-flask:${{ steps.ref_gate.outputs.sha_short }}
+          docker push localhost:5001/projecta-frontend:${{ steps.ref_gate.outputs.sha_short }}
 
       - name: Reclaim the build's disk
         timeout-minutes: 3
@@ -408,17 +460,41 @@ jobs:
         # by a human who knows whose machine it is.
         if: always()
         run: |
-          docker rmi localhost:5001/projecta-flask:${{ github.sha }} || true
+          docker rmi localhost:5001/projecta-flask:${{ steps.ref_gate.outputs.sha_short }} || true
+          docker rmi localhost:5001/projecta-frontend:${{ steps.ref_gate.outputs.sha_short }} || true
 
   deploy:
     # Runs only after the artifact exists, and only for refs that published one.
-    # release/* deploys as well as main: release/sprint2 is the sprint
-    # checkpoint and the branch that gets demonstrated, so waiting until the
-    # end-of-sprint merge to find out whether it deploys would put the first
-    # real CD run at the most expensive possible moment.
+    # release/* deploys as well as main: release/meres is the branch the
+    # automated measurement series is pushed to, and release/sprintN is the
+    # branch that gets demonstrated.
     needs: build-test-push
     if: needs.build-test-push.outputs.ships == 'true'
     runs-on: ubuntu-latest
+
+    # **This job deploys to the k3s cluster with Helm, not to the Docker host
+    # with Ansible.** ADR-0009 made that decision on 2026-09-21 and this file
+    # followed it here. The previous version of this job ran
+    # `ansible-playbook playbooks/deploy.yml`, which reconciles a container on
+    # the host's Docker daemon — a different target from the one the manual
+    # measurement series deploys to. Left as it was, the two halves of the
+    # measurement would have deployed to two different systems, and §6.4's
+    # claim that the only difference between them is the branch name would
+    # have been false.
+    #
+    # The Ansible deploy path is not deleted. It is the previous generation of
+    # the chain and the thesis describes both; `playbooks/deploy.yml` still
+    # works by hand.
+    #
+    # Literal values only in this block, no expressions. Step-level `env:` with
+    # `${{ }}` is proven on this runner — the ref gate has used it in
+    # production since the beginning — whereas job-level env with expressions
+    # is not something ADR-0005 tested, and the helper script defaults to these
+    # same values anyway, so nothing breaks if the runner ignores them.
+    env:
+      RELEASE: projecta
+      HELM_IMAGE: alpine/helm:3.22.0
+      KUBECONFIG_HOST_PATH: /etc/rancher/k3s/k3s.yaml
 
     steps:
       - name: Checkout repository
@@ -433,44 +509,166 @@ jobs:
 
       - name: Install Ansible
         timeout-minutes: 5
+        # Still here, and the collection install that used to follow it is not.
+        # Verification is `ansible.builtin.uri` and `ansible.builtin.assert` —
+        # both built in — so this job needs ansible-core and nothing from
+        # Galaxy. community.docker is only used by the deploy path this job no
+        # longer takes, and by ansible-lint in the build job, which installs it
+        # for itself.
         run: |
           python -m pip install --upgrade pip
           python -m pip install --require-hashes -r ansible/requirements-ansible.txt
 
-      - name: Install Ansible collections
-        timeout-minutes: 5
-        run: ansible-galaxy collection install -r ansible/requirements.yml
+      - name: Resolve the address of the Docker host
+        # The verification below reaches the cluster's ingress on the host's
+        # port 80. From this job container that is not localhost: the container
+        # sits on the projecta-platform bridge, and the host is its default
+        # gateway. Read from the routing table rather than hard-coded, because
+        # the bridge subnet is Docker's to choose and a literal here would be a
+        # value that works until Docker renumbers the network.
+        #
+        # If this ever comes back empty, the fallback is a fixed address: add
+        # `--add-host=host.docker.internal:host-gateway` to container.options
+        # in platform/config.yaml, restart the runner — no re-registration —
+        # and use that name. Kept as a note rather than as the default, because
+        # it edits the platform for something the routing table already knows.
+        run: |
+          set -eu
+          addr=$(ip -4 route show default | awk '{print $3; exit}')
+          test -n "$addr" || { echo "no default route: cannot reach the Docker host"; exit 1; }
+          echo "DOCKER_HOST_ADDR=$addr" >> "$GITHUB_ENV"
+          echo "Docker host reachable at $addr"
 
-      - name: Verify the deploy target
-        timeout-minutes: 2
-        working-directory: ansible
-        # Same skeleton check that runs on a laptop. It costs a second and it
-        # separates "the runner's environment is wrong" from "the deploy is
-        # wrong" — a distinction that is expensive to make from a half-finished
-        # deploy's logs.
-        run: ansible-playbook playbooks/ping.yml
+      - name: Record the release that is running now
+        timeout-minutes: 3
+        # Three things at once, and each of them earns the step.
+        #
+        # It is the skeleton check the Ansible ping play used to be: if helm
+        # cannot read this release, the kubeconfig, the API server or the
+        # release itself is wrong, and that is a different failure from a
+        # deploy that went bad — a distinction which is expensive to make from
+        # a half-finished deploy's logs.
+        #
+        # It records the tag to roll back *to*, so the rollback below can
+        # assert that the cluster really did return to the previous version
+        # instead of assuming it. Same idea as the Ansible role's "record what
+        # is running now, so a failure can name its own rollback".
+        #
+        # `helm get values` returns only what was passed with --set, which is
+        # exactly image.tag. An empty answer means the release was installed
+        # without a tag, and deploying on top of that would leave nothing
+        # identifiable to go back to.
+        run: |
+          set -eu
+          prev=$(scripts/helm-on-host.sh get values "$RELEASE" --output json \
+            | python -c 'import json,sys; print((json.load(sys.stdin) or {}).get("image", {}).get("tag", ""))')
+          test -n "$prev" || {
+            echo "release '$RELEASE' has no image.tag value — nothing to roll back to"
+            exit 1
+          }
+          echo "PREV_TAG=$prev" >> "$GITHUB_ENV"
+          echo "currently deployed: $prev"
 
       - name: Deploy the artifact this pipeline built
-        # Bounded above the smoke test's own retry budget, not below it. The
-        # role retries the smoke check and is allowed to spend that time
-        # failing honestly; this catches a play that stops making progress at
-        # all — an unreachable daemon, a registry pull that never returns.
+        # Bounded above helm's own --timeout, not below it: helm is allowed to
+        # spend five minutes failing honestly, and this catches a step that
+        # stops making progress at all — a registry pull that never returns, a
+        # wedged daemon.
         timeout-minutes: 10
-        working-directory: ansible
-        # No build step here, deliberately. This deploys ${{ github.sha }} — the
-        # exact image the job above tested, scanned and pushed. Rebuilding would
-        # produce a different artifact than the one that passed the gates, which
-        # is the guarantee the whole pipeline exists to provide.
+        env:
+          TAG: ${{ needs.build-test-push.outputs.sha_short }}
+        # No build here, deliberately: this deploys the images the job above
+        # built, tested, scanned and pushed under this exact tag. Rebuilding
+        # would ship a different artifact than the one that passed the gates.
         #
-        # smoke_vantage=network because this job runs in a container on
-        # projecta-platform: localhost here is the job container, not the Docker
-        # host, so the smoke test must reach the app by container name.
+        # `--wait` is what replaces steps 10 and 11 of the manual protocol —
+        # the two `kubectl rollout status` commands, one per Deployment. It is
+        # the same kind of answer, a readiness signal rather than a timer, as
+        # ADR-0003 requires; the difference is that the operator pays for one
+        # command per component and the pipeline pays for one flag. That
+        # difference is a finding for §6.4, not a shortcut.
+        #
+        # Not `--atomic`. Helm's own automatic rollback would fire on its own
+        # verdict and leave nothing to measure: the failure this project cares
+        # about is the one helm cannot see, where the pods come up healthy and
+        # the application is still broken. The rollback stays an explicit,
+        # separately timed step below.
+        #
+        # The marker file is written *before* the upgrade, not after. A helm
+        # upgrade that fails part-way has already touched the release, so it is
+        # exactly the case the rollback exists for.
         run: |
-          ansible-playbook playbooks/deploy.yml \
-            -e app_version=${{ github.sha }} \
-            -e deploy_app_smoke_vantage=network
+          set -eu
+          touch /tmp/deploy-attempted
+          echo "MERES deploy-start $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          scripts/helm-on-host.sh upgrade --install "$RELEASE" /chart \
+            --set image.tag="$TAG" \
+            --wait --timeout 5m
+          echo "MERES live $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Verify the deployed release
+        timeout-minutes: 5
+        env:
+          TAG: ${{ needs.build-test-push.outputs.sha_short }}
+        # The gate. Same checks as scripts/smoke.sh and the same ones the
+        # operator reads by eye in step 13 of the manual protocol — but here
+        # every one of them fails the play, and therefore the job. That
+        # asymmetry is deliberate and it is a result: scripts/smoke.sh has no
+        # `set -e` and its check() asserts nothing, so on the manual side the
+        # verdict is a human reading output (step V1 of the recovery protocol).
+        # Both sides check the same things; only one side decides mechanically.
+        #
+        # Through the ingress, so the frontend's nginx and Traefik are part of
+        # what is verified — the same path the manual acceptance check takes.
+        run: |
+          set -eu
+          cd ansible
+          ansible-playbook playbooks/verify.yml \
+            -e app_version="$TAG" \
+            -e deploy_app_smoke_vantage=ingress \
+            -e deploy_app_ingress_host="$DOCKER_HOST_ADDR" \
+          || { echo "MERES detect $(date -u +%Y-%m-%dT%H:%M:%SZ)"; exit 1; }
+          echo "MERES accepted $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Roll back to the previous revision
+        if: failure()
+        timeout-minutes: 10
+        # The automated counterpart of V2–V6. `helm rollback` with no revision
+        # goes to the previous one, which is the release this job recorded
+        # before touching anything — so the target is an identifier, not
+        # something reconstructed under pressure (ADR-0009).
+        #
+        # Verified, not assumed: the same acceptance check runs again against
+        # the previous tag, so "rolled back" means the old version is answering
+        # on the ingress, not merely that helm printed a success line.
+        #
+        # This step does not rescue the job. A successful rollback is not a
+        # successful deploy: the job stays red, which is what stops a broken
+        # commit from being mistaken for a shipped one.
+        #
+        # The guard exists because `failure()` fires for any earlier failure,
+        # including a pip install that never got near the cluster. Rolling a
+        # healthy release back because Galaxy was down would be the pipeline
+        # causing the outage it is supposed to prevent. A marker file rather
+        # than `steps.<id>.outcome`, which ADR-0005 has not tested on this
+        # runner.
+        run: |
+          set -eu
+          test -f /tmp/deploy-attempted || {
+            echo "nothing was deployed in this run — no rollback to perform"
+            exit 0
+          }
+          scripts/helm-on-host.sh rollback "$RELEASE" --wait --timeout 5m
+          cd ansible
+          ansible-playbook playbooks/verify.yml \
+            -e app_version="$PREV_TAG" \
+            -e deploy_app_smoke_vantage=ingress \
+            -e deploy_app_ingress_host="$DOCKER_HOST_ADDR"
+          echo "MERES restored $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
       - name: Report what is now running
+        env:
+          TAG: ${{ needs.build-test-push.outputs.sha_short }}
         run: |
-          echo "Deployed ${{ github.sha }}"
-          echo "Roll back with: ansible-playbook playbooks/deploy.yml -e app_version=<previous-sha>"
+          echo "Deployed $TAG (previous revision was $PREV_TAG)"
+          echo "Roll back by hand on the host with: helm rollback $RELEASE"

@@ -40,12 +40,30 @@ deploy_app_log_options:
 #   host     published port on the Docker host — localhost:8000. The default,
 #            because that is where a human runs this from.
 #   network  the container's own name and internal port on projecta-platform.
-#            CD must use this: its job runs in a container on that network, so
-#            "localhost" there is the job container, not the Docker host.
+#            The Docker deploy path used this from CD: its job runs in a
+#            container on that network, so "localhost" there is the job
+#            container, not the Docker host.
+#   ingress  the k3s cluster's front door — Traefik on port 80, then the
+#            frontend's nginx, which strips the /api/ prefix before proxying to
+#            the backend. This is the vantage the measurement uses, and the
+#            reason is not convenience: steps 12 and 13 of the manual protocol
+#            check through exactly this path, so anything else would have the
+#            automated side verifying less of the system than the human did.
+#            The extra hops are the point — the ingress and the frontend proxy
+#            are part of what a deploy can break.
 #
 deploy_app_smoke_vantage: host
+
+# Where the ingress answers, as seen from wherever this play runs. localhost on
+# the measuring machine itself; from a CI job container the Docker host has to
+# be named explicitly, because localhost there is the job container. CD passes
+# the bridge gateway address it resolves at run time.
+deploy_app_ingress_host: localhost
+
 deploy_app_smoke_base: >-
-  {{ 'http://' ~ app_container_name ~ ':' ~ app_container_port
+  {{ 'http://' ~ deploy_app_ingress_host ~ '/api'
+     if deploy_app_smoke_vantage == 'ingress'
+     else 'http://' ~ app_container_name ~ ':' ~ app_container_port
      if deploy_app_smoke_vantage == 'network'
      else 'http://localhost:' ~ app_host_port }}
 deploy_app_smoke_retries: 10

@@ -1,0 +1,29 @@
+---
+# Verify a deployed Project A. Deploys nothing, changes nothing, and fails if
+# the running release does not pass the acceptance criteria:
+#
+#   cd ansible && ansible-playbook playbooks/verify.yml -e app_version=<short-sha>
+#
+# Against the k3s cluster, from the machine it runs on — the automated
+# equivalent of steps 12 and 13 of the manual protocol:
+#
+#   ansible-playbook playbooks/verify.yml -e app_version=<short-sha> \
+#     -e deploy_app_smoke_vantage=ingress
+#
+# The checks themselves live in the deploy_app role, so the deploy path and
+# this stand-alone path cannot drift into two different definitions of
+# "healthy". This play only chooses where to look from.
+#
+# Ansible survives the move to Helm (ADR-0009) in this one role: every task
+# here is ansible.builtin.uri or ansible.builtin.assert, which speak HTTP and
+# nothing else. Nothing in this play touches a cluster object, so the "Helm
+# owns the objects" rule holds.
+- name: Verify a deployed Project A
+  hosts: local_docker
+  gather_facts: false
+
+  tasks:
+    - name: Run the post-deploy checks
+      ansible.builtin.include_role:
+        name: deploy_app
+        tasks_from: smoke.yml
