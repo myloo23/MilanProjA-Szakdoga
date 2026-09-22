@@ -20,20 +20,61 @@ oszlopa a mérvadó. Ezt a 6.1-ben egy mondattal ki kell mondani.
 
 ## Az előkészítés (nem mért, a rögzítés előtt)
 
-A mérőgép oldalán semmit nem kell előkészíteni: az E1–E6 egyszeri lépések
-megvannak, a fürtön az előző futtatás verziója fut. A laptopon:
+Jelölés: **(L)** = laptop, **(G)** = mérőgép. A laptopon két terminálablak kell:
+az **A ablak** az SSH-alagutat tartja nyitva és végig ott marad, a **B ablak**
+az, amelyikben a mérés zajlik.
 
-1. Az ág és a jelölősor-commit létrehozása (a 2. futtatásnál ez **kész**):
+**1. Az ág és a jelölősor-commit (L, B ablak).** A repó gyökerében:
 
-   ```bash
-   git checkout -b meres/kezi-NN
-   sed -i '' 's/^# meres-jelolo: .*/# meres-jelolo: 0NN/' app/app.py
-   git commit -am "meres: kezi-NN"
-   ```
+```bash
+cd ~/Documents/Szakdolgozat/MilanProjA-Szakdoga
+git checkout -b meres/kezi-NN
+sed -i '' 's/^# meres-jelolo: .*/# meres-jelolo: 0NN/' app/app.py
+git commit -am "meres: kezi-NN"
+git rev-parse --short HEAD          # ezt a SHA-t kell a 4. lépésnek visszaadnia
+```
 
-   A `sed -i ''` a macOS változata; Linuxon `sed -i`.
-2. Az SSH-alagút (3000, 5001) nyitva van-e (E8) — enélkül az 1. lépés elbukik.
-3. A `main` ágra a futtatás alatt nem megy push (E9).
+A `sed -i ''` a macOS változata; Linuxon `sed -i`.
+
+**2. Az SSH-alagút (L, A ablak) — E8.** Ez az az alagút, amin a `git push azure`
+és a registry elérhető; az 1. lépés enélkül elbukik. Külön ablakban indítsd, és
+hagyd nyitva a futtatás végéig:
+
+```bash
+cd ~/Documents/Szakdolgozat/MilanProjA-Szakdoga
+ssh -L 3000:127.0.0.1:3000 -L 5001:127.0.0.1:5001 \
+  azureuser@$(terraform -chdir=terraform output -raw public_ip)
+```
+
+Ez egy sima SSH-munkamenet a mérőgépen, csak a két porttovábbítással. **Nem** ez
+a protokoll 2. lépése — azt a B ablakban, a rögzítés alatt kell megnyitni.
+
+Hogy tényleg él-e, a B ablakban (L):
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' http://localhost:3000/    # 200
+curl -sS http://localhost:5001/v2/; echo                            # {}
+```
+
+Ha az első nem 200-at ad vagy a második „connection refused", az alagút nincs
+fent: nézd meg az A ablakot.
+
+**3. Nem fut idegen build a runneren — E9.** A `ci.yml` a `main`-re figyel, a
+futtató pedig a mérőgépen van: egy párhuzamos build ugyanazt a gépet terheli,
+amit mérünk. Az A ablakban (G):
+
+```bash
+docker ps --format '{{.Names}}'
+```
+
+Pontosan hármat kell látni: `projecta-gitea`, `projecta-registry`,
+`projecta-act-runner`. Bármi negyedik egy futó pipeline-munka konténere — várd
+meg, amíg eltűnik, és csak utána indítsd a rögzítést.
+
+E9 másik fele egy szabály, nem parancs: a futtatás alatt **ne** adj ki
+`git push azure main`-t (és semmilyen más pushot a `main`-re), se a B ablakban,
+se máshol. A B ablakban a `git branch --show-current` a mérési ágat adja vissza
+— ha nem azt, állj meg.
 
 ## A mért futtatás indítása
 
