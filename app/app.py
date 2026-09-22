@@ -216,6 +216,23 @@ def _payload_too_large(_error: RequestEntityTooLarge) -> tuple[Response, int]:
 
 @app.route("/echo", methods=["POST"])
 def echo():
+    # === MERESI HIBAINJEKTALAS — szándékos hiba, nem kerül a main ágra ===
+    # A 2.6 helyreállítási méréséhez (04-kezi-telepitesi-folyamat.md 6. pont).
+    # Ervenyes JSON-kérésre 500-at ad; a hibás és a túlméretes kéréseket
+    # változatlanul hagyja, a /health es a /ready érintetlen. A telepítés így
+    # sikeresnek látszik, és a füstteszt harmadik ellenőrzése buktatja el.
+    try:
+        _injected = request.get_json(silent=True)
+    except RecursionError:
+        # A melyen egymasba agyazott torzs a dekodoloban kifut a verembol, es a
+        # RecursionError nem BadRequest, tehat a silent=True nem nyeli el. Enelkul
+        # a fustteszt melyen agyazott JSON-ellenorzese (soha nem 5xx) is elbukna,
+        # vagyis a hiba nem egy, hanem ket ellenorzest tor el. Merve: 04-kezi 6. pont.
+        _injected = None
+    if isinstance(_injected, dict):
+        return jsonify(error="internal error"), 500
+    # === A HIBAINJEKTALAS VEGE ===
+
     # The parse and the response are inside one `try` on purpose, and it is not
     # a stylistic choice. `/echo` reflects what it was sent, so a document deep
     # enough to exhaust the C stack does it once on the way in, in
@@ -277,4 +294,4 @@ def echo():
         )
         return jsonify(error="Invalid JSON payload"), 400
 
-# meres-jelolo: 000
+# meres-jelolo: 101
