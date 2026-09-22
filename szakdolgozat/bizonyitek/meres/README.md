@@ -3,7 +3,7 @@
 Protokoll: [`../04-kezi-telepitesi-folyamat.md`](../04-kezi-telepitesi-folyamat.md) 5. pont.
 Adatsor: [`kezi-sorozat.csv`](kezi-sorozat.csv) · lépésenkénti bontás: [`lepesidok.md`](lepesidok.md).
 
-## Hol tartunk (2026-09-22)
+## Hol tartunk (2026-09-22) — **a kézi sorozat kész**
 
 | Futtatás | Ág | Állapot |
 |---|---|---|
@@ -20,7 +20,14 @@ Adatsor: [`kezi-sorozat.csv`](kezi-sorozat.csv) · lépésenkénti bontás: [`le
 | **7.** | `meres/kezi-09` | **érvényes, 74 mp, 13 beavatkozás**, eltérés nélkül |
 | **8.** | `meres/kezi-10` | **érvényes, 79 mp, 13 beavatkozás**; a 12. lépésben 11 mp-es emberi szünet |
 | **9.** | `meres/kezi-11` | **érvényes, 71 mp, 13 beavatkozás**, eltérés nélkül |
-| **10.** | `meres/kezi-12` | előkészítve (ág és commit kész), **az utolsó futtatás** |
+| **10.** | `meres/kezi-12` | **érvényes, 64 mp, 13 beavatkozás**, a sorozat leggyorsabb futtatása |
+
+**A tíz érvényes futtatás megvan.** Beállt szakasz (4–10. futtatás): 64–79 mp,
+átlag 71,6 mp, medián 71 mp, minden futtatásban 13 emberi beavatkozás, az
+elfogadási ellenőrzés 10/10 sikeres. A kiértékelés a `lepesidok.md`-ben.
+
+Ami a 2.6-ból még hátravan: a hibainjektálásos helyreállítási mérés (a protokoll
+6. pontja, három futtatás).
 
 A cél **tíz érvényes futtatás** (00-terv 7., 04-kezi 7.d). Az érvénytelen
 futtatások miatt az ágnevek elcsúsztak a sorszámoktól; a CSV `futtatas` oszlopa
