@@ -6,3 +6,4 @@ futtatas,ag,commit,kezdes_utc,befejezes_utc,eltelt_mp,beavatkozasok,elfogadas,me
 5,meres/kezi-07,658cbe7,08:31:35,08:32:50,75,13,sikeres,"elteres nelkul; a 2. lepes 9 mp (ssh-kapcsolodas ingadozasa), a 10. lepes 18 mp"
 6,meres/kezi-08,65e83c4,08:37:03,08:38:14,71,13,sikeres,"elteres nelkul"
 7,meres/kezi-09,d1c08c6,08:43:00,08:44:14,74,13,sikeres,"elteres nelkul; a 10. lepes 19 mp, a sorozat eddigi legmagasabb gordulo csere ideje"
+8,meres/kezi-10,62a7daf,08:45:55,08:47:14,79,13,sikeres,"a 12. lepes 11 mp (a tobbi futtatasban 4-6 mp): emberi szunet a kimenet elolvasasakor, nem gepi ok"

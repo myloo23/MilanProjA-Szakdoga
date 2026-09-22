@@ -6,29 +6,34 @@ gondolkodás, gépelés és futásidő együtt (04-kezi-telepitesi-folyamat.md 5
 
 Ez a fájl a 6.4 alfejezet nyersanyaga. A CSV az összesített adat, ez a bontás.
 
-| # | Lépés | 1. (`kezi-NN`) | 2. (`kezi-03`) | 3. (`kezi-04`) | 4. (`kezi-05`) | 5. (`kezi-07`) | 6. (`kezi-08`) | 7. (`kezi-09`) |
-|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | push | 7 mp | 30 mp¹ | 8 mp | 4 mp | 5 mp | 5 mp | 5 mp |
-| 2 | ssh | 6 mp² | (az 1-gyel együtt)¹ | 6 mp | 4 mp | 9 mp | 5 mp | 4 mp |
-| — | *prompt beállítása (műszer, nem lépés)* | (a 2-vel együtt)² | 9 mp | 4 mp | 2 mp | 3 mp | 3 mp | 5 mp |
-| 3 | fetch + checkout | 7 mp | 8 mp | 5 mp | 4 mp | 4 mp | 5 mp | 3 mp |
-| 4 | SHA | 6 mp | 11 mp | 8 mp | 3 mp | 4 mp | 4 mp | 3 mp |
-| 5 | backend build | 35 mp | 24 mp | 12 mp | 11 mp | 11 mp | 11 mp | 11 mp |
-| 6 | frontend build | 3 mp | 4 mp | 2 mp | 2 mp | 2 mp | 2 mp | 3 mp |
-| 7 | backend push | 9 mp | 8 mp | 5 mp | 3 mp | 4 mp | 3 mp | 3 mp |
-| 8 | frontend push | 7 mp | 7 mp | 3 mp | 3 mp | 3 mp | 3 mp | 4 mp |
-| 9 | helm upgrade | 6 mp | 6 mp | 4 mp | 4 mp | 3 mp | 3 mp | 4 mp |
-| 10 | rollout backend | 16 mp | 17 mp | 16 mp | 16 mp | 18 mp | 17 mp | 19 mp |
-| 11 | rollout frontend | 4 mp | 6 mp | 3 mp | 3 mp | 2 mp | 3 mp | 3 mp |
-| 12 | /version | 6 mp | 6 mp | 5 mp | 4 mp | 4 mp | 4 mp | 4 mp |
-| 13 | füstteszt | 9 mp | 8 mp | 5 mp | 4 mp | 3 mp | 3 mp | 3 mp |
-| | **összesen** | **121 mp** | **144 mp** | **86 mp** | **67 mp** | **75 mp** | **71 mp** | **74 mp** |
+| # | Lépés | 1. (`kezi-NN`) | 2. (`kezi-03`) | 3. (`kezi-04`) | 4. (`kezi-05`) | 5. (`kezi-07`) | 6. (`kezi-08`) | 7. (`kezi-09`) | 8. (`kezi-10`) |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | push | 7 mp | 30 mp¹ | 8 mp | 4 mp | 5 mp | 5 mp | 5 mp | 3 mp |
+| 2 | ssh | 6 mp² | (az 1-gyel együtt)¹ | 6 mp | 4 mp | 9 mp | 5 mp | 4 mp | 4 mp |
+| — | *prompt beállítása (műszer, nem lépés)* | (a 2-vel együtt)² | 9 mp | 4 mp | 2 mp | 3 mp | 3 mp | 5 mp | 3 mp |
+| 3 | fetch + checkout | 7 mp | 8 mp | 5 mp | 4 mp | 4 mp | 5 mp | 3 mp | 3 mp |
+| 4 | SHA | 6 mp | 11 mp | 8 mp | 3 mp | 4 mp | 4 mp | 3 mp | 5 mp |
+| 5 | backend build | 35 mp | 24 mp | 12 mp | 11 mp | 11 mp | 11 mp | 11 mp | 11 mp |
+| 6 | frontend build | 3 mp | 4 mp | 2 mp | 2 mp | 2 mp | 2 mp | 3 mp | 4 mp |
+| 7 | backend push | 9 mp | 8 mp | 5 mp | 3 mp | 4 mp | 3 mp | 3 mp | 4 mp |
+| 8 | frontend push | 7 mp | 7 mp | 3 mp | 3 mp | 3 mp | 3 mp | 4 mp | 2 mp |
+| 9 | helm upgrade | 6 mp | 6 mp | 4 mp | 4 mp | 3 mp | 3 mp | 4 mp | 4 mp |
+| 10 | rollout backend | 16 mp | 17 mp | 16 mp | 16 mp | 18 mp | 17 mp | 19 mp | 18 mp |
+| 11 | rollout frontend | 4 mp | 6 mp | 3 mp | 3 mp | 2 mp | 3 mp | 3 mp | 3 mp |
+| 12 | /version | 6 mp | 6 mp | 5 mp | 4 mp | 4 mp | 4 mp | 4 mp | 11 mp³ |
+| 13 | füstteszt | 9 mp | 8 mp | 5 mp | 4 mp | 3 mp | 3 mp | 3 mp | 4 mp |
+| | **összesen** | **121 mp** | **144 mp** | **86 mp** | **67 mp** | **75 mp** | **71 mp** | **74 mp** | **79 mp** |
 
 ¹ A `kezi-03`-ban a laptop promptja nem volt időbélyeges (a `PROMPT` a `script`
 előtt lett beállítva, így az új héj nem örökölte), ezért az 1. és a 2. lépés nem
 bontható szét, és a 30 mp felfelé torzít. A kezdő időbélyeg a `script`-fájl
 létrehozási idejéből jön, ami pontosan a rögzítő héj indulása — a mérés kezdő-
 és végpontja tehát érvényes, csak a két első lépés bontása hiányzik.
+
+³ A 8. futtatásban a 12. lépés 11 mp volt a szokásos 4–6 helyett: emberi szünet
+a kimenet elolvasásakor. Bent marad, mert valódi kézi költség (a protokoll 1.
+pontja szerint a lépés ideje a gondolkodást is tartalmazza) — de a sávot ez az
+egy tétel tágítja 75-ről 79-re.
 
 ² Az 1. futtatásban a prompt beállítása a 2. lépés utáni promptig tartott, ezért
 nem különíthető el. Ez a tétel mindegyik futtatásban műszerköltség, nem a
@@ -57,17 +62,17 @@ két futtatásban a különbség egyetlen másodperc.
 
 ## A sorozat beállt — mit jelent ez a kiértékelésre
 
-121 / 144 / 86 / **67 / 75 / 71 / 74** mp. Az első három futtatás a tanulási
+121 / 144 / 86 / **67 / 75 / 71 / 74 / 79** mp. Az első három futtatás a tanulási
 görbe és a hideg réteg-gyorsítótár együttes hatását mutatja; a 4. futtatástól a
 sor egy **67–75 mp-es sávban** mozog. A sávon belüli eltérés azonosítható
 tételekre bontható, nem „mérési zaj":
 
-- a gépelt lépések összege a négy futtatásban 21 / 22 / 22 / 20 mp — gyakorlatilag
-  állandó, tehát az operátor már nem változik;
-- a backend buildje mind a négyszer pontosan 11 mp;
-- a gördülő csere kivárása 16 / 18 / 17 / 19 mp, és az SSH-kapcsolódás 4 és 9 mp
-  között ingadozik — **a sáv szélességét ez a két gépi tétel adja**, nem az
-  ember.
+- a gépelt lépések összege az öt futtatásban 21 / 22 / 22 / 20 / 29 mp; az
+  utolsó érték egyetlen tételtől nő meg (a 12. lépés 11 mp-es emberi szünete),
+  e nélkül 22 mp — az operátor tehát már nem változik;
+- a backend buildje mind az ötször pontosan 11 mp;
+- a gördülő csere kivárása 16 / 18 / 17 / 19 / 18 mp, és az SSH-kapcsolódás 4 és
+  9 mp között ingadozik — **a sáv szélességét jórészt ez a két gépi tétel adja**.
 
 Ez a 6.4-nek fontos: a kézi oldal maradék szórása is gépi eredetű, és ugyanez a
 két tétel az automatizált oldalon is jelen lesz.
