@@ -19,8 +19,8 @@ Adatsor: [`kezi-sorozat.csv`](kezi-sorozat.csv) · lépésenkénti bontás: [`le
 | **6.** | `meres/kezi-08` | **érvényes, 71 mp, 13 beavatkozás**, eltérés nélkül |
 | **7.** | `meres/kezi-09` | **érvényes, 74 mp, 13 beavatkozás**, eltérés nélkül |
 | **8.** | `meres/kezi-10` | **érvényes, 79 mp, 13 beavatkozás**; a 12. lépésben 11 mp-es emberi szünet |
-| **9.** | `meres/kezi-11` | előkészítve (ág és commit kész), futtatásra vár |
-| 10. | `meres/kezi-12` | hátravan |
+| **9.** | `meres/kezi-11` | **érvényes, 71 mp, 13 beavatkozás**, eltérés nélkül |
+| **10.** | `meres/kezi-12` | előkészítve (ág és commit kész), **az utolsó futtatás** |
 
 A cél **tíz érvényes futtatás** (00-terv 7., 04-kezi 7.d). Az érvénytelen
 futtatások miatt az ágnevek elcsúsztak a sorszámoktól; a CSV `futtatas` oszlopa
