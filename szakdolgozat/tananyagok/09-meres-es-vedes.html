@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>9. Mérés és védés</title>
+<link rel="stylesheet" href="assets/tananyag.css">
+<style>
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: .75rem; margin: 1rem 0; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: .8rem 1rem; }
+  .stat .v { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+  .stat .l { font-size: .82rem; color: var(--muted); }
+  .legend { display: flex; gap: 1.2rem; flex-wrap: wrap; font-size: .85rem; color: var(--muted); margin: 0 0 .5rem; }
+  .legend span::before { content: ""; display: inline-block; width: .8em; height: .8em; border-radius: 3px; margin-right: .4em; vertical-align: -.05em; background: var(--c); }
+  svg .bar-k { fill: var(--violet); }
+  svg .bar-a { fill: var(--accent); }
+  svg .bar-k-soft { fill: var(--violet-soft); stroke: var(--violet); stroke-width: 1; }
+  svg .bar-a-soft { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1; }
+  svg .grid { stroke: var(--border); stroke-width: 1; }
+  svg rect[data-tip]:hover { opacity: .8; }
+  .pitch { font-size: 1.05rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="top"><a href="08-pipeline-biztonsag-megfigyeles.html">← 8. Pipeline, biztonság, megfigyelés</a><a href="index.html">Tananyagtérkép →</a></nav>
+
+<p class="eyebrow">9. tananyag · a dolgozat gerince</p>
+<h1>A mérés, és amit a védésen mondasz</h1>
+<p class="lead">Mit mértél, mi jött ki, és hogyan mondod el úgy, hogy ne lehessen szétszedni. A végén a várható kérdések, rövid válaszokkal.</p>
+
+<div class="goals">
+  <h2>A végére ezt fogod tudni</h2>
+  <ul>
+    <li>Miért tisztességes az összehasonlítás (ez a legfontosabb).</li>
+    <li>A főbb számokat fejből.</li>
+    <li>Miért <em>lassabb</em> összesen az automatizálás, és miért nem baj.</li>
+    <li>A mérés gyenge pontjait — és hogy te magad mondod ki őket.</li>
+  </ul>
+</div>
+
+<h2 id="kerdes">1. A kérdés, és miért fair a mérés</h2>
+
+<div class="box key"><strong>A kutatási kérdés</strong>
+Mennyit javít mérhetően az automatizálás a telepítésen? Ugyanazt a változtatást kézzel és a pipeline-nal is kiviszed, többször, és összehasonlítod.</div>
+
+<div class="toggle-figure">
+<div class="toggle">
+  <button data-state="kezi" data-caption="<strong>Kézi:</strong> a <code>meres/kezi-NN</code> ágra pusholsz — erre az ágra nem indul pipeline. Utána 13 parancsot adsz ki egyesével, és mindegyik kimenetét elolvasod.">Kézi oldal</button>
+  <button data-state="auto" data-caption="<strong>Automatizált:</strong> a <code>release/meres</code> ágra pusholsz — erre indul a pipeline. Utána csak megnézed, zöld lett-e. <strong>Minden más ugyanaz</strong>: gép, registry, fürt, chart, változtatás.">Automatizált oldal</button>
+</div>
+<figure>
+<svg viewBox="0 0 640 200" role="img" aria-label="A két mérési oldal ugyanarra a fürtre telepít">
+  <defs><marker id="m9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+  <rect x="10" y="70" width="110" height="60" rx="8" class="n-2"/>
+  <text x="65" y="96" text-anchor="middle" class="t-bold">git push</text>
+  <text x="65" y="114" text-anchor="middle" class="t-small t-mono" data-when="kezi">meres/kezi-NN</text>
+  <text x="65" y="114" text-anchor="middle" class="t-small t-mono" data-when="auto">release/meres</text>
+
+  <g data-when="kezi">
+    <rect x="160" y="50" width="220" height="100" rx="10" class="n-violet"/>
+    <text x="270" y="78" text-anchor="middle" class="t-bold">Te, 13 paranccsal</text>
+    <text x="270" y="98" text-anchor="middle" class="t-small">ssh, checkout, 2× build, 2× push,</text>
+    <text x="270" y="114" text-anchor="middle" class="t-small">helm upgrade, 2× rollout status,</text>
+    <text x="270" y="130" text-anchor="middle" class="t-small">/version, füstteszt</text>
+  </g>
+  <g data-when="auto">
+    <rect x="160" y="50" width="220" height="100" rx="10" class="n-accent"/>
+    <text x="270" y="78" text-anchor="middle" class="t-bold">Pipeline</text>
+    <text x="270" y="98" text-anchor="middle" class="t-small">ugyanazok a lépések + lint,</text>
+    <text x="270" y="114" text-anchor="middle" class="t-small">tesztek, szkennelés, és</text>
+    <text x="270" y="130" text-anchor="middle" class="t-small">automatikus rollback</text>
+  </g>
+
+  <rect x="420" y="30" width="210" height="140" rx="12" class="n-ok"/>
+  <text x="525" y="58" text-anchor="middle" class="t-bold">UGYANAZ</text>
+  <text x="525" y="82" text-anchor="middle" class="t-small">Azure VM</text>
+  <text x="525" y="100" text-anchor="middle" class="t-small">registry (localhost:5001)</text>
+  <text x="525" y="118" text-anchor="middle" class="t-small">k3s fürt, Helm chart</text>
+  <text x="525" y="136" text-anchor="middle" class="t-small">elfogadás: /version + füstteszt</text>
+  <path d="M120,100 L156,100" class="line" marker-end="url(#m9)"/>
+  <path d="M380,100 L416,100" class="line" marker-end="url(#m9)"/>
+</svg>
+</figure>
+<div class="caption"></div>
+</div>
+
+<div class="box whatif"><strong>Mi lett volna, ha a kézit Docker Compose-on, az automatát Kubernetesen méred?</strong>
+Akkor a különbség nem csak az automatizálásból jönne, hanem a két platformból is — és nem tudnád szétválasztani. Ezt a védésen elsőként szednék szét. Ezért mérted mindkettőt ugyanarra a fürtre.</div>
+
+<h3>Mit mértél — három dolgot</h3>
+<div class="table-wrap"><table>
+<tr><th>Mérőszám</th><th>Kezdete → vége</th></tr>
+<tr><td><strong>Idő</strong></td><td>a commit megvan → az új verzió fut, és az átvétel sikeres</td></tr>
+<tr><td><strong>Emberi beavatkozás</strong></td><td>minden kiadott parancs, <em>és</em> minden kimenet, amit elolvasol és döntesz róla</td></tr>
+<tr><td><strong>Helyreállítási idő</strong></td><td>a hibás verzió él → a hibát észrevetted → az előző verzió újra jól működik</td></tr>
+</table></div>
+<p>A mérést <code>script</code> paranccsal és időbélyeges prompttal rögzítetted, nem stopperrel. Minden futtatás jegyzőkönyve ott van a <code>bizonyitek/meres/</code> mappában. Az automatizált oldal időbélyegei a pipeline naplójából jönnek (<code>MERES deploy-start</code>, <code>MERES accepted</code>…).</p>
+
+<h2 id="kezi">2. A kézi oldal: te is tanultál közben</h2>
+<p>Tíz érvényes futtatás. Az első háromban még lassabb voltál — a build gyorsítótára is ekkor „melegedett be”. A 4.-től beállt. <strong>A dolgozatban a beállt szakasz (4–10.) számít.</strong></p>
+
+<figure>
+<p class="legend"><span style="--c: var(--violet-soft)">bemelegedés (1–3.)</span><span style="--c: var(--violet)">beállt szakasz (4–10.)</span></p>
+<svg viewBox="0 -14 640 254" role="img" aria-label="A kézi futtatások ideje másodpercben: 121, 144, 86, 67, 75, 71, 74, 79, 71, 64">
+  <line x1="40" y1="200" x2="630" y2="200" class="grid"/>
+  <line x1="40" y1="133" x2="630" y2="133" class="grid"/>
+  <line x1="40" y1="67" x2="630" y2="67" class="grid"/>
+  <text x="34" y="204" text-anchor="end" class="t-small t-muted">0</text>
+  <text x="34" y="137" text-anchor="end" class="t-small t-muted">50</text>
+  <text x="34" y="71" text-anchor="end" class="t-small t-muted">100</text>
+  <text x="34" y="20" text-anchor="end" class="t-small t-muted">mp</text>
+  <g id="kezi-bars"></g>
+  <line x1="227" y1="105" x2="630" y2="105" class="line dash"/>
+  <text x="626" y="30" text-anchor="end" class="t-small t-bold">szaggatott vonal: a 4–10. futtatás mediánja, 71 mp</text>
+</svg>
+<figcaption>Vízszintes tengely: a futtatás sorszáma. A 2. futtatás (144 mp) időbélyeg-hiba miatt pontatlanabb, ezt a CSV megjegyzése rögzíti. Két futtatás (<code>kezi-02</code>, <code>kezi-06</code>) érvénytelen lett, és ezt nyíltan dokumentáltad.</figcaption>
+</figure>
+
+<h2 id="eredmeny">3. Az eredmény három számban</h2>
+
+<figure>
+<p class="legend"><span style="--c: var(--violet)">kézi (4–10., medián)</span><span style="--c: var(--accent)">automatizált (10 futtatás, medián)</span></p>
+<svg viewBox="0 0 640 260" role="img" aria-label="Kézi és automatizált összehasonlítás: teljes idő 71 és 129,5 mp, telepítési szakasz 31 és 24 mp, beavatkozás 13 és 2">
+  <text x="10" y="24" class="t-bold">Teljes idő</text>
+  <rect x="190" y="10" width="185" height="18" rx="4" class="bar-k" data-tip="Kézi teljes idő: medián 71 mp (sáv 64–79)"/><text x="381" y="24" class="t-small t-bold">71 mp</text>
+  <rect x="190" y="32" width="336" height="18" rx="4" class="bar-a" data-tip="Automatizált teljes idő: medián 129,5 mp (sáv 115–144)"/><text x="532" y="46" class="t-small t-bold">129,5 mp</text>
+  <text x="10" y="44" class="t-small t-muted">az automata lassabb</text>
+
+  <text x="10" y="104" class="t-bold">Telepítési szakasz</text>
+  <rect x="190" y="90" width="81" height="18" rx="4" class="bar-k" data-tip="Kézi telepítési szakasz (9–13. lépés): medián 31 mp (sáv 29–40)"/><text x="277" y="104" class="t-small t-bold">31 mp</text>
+  <rect x="190" y="112" width="62" height="18" rx="4" class="bar-a" data-tip="Automatizált telepítési szakasz: medián 24 mp (sáv 23–26)"/><text x="258" y="126" class="t-small t-bold">24 mp</text>
+  <text x="10" y="124" class="t-small t-muted">az automata gyorsabb</text>
+
+  <text x="10" y="184" class="t-bold">Beavatkozás</text>
+  <rect x="190" y="170" width="338" height="18" rx="4" class="bar-k" data-tip="Kézi: 13 beavatkozás minden futtatásban"/><text x="534" y="184" class="t-small t-bold">13</text>
+  <rect x="190" y="192" width="52" height="18" rx="4" class="bar-a" data-tip="Automatizált: 2 beavatkozás (push + az eredmény elolvasása)"/><text x="248" y="206" class="t-small t-bold">2</text>
+  <text x="10" y="204" class="t-small t-muted">a legnagyobb különbség</text>
+
+  <text x="190" y="248" class="t-small t-muted">A beavatkozás külön skálán van: nem másodperc.</text>
+</svg>
+<figcaption>Vidd az egeret egy sávra a pontos értékekért. Az elfogadási ellenőrzés mindkét oldalon minden futtatásban sikeres volt.</figcaption>
+</figure>
+
+<div class="stats">
+  <div class="stat"><div class="v">13 → 2</div><div class="l">emberi beavatkozás</div></div>
+  <div class="stat"><div class="v">31 → 24 mp</div><div class="l">telepítési szakasz (medián)</div></div>
+  <div class="stat"><div class="v">71 → 129,5 mp</div><div class="l">teljes idő (medián) — több munkával</div></div>
+</div>
+
+<h2 id="lassabb">4. Miért lassabb összesen — és miért nem baj</h2>
+<p>Ez lesz az első kérdés a védésen, ezért értsd pontosan. A két teljes idő <strong>nem ugyanazt a munkát</strong> takarja:</p>
+
+<figure>
+<p class="legend"><span style="--c: var(--surface-2)">előkészítés / ellenőrzés</span><span style="--c: var(--ok)">telepítés + átvétel</span></p>
+<svg viewBox="0 0 640 170" role="img" aria-label="Az idő bontása: kézi 40 mp előkészítés és 31 mp telepítés; automatizált 11 mp indulás, 94 mp ellenőrzés és build, 24 mp telepítés">
+  <text x="10" y="44" class="t-bold">Kézi</text>
+  <rect x="80" y="28" width="164" height="26" rx="4" class="n-2" data-tip="1–8. lépés: push, ssh, checkout, 2 build, 2 push — kb. 40 mp"/>
+  <text x="162" y="46" text-anchor="middle" class="t-small">push, build, push · ~40</text>
+  <rect x="246" y="28" width="127" height="26" rx="4" class="n-ok" data-tip="9–13. lépés: helm upgrade, 2 rollout status, /version, füstteszt — medián 31 mp"/>
+  <text x="309" y="46" text-anchor="middle" class="t-small t-bold">31</text>
+
+  <text x="10" y="104" class="t-bold">Auto</text>
+  <rect x="80" y="88" width="44" height="26" rx="4" class="n-2" data-tip="push → a pipeline elindul: medián 11 mp"/>
+  <text x="102" y="106" text-anchor="middle" class="t-small">11</text>
+  <rect x="126" y="88" width="384" height="26" rx="4" class="n-violet" data-tip="build-test-push job: ruff, secret scan, hadolint, pytest, ansible-lint, 2 build, próbaindítás, Trivy, push — medián 94 mp (80–106)"/>
+  <text x="318" y="106" text-anchor="middle" class="t-small">lint, tesztek, 2 build, szkennelés · ~94</text>
+  <rect x="512" y="88" width="98" height="26" rx="4" class="n-ok" data-tip="deploy-start → accepted: medián 24 mp"/>
+  <text x="561" y="106" text-anchor="middle" class="t-small t-bold">24</text>
+
+  <text x="80" y="150" class="t-small t-muted">A lila rész az, amit a kézi oldal egyáltalán nem csinál.</text>
+</svg>
+<figcaption>Mediánok másodpercben; a mediánok összege nem pontosan a teljes idő mediánja, ezért „~”.</figcaption>
+</figure>
+
+<div class="box key"><strong>A mondat, amit mondani fogsz</strong>
+Az automatizálás nem gyorsabb, hanem <em>többet csinál nagyjából ugyanannyi idő alatt</em> — tizenhárom helyett két emberi beavatkozással. Ahol ugyanazt a munkát végzi (a telepítési szakasz), ott gyorsabb: 31 helyett 24 mp.</div>
+
+<div class="box story"><strong>A legerősebb bizonyítékod: előre megmondtad</strong>
+Még az automatizált mérés előtt leírtad (<code>lepesidok.md</code>), hogy a gördülő csere kivárása ott sem lesz gyorsabb, mert azt a Kubernetes csinálja, nem te. És így lett: kézzel 19–21 mp, a <code>helm upgrade --wait</code>-tel 19–22 mp. A javulás a gépelésből és a kimenet olvasásából jött. Ha egy mérés azt adja, amit a mechanizmus alapján <em>előre</em> megjósoltál, az erősebb, mint maga a szám.</div>
+
+<h2 id="helyreallitas">5. Helyreállítás: mi van, ha rossz verzió megy ki</h2>
+<p>Szándékosan hibás verziót telepítettél: az <code>/echo</code> 500-as hibát ad, de minden más működik — a telepítés sikeresnek <em>látszik</em>, csak a füstteszt buktatja le. Aztán visszaállítottad.</p>
+
+<div class="stats">
+  <div class="stat"><div class="v">17 mp</div><div class="l">észlelés (kézi, medián)</div></div>
+  <div class="stat"><div class="v">37 mp</div><div class="l">helyreállítás (kézi, medián)</div></div>
+  <div class="stat"><div class="v">56 mp</div><div class="l">teljes kiesés (kézi, medián)</div></div>
+  <div class="stat"><div class="v">19</div><div class="l">beavatkozás (kézi)</div></div>
+</div>
+<p>Kézzel 3 futtatás, mind sikeres, mindháromszor ugyanarra a verzióra (<code>be36f74</code>) állt vissza. <strong>Az automatizált párja még hátravan</strong> (3 futtatás, ugyanazzal a hibával). Előrejelzés: a <code>helm rollback</code> kivárása ott is ugyanannyi lesz, a nyereség az emberi részből jön.</p>
+
+<h2 id="tobbi">6. Amit a számok nem mutatnak, de elmondod</h2>
+<div class="table-wrap"><table>
+<tr><th>Eset</th><th>Mit jelent</th></tr>
+<tr><td><strong>psycopg</strong></td><td>A pipeline elbukott egy olyan hibán, ami csak a tesztkörnyezetben létezett. Kézi telepítésnél sosem derült volna ki.</td></tr>
+<tr><td><strong>43 Trivy-találat</strong></td><td>Változatlan kód, de új ismert hibák az alapképben. A pipeline megkérdezi minden commitnál; a kézi út soha.</td></tr>
+<tr><td><strong>Ki dönt?</strong></td><td>Kézzel <em>te</em> olvasod ki a füstteszt eredményét (a szkript mindig 0-val lép ki). Az automatánál a gép dönt. Ember elnézheti, gép nem.</td></tr>
+</table></div>
+
+<h2 id="korlatok">7. A gyenge pontok — mondd ki előbb te</h2>
+<p>Ha te mondod ki, az erősség. Ha a bizottság találja meg, az gyengeség.</p>
+<div class="table-wrap"><table>
+<tr><th>Korlát</th><th>A válaszod</th></tr>
+<tr><td>Egyetlen ember végezte a mérést.</td><td>Rögzített lépéslista, azonos elfogadási feltétel, minden futtatás jegyzőkönyvvel.</td></tr>
+<tr><td>A kézi folyamatot a rendszert már ismerve játszottad újra.</td><td>Ez a kézi oldalnak kedvez, tehát a kimutatott javulás <strong>alsó becslés</strong>.</td></tr>
+<tr><td>Kevés futtatás (10, illetve 3).</td><td>Ezért medián és sáv, nem csak átlag, és nem adok meg százalékos hibaarányt.</td></tr>
+<tr><td>Egy alkalmazás, egy környezet.</td><td>Az eredmény erre a rendszerre érvényes, nem általánosítom.</td></tr>
+<tr><td>A pipeline és a mért fürt ugyanazon a gépen fut.</td><td>A mérés alatt más build nem futhatott (ellenőrizve: csak 3 platformkonténer futott).</td></tr>
+</table></div>
+
+<h2 id="vedes">8. A védés: a 3 mondatos bemutatkozás</h2>
+<div class="box thesis pitch"><strong>Tanuld meg, mondd el hangosan háromszor</strong>
+„Egy saját webalkalmazáshoz automatizált telepítési láncot építettem: Terraformmal létrehozott Azure-os gépen fut egy Kubernetes-fürt, amire egy Gitea Actions pipeline tesztel, épít, szkennel, telepít, ellenőriz, és hiba esetén visszaállít. Ugyanazt a változtatást tízszer kézzel és tízszer a pipeline-nal telepítettem ugyanarra a fürtre. Az eredmény: az emberi beavatkozások száma 13-ról 2-re csökkent, a telepítési szakasz 31-ről 24 másodpercre, a teljes idő pedig azért hosszabb, mert a pipeline közben olyan ellenőrzéseket is elvégez, amiket a kézi út egyáltalán nem.”</div>
+
+<h2 id="kerdesek">9. Várható kérdések</h2>
+<p>Előbb válaszolj magadban, csak utána nyisd le.</p>
+
+<div class="quiz">
+<details><summary>Ha az automatizálás lassabb, akkor mi értelme?</summary>Nem lassabb ugyanarra a munkára: a telepítési szakasz 31 → 24 mp. A teljes idő azért hosszabb, mert tesztel, lintel és szkennel is, amit kézzel nem csinálsz. És 13 helyett 2 emberi lépés — kevesebb hibalehetőség.</details>
+<details><summary>Honnan tudod, hogy a különbség tényleg az automatizálásból jön?</summary>Mindkét oldal ugyanarra a fürtre, ugyanabból a registryből, ugyanazzal a charttal telepít. Az egyetlen különbség az ágnév, ami eldönti, indul-e pipeline.</details>
+<details><summary>Miért számít beavatkozásnak egy kimenet elolvasása?</summary>Mert ott az ember dönt (jó-e vagy nem). A definíciót előre rögzítettem, és mindkét oldalon ugyanúgy alkalmaztam — ezért 2 az automatánál, nem 1.</details>
+<details><summary>Miért csak 10 futtatás?</summary>A kézi futtatás drága és fárasztó; 10 elég a medián és a sáv megadásához. Épp ezért nem adok meg százalékokat, és nem állítok általános érvényt.</details>
+<details><summary>Miért k3s és nem felügyelt Kubernetes (AKS)?</summary>A k3s teljes értékű, tanúsított Kubernetes, ugyanazokkal a parancsokkal. Egy gépen elfér, belefér az Azure for Students keretbe, és a Terraform cloud-inittel telepíti. A dolgozat a telepítési láncról szól, nem a fürt üzemeltetéséről (ADR-0008).</details>
+<details><summary>Miért Gitea és nem GitHub Actions?</summary>A cél egy saját üzemeltetésű lánc volt, amit teljesen értek: runner, registry, minden. A GitHub-os futtatóhoz nem fér hozzá a felhős fürt a saját registryvel együtt (ADR-0001, -0004).</details>
+<details><summary>Miért Helm, és miért nem maradt az Ansible a telepítésre?</summary>A Kubernetes magától fenntartja a kívánt állapotot; a Helm csak átadja neki, és emlékszik a korábbi verziókra, így a rollback egy parancs. Az Ansible a repóban maradt mint az előző generáció, és a füstteszt még azzal fut (ADR-0009).</details>
+<details><summary>Mi a füstteszt, és mit ellenőriz?</summary>Gyors próba: <code>/health</code>, <code>/ready</code>, az <code>/echo</code> jó és rossz kérésekkel (hibás JSON, túl nagy törzs…). Megnézi, hogy mindegyik a várt státuszkódot adja.</details>
+<details><summary>Miért olyan hibát injektáltál, ami nem dönti le a podot?</summary>Mert a legveszélyesebb hiba az, ami sikeresnek látszik. Ha a pod összeomlana, a Kubernetes maga jelezné, és nem lenne mit észlelni. Így a mérés azt méri, amit kell: észreveszi-e az ellenőrzés, és milyen gyorsan áll vissza.</details>
+<details><summary>Mik a DORA-metrikák, és melyiket mérted?</summary>Négy mutató a szoftverszállítás teljesítményére: telepítési gyakoriság, a változtatás átfutási ideje, a hibás változtatások aránya, és a helyreállítási idő. Az átfutási időt és a helyreállítási időt mérted. A gyakoriságot egyszemélyes projektben nincs értelme összevetni, a hibaarányt 10 futtatásból nem lehet komolyan venni.</details>
+<details><summary>Mi az SBOM, és mire jó?</summary>Összetevőlista a szoftverről. Ha holnap kiderül egy hiba valamelyik könyvtárban, egy kereséssel megmondod, érintett vagy-e.</details>
+<details><summary>Mi történik, ha a Terraform state elveszik?</summary>A gép megmarad, de a Terraform nem tudja, hogy az övé; a következő apply egy másodikat hozna létre. Csapatban távoli state kell — ez a továbbfejlesztési fejezetben van.</details>
+<details><summary>Mi maradt ki, és miért?</summary>Képaláírás (cosign), GitOps (ArgoCD), több csomópont, automatikus skálázás, távoli Terraform state. Tudatos döntés: a mérés volt az elsődleges, ezeket a 7. fejezetben leírom.</details>
+<details><summary>Mi volt a legnagyobb tanulság?</summary>Egy állítás akkor bizonyított, ha megpróbáltam megcáfolni. Pl. azt hittem, a <code>registries.yaml</code> miatt működik a képletöltés — kivettem, és akkor is működött. Vagy: a build szórását a hálózatra fogtam, megmértem, és kiderült, hogy egy nem gyorsítótárazott pip-telepítés okozza.</details>
+</div>
+
+<div class="box whatif"><strong>Ha nem tudod a választ</strong>
+Ne találj ki semmit. Mondd: „Ezt nem mértem, de így közelíteném meg: …” Egy őszinte „nem tudom, de így derítenem ki” többet ér, mint egy magabiztos tévedés.</div>
+
+<h2 id="puska">10. Puska — ezeket a számokat tudd fejből</h2>
+<div class="table-wrap"><table>
+<tr><th></th><th>Kézi</th><th>Automatizált</th></tr>
+<tr><td>Futtatások</td><td>10 (ebből 7 beállt)</td><td>10</td></tr>
+<tr><td>Teljes idő, medián</td><td>71 mp (64–79)</td><td>129,5 mp (115–144)</td></tr>
+<tr><td>Telepítési szakasz, medián</td><td>31 mp (29–40)</td><td>24 mp (23–26)</td></tr>
+<tr><td>Emberi beavatkozás</td><td>13</td><td>2</td></tr>
+<tr><td>Helyreállítás (teljes kiesés), medián</td><td>56 mp, 19 beavatkozás</td><td><em>hátravan</em></td></tr>
+<tr><td>Átvétel sikeres</td><td>minden futtatásban</td><td>10/10</td></tr>
+</table></div>
+
+<footer class="page"><span>Utoljára frissítve: 2026. szeptember 22.</span><span>Forrás: bizonyitek/meres/ (CSV-k, README, lepesidok.md), naplo.md, 00-terv.md</span></footer>
+</div>
+<script src="assets/tananyag.js"></script>
+<script>
+// A kézi futtatások oszlopai és a sávokra vitt egér tooltipje.
+(() => {
+  const data = [121, 144, 86, 67, 75, 71, 74, 79, 71, 64]
+  const g = document.getElementById('kezi-bars')
+  const ns = 'http://www.w3.org/2000/svg'
+  const base = 200, pxPerSec = 133 / 100, w = 44, step = 59, x0 = 50
+  data.forEach((v, i) => {
+    const hh = v * pxPerSec
+    const x = x0 + i * step
+    const r = document.createElementNS(ns, 'rect')
+    r.setAttribute('x', x); r.setAttribute('y', base - hh); r.setAttribute('width', w); r.setAttribute('height', hh)
+    r.setAttribute('rx', 4)
+    r.setAttribute('class', i < 3 ? 'bar-k-soft' : 'bar-k')
+    r.dataset.tip = `${i + 1}. futtatás: ${v} mp`
+    g.appendChild(r)
+    const t = document.createElementNS(ns, 'text')
+    t.setAttribute('x', x + w / 2); t.setAttribute('y', base - hh - 5); t.setAttribute('text-anchor', 'middle')
+    t.setAttribute('class', 't-small'); t.textContent = v
+    g.appendChild(t)
+    const n = document.createElementNS(ns, 'text')
+    n.setAttribute('x', x + w / 2); n.setAttribute('y', base + 16); n.setAttribute('text-anchor', 'middle')
+    n.setAttribute('class', 't-small t-muted'); n.textContent = i + 1
+    g.appendChild(n)
+  })
+  const tip = document.createElement('div')
+  tip.style.cssText = 'position:fixed;pointer-events:none;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:.3rem .55rem;font-size:.82rem;box-shadow:0 2px 8px rgba(0,0,0,.15);display:none;z-index:10;max-width:18rem'
+  document.body.appendChild(tip)
+  document.addEventListener('mouseover', (e) => {
+    const el = e.target.closest('[data-tip]')
+    if (!el) { tip.style.display = 'none'; return }
+    tip.textContent = el.dataset.tip; tip.style.display = 'block'
+  })
+  document.addEventListener('mousemove', (e) => { tip.style.left = (e.clientX + 12) + 'px'; tip.style.top = (e.clientY + 12) + 'px' })
+})()
+</script>
+</body>
+</html>

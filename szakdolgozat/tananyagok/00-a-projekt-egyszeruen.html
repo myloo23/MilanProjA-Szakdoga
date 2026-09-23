@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0. A projekt egyszerűen</title>
+<link rel="stylesheet" href="assets/tananyag.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="top"><a href="index.html">← Tananyagtérkép</a><a href="08-pipeline-biztonsag-megfigyeles.html">8. Pipeline, biztonság, megfigyelés →</a></nav>
+
+<p class="eyebrow">0. tananyag · kezdd ezzel</p>
+<h1>Az egész projekt egyszerűen</h1>
+<p class="lead">Ha csak egy oldalt olvasol el, ezt. Mit építettél, miért, és hol tartasz most. Minden szakszó mellett ott van, mit jelent emberi nyelven.</p>
+
+<div class="goals">
+  <h2>A végére ezt fogod tudni</h2>
+  <ul>
+    <li>Egy mondatban elmondani, miről szól a dolgozatod.</li>
+    <li>Lerajzolni a rendszert egy papírra.</li>
+    <li>Mit csinál egy <code>git push</code> után a gépsor, lépésről lépésre.</li>
+    <li>Mi van kész, és mi van még hátra.</li>
+  </ul>
+</div>
+
+<h2 id="egy-mondat">1. A dolgozat egy mondatban</h2>
+
+<div class="box key"><strong>Ezt tanuld meg szó szerint</strong>
+Építettem egy gépsort, ami a kódomat magától kiviszi a szerverre, ellenőrzi, és ha hibás, visszaállítja az előzőt — aztán megmértem, mennyivel jobb ez, mint ugyanezt kézzel csinálni.</div>
+
+<p>Minden más ennek a mondatnak a részletezése. A gépsor neve <strong>CI/CD pipeline</strong>, a „szerver” egy <strong>Kubernetes-fürt</strong> az Azure-ban, a mérés pedig a dolgozat gerince.</p>
+
+<h3>Egy hasonlat, ami végig működik</h3>
+<p>Képzelj el egy pékséget. <strong>Kézzel</strong>: te gyúrod a tésztát, te sütöd, te csomagolod, te viszed ki a boltba, te kóstolod meg, jó-e. Tizenhárom mozdulat, és mindegyiket te csinálod. <strong>Pipeline-nal</strong>: beadod a receptet, és egy futószalag megcsinálja az egészet — sőt közben megnézi, nincs-e romlott alapanyag, és ha a kész kenyér rossz, magától visszateszi a polcra a tegnapit.</p>
+
+<div class="table-wrap"><table>
+<tr><th>A pékségben</th><th>Nálad</th></tr>
+<tr><td>recept</td><td>a forráskód (Git)</td></tr>
+<tr><td>a kész, becsomagolt kenyér</td><td>a konténer<em>kép</em> (Docker image)</td></tr>
+<tr><td>raktár</td><td>a registry</td></tr>
+<tr><td>a bolt polca</td><td>a Kubernetes-fürt</td></tr>
+<tr><td>a futószalag</td><td>a Gitea Actions pipeline</td></tr>
+<tr><td>összetevőlista a csomagoláson</td><td>az SBOM</td></tr>
+<tr><td>minőségellenőr</td><td>a füstteszt és a Trivy</td></tr>
+<tr><td>biztonsági kamera a boltban</td><td>Prometheus, Grafana, Loki</td></tr>
+</table></div>
+
+<h2 id="rendszer">2. A rendszer egy képen</h2>
+<p>Minden egyetlen Azure-os virtuális gépen fut. Ezt a gépet nem kattintással hoztad létre, hanem <strong>Terraformmal</strong>, kódból.</p>
+
+<figure>
+<svg viewBox="0 0 640 390" role="img" aria-label="A rendszer felépítése: laptop, Azure virtuális gép, rajta Gitea, runner, registry és k3s fürt">
+  <defs><marker id="p0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+
+  <rect x="10" y="150" width="120" height="80" rx="10" class="n-2"/>
+  <text x="70" y="180" text-anchor="middle" class="t-bold">Laptop</text>
+  <text x="70" y="198" text-anchor="middle" class="t-small">itt írod a kódot</text>
+  <text x="70" y="214" text-anchor="middle" class="t-mono t-small">git push</text>
+
+  <rect x="160" y="10" width="470" height="370" rx="14" class="zone"/>
+  <text x="176" y="34" class="t-bold">Azure virtuális gép · szakdoga2-vm</text>
+  <text x="176" y="52" class="t-small t-muted">Terraform hozta létre · 2 vCPU · 8 GB · swedencentral</text>
+
+  <rect x="180" y="70" width="130" height="56" rx="8" class="n-accent"/>
+  <text x="245" y="94" text-anchor="middle" class="t-bold">Gitea</text>
+  <text x="245" y="112" text-anchor="middle" class="t-small">a kód tárolója</text>
+
+  <rect x="330" y="70" width="130" height="56" rx="8" class="n-accent"/>
+  <text x="395" y="94" text-anchor="middle" class="t-bold">act_runner</text>
+  <text x="395" y="112" text-anchor="middle" class="t-small">a futószalag motorja</text>
+
+  <rect x="480" y="70" width="130" height="56" rx="8" class="n-accent"/>
+  <text x="545" y="94" text-anchor="middle" class="t-bold">registry</text>
+  <text x="545" y="112" text-anchor="middle" class="t-small">a képek raktára</text>
+
+  <text x="395" y="146" text-anchor="middle" class="t-small t-muted">ez a három Docker Compose-szal fut</text>
+
+  <rect x="180" y="165" width="430" height="200" rx="10" class="n-ok"/>
+  <text x="196" y="188" class="t-bold">k3s fürt (Kubernetes) · Helm: projecta</text>
+
+  <rect x="200" y="205" width="120" height="60" rx="8" class="n"/>
+  <text x="260" y="230" text-anchor="middle" class="t-bold">frontend ×2</text>
+  <text x="260" y="248" text-anchor="middle" class="t-small">React + nginx</text>
+
+  <rect x="345" y="205" width="120" height="60" rx="8" class="n"/>
+  <text x="405" y="230" text-anchor="middle" class="t-bold">backend ×2</text>
+  <text x="405" y="248" text-anchor="middle" class="t-small">Python Flask</text>
+
+  <rect x="490" y="205" width="105" height="60" rx="8" class="n"/>
+  <text x="542" y="230" text-anchor="middle" class="t-bold">postgres</text>
+  <text x="542" y="248" text-anchor="middle" class="t-small">adatbázis</text>
+
+  <text x="395" y="300" text-anchor="middle" class="t-small">Egy jegyzetelő alkalmazás: jegyzet létrehozása,</text>
+  <text x="395" y="318" text-anchor="middle" class="t-small">listázása, módosítása, törlése. Szándékosan kicsi —</text>
+  <text x="395" y="336" text-anchor="middle" class="t-small">a dolgozat tárgya nem az app, hanem a szállítása.</text>
+
+  <path d="M130,175 C150,130 160,100 176,98" class="line" marker-end="url(#p0)"/>
+  <text x="70" y="250" text-anchor="middle" class="t-small t-muted">SSH-alagúton át</text>
+  <path d="M310,98 L326,98" class="line" marker-end="url(#p0)"/>
+  <path d="M460,98 L476,98" class="line" marker-end="url(#p0)"/>
+  <path d="M545,126 L545,161" class="line" marker-end="url(#p0)"/>
+  <text x="552" y="150" class="t-small t-muted">kép letöltése</text>
+  <path d="M320,235 L341,235" class="line" marker-end="url(#p0)"/>
+  <path d="M465,235 L486,235" class="line" marker-end="url(#p0)"/>
+</svg>
+<figcaption>Miért van minden egy gépen? Mert a fürtnek el kell érnie a registryt, ahonnan a képet letölti. A laptopon lévő registryt a felhőből nem érné el (ADR-0008). A régiót és a méretet az Azure for Students szabályai döntötték el, nem te.</figcaption>
+</figure>
+
+<div class="box whatif"><strong>Mi lett volna, ha kézzel kattintod össze a gépet?</strong>
+Működne, de nem tudnád bizonyítani, hogy ugyanígy újra felépíthető. A Terraform kódja maga a bizonyíték: <code>terraform apply</code>, és ugyanaz a gép jön létre. Részletek: <a href="07-terraform.html">7. tananyag</a>.</div>
+
+<h2 id="push">3. Mi történik, amikor pusholsz</h2>
+<p>Kattints végig. Ez a pipeline, madártávlatból. A részletek a <a href="08-pipeline-biztonsag-megfigyeles.html">8. tananyagban</a> vannak.</p>
+
+<div class="stepper" data-captions="<strong>1. Push.</strong> A laptopodon kiadod: <code>git push azure release/meres</code>. Ez az egyetlen dolog, amit te csinálsz.|<strong>2. A Gitea észreveszi</strong>, hogy új kód jött egy figyelt ágra, és szól a runnernek: indulhat a futószalag.|<strong>3. Ellenőrzés.</strong> A runner leteszteli a kódot (pytest), átnézi a stílust (ruff), keres benne véletlenül bent hagyott jelszót, és ellenőrzi a Dockerfile-t.|<strong>4. Csomagolás.</strong> Megépíti a backend és a frontend konténerképét. A kép neve a commit azonosítója (SHA), így mindig tudod, pontosan melyik kód van benne.|<strong>5. Biztonsági vizsgálat.</strong> A Trivy átnézi a képet ismert sérülékenységekre. Ha súlyosat talál, a futószalag megáll.|<strong>6. Raktár.</strong> A kép a registrybe kerül. Innentől ez a kép <em>nem változik</em>: ugyanaz megy ki, amit teszteltél.|<strong>7. Telepítés.</strong> <code>helm upgrade --install</code>: a Helm szól a Kubernetesnek, hogy az új képet futtassa. A Kubernetes egyenként cseréli a podokat, így nincs leállás.|<strong>8. Átvétel.</strong> A pipeline megkérdezi az appot: melyik verzió vagy? (<code>/version</code>) Aztán lefuttatja a füsttesztet. Ha minden jó: kész, zöld.|<strong>9. Ha rossz:</strong> <code>helm rollback</code> — magától visszaáll az előző, működő verzióra. Nem kell hozzá ember.">
+<figure>
+<svg viewBox="0 0 640 170" role="img" aria-label="A pipeline kilenc lépése">
+  <g data-step="0"><rect x="5" y="40" width="60" height="50" rx="8" class="n-2"/><text x="35" y="70" text-anchor="middle" class="t-small t-bold">push</text></g>
+  <g data-step="1"><rect x="75" y="40" width="60" height="50" rx="8" class="n-accent"/><text x="105" y="70" text-anchor="middle" class="t-small t-bold">Gitea</text></g>
+  <g data-step="2"><rect x="145" y="40" width="60" height="50" rx="8" class="n-accent"/><text x="175" y="70" text-anchor="middle" class="t-small t-bold">teszt</text></g>
+  <g data-step="3"><rect x="215" y="40" width="60" height="50" rx="8" class="n-accent"/><text x="245" y="70" text-anchor="middle" class="t-small t-bold">build</text></g>
+  <g data-step="4"><rect x="285" y="40" width="60" height="50" rx="8" class="n-violet"/><text x="315" y="70" text-anchor="middle" class="t-small t-bold">Trivy</text></g>
+  <g data-step="5"><rect x="355" y="40" width="60" height="50" rx="8" class="n-accent"/><text x="385" y="70" text-anchor="middle" class="t-small t-bold">registry</text></g>
+  <g data-step="6"><rect x="425" y="40" width="60" height="50" rx="8" class="n-ok"/><text x="455" y="70" text-anchor="middle" class="t-small t-bold">Helm</text></g>
+  <g data-step="7"><rect x="495" y="40" width="60" height="50" rx="8" class="n-ok"/><text x="525" y="70" text-anchor="middle" class="t-small t-bold">átvétel</text></g>
+  <g data-only="7"><text x="600" y="70" text-anchor="middle" class="t-bold t-ok">zöld ✓</text></g>
+  <g data-only="8"><text x="600" y="70" text-anchor="middle" class="t-bold t-bad">piros ✗</text><rect x="425" y="115" width="130" height="40" rx="8" class="n-bad"/><text x="490" y="140" text-anchor="middle" class="t-small t-bold">helm rollback</text>
+  <path d="M525,90 L510,112" class="line-bad"/></g>
+  <text x="140" y="25" text-anchor="middle" class="t-small t-muted">1. job: build-test-push</text>
+  <text x="490" y="25" text-anchor="middle" class="t-small t-muted">2. job: deploy</text>
+</svg>
+</figure>
+<div class="controls">
+  <button data-prev>← Vissza</button>
+  <button data-next class="primary">Tovább →</button>
+  <button data-reset>Elölről</button>
+  <span class="counter"></span>
+</div>
+<div class="caption"></div>
+</div>
+
+<h2 id="szotar">4. Szószedet — egy sor mindenre</h2>
+<p>Ha a védésen elhangzik egy szó, és nem jut eszedbe, mit jelent, ide nézz. A bal oszlop a szó, a középső az emberi nyelv.</p>
+
+<div class="table-wrap"><table>
+<tr><th>Szó</th><th>Egyszerűen</th><th>Nálad</th></tr>
+<tr><td><strong>CI</strong> (folyamatos integráció)</td><td>Minden kódváltozást azonnal, automatikusan tesztelünk.</td><td>ruff, pytest, szkennelések</td></tr>
+<tr><td><strong>CD</strong> (folyamatos szállítás)</td><td>A tesztelt kód automatikusan ki is megy a szerverre.</td><td>a <code>deploy</code> job</td></tr>
+<tr><td><strong>Pipeline</strong></td><td>A futószalag: lépések, amik egymás után, maguktól lefutnak.</td><td><code>.gitea/workflows/ci.yml</code></td></tr>
+<tr><td><strong>Konténer / Docker</strong></td><td>Egy doboz, amiben az app és minden, ami kell neki, benne van. Bárhol ugyanúgy fut.</td><td><code>Dockerfile</code>, <code>frontend/Dockerfile</code></td></tr>
+<tr><td><strong>Image (kép)</strong></td><td>A doboz „fagyasztott” változata, amiből konténer indítható.</td><td><code>projecta-flask:&lt;sha&gt;</code></td></tr>
+<tr><td><strong>Registry</strong></td><td>A képek raktára.</td><td><code>localhost:5001</code> a VM-en</td></tr>
+<tr><td><strong>Kubernetes</strong></td><td>Egy „karmester”: megmondod neki, mi fusson, és ő gondoskodik róla, hogy fusson.</td><td>k3s, egy csomóponton</td></tr>
+<tr><td><strong>k3s</strong></td><td>A Kubernetes könnyített, de teljes értékű változata.</td><td>a VM-en, cloud-init telepíti</td></tr>
+<tr><td><strong>Pod</strong></td><td>A Kubernetesben futó konténer (egy vagy több).</td><td>backend ×2, frontend ×2, postgres ×1</td></tr>
+<tr><td><strong>Helm</strong></td><td>A Kubernetes csomagkezelője. Egy paranccsal az egész appot telepíti, és emlékszik az előző verziókra.</td><td><code>chart/</code></td></tr>
+<tr><td><strong>Rollback</strong></td><td>Visszaállás az előző, működő verzióra.</td><td><code>helm rollback projecta</code></td></tr>
+<tr><td><strong>Terraform</strong></td><td>Szerver létrehozása kódból, kattintás helyett.</td><td><code>terraform/</code>, 8 erőforrás</td></tr>
+<tr><td><strong>Gitea / Gitea Actions</strong></td><td>Saját, magunk futtatta „GitHub”, beépített futószalaggal.</td><td>a VM-en</td></tr>
+<tr><td><strong>act_runner</strong></td><td>A program, ami ténylegesen végrehajtja a pipeline lépéseit.</td><td>a VM-en, egyszerre 1 munka</td></tr>
+<tr><td><strong>Füstteszt</strong> (smoke test)</td><td>Gyors próba: „bekapcsol, nem füstöl?” — néhány kérés, jó választ ad-e.</td><td><code>scripts/smoke.sh</code>, <code>smoke.yml</code></td></tr>
+<tr><td><strong>Ellátási lánc</strong> (supply chain)</td><td>Minden külső darab, amiből a szoftvered áll: könyvtárak, alapkép.</td><td>hash-lock, SBOM, Trivy</td></tr>
+<tr><td><strong>SBOM</strong></td><td>Összetevőlista: miből áll a szoftvered.</td><td><code>docs/sbom/</code></td></tr>
+<tr><td><strong>Trivy</strong></td><td>Szkenner: ismert biztonsági hibákat keres a képben.</td><td>a pipeline-ban</td></tr>
+<tr><td><strong>Prometheus / Grafana / Loki</strong></td><td>Számok gyűjtése / kijelző / naplók gyűjtése.</td><td><code>platform/observability/</code></td></tr>
+<tr><td><strong>ADR</strong></td><td>Döntési jegyzet: mit döntöttem, miért, és mi az ára.</td><td><code>docs/adr/</code>, 9 darab</td></tr>
+</table></div>
+
+<h2 id="tortenet">5. Hogyan jutottál ide</h2>
+
+<figure>
+<svg viewBox="0 0 640 300" role="img" aria-label="A projekt idővonala">
+  <line x1="40" y1="20" x2="40" y2="285" class="line"/>
+  <circle cx="40" cy="35" r="8" class="n-violet"/>
+  <text x="60" y="32" class="t-bold">Gyakornokság (TCS, nyár)</text>
+  <text x="60" y="50" class="t-small">Gitea + runner + registry, pipeline Dockerre, Ansible-telepítés, rollback-gyakorlat,</text>
+  <text x="60" y="66" class="t-small">SBOM, Trivy, Prometheus/Grafana/Loki. Ez lett az alap.</text>
+
+  <circle cx="40" cy="105" r="8" class="n-accent"/>
+  <text x="60" y="102" class="t-bold">Szakdoga 1. hét — az app és a Kubernetes</text>
+  <text x="60" y="120" class="t-small">Jegyzet-funkció + PostgreSQL, React frontend, Helm chart, tesztelve k3d-n a laptopon.</text>
+  <text x="60" y="136" class="t-small">Tananyag: 1–6.</text>
+
+  <circle cx="40" cy="175" r="8" class="n-accent"/>
+  <text x="60" y="172" class="t-bold">2. hét — a valódi környezet</text>
+  <text x="60" y="190" class="t-small">Terraform → Azure VM + k3s. Gitea, runner, registry átköltözött a VM-re.</text>
+  <text x="60" y="206" class="t-small">Tananyag: 7.</text>
+
+  <circle cx="40" cy="245" r="8" class="n-ok"/>
+  <text x="60" y="242" class="t-bold">2. hét vége — a mérés</text>
+  <text x="60" y="260" class="t-small">Kézi folyamat 13 lépésben rögzítve, 10 kézi + 3 kézi hibás futtatás.</text>
+  <text x="60" y="276" class="t-small">A pipeline Helm-re állt át (ADR-0009), 10 automatizált futtatás. Tananyag: 8–9.</text>
+</svg>
+</figure>
+
+<h2 id="allapot">6. Hol tartasz most</h2>
+
+<div class="table-wrap"><table>
+<tr><th>Kész ✓</th><th>Hátravan</th></tr>
+<tr><td>Backend, frontend, adatbázis</td><td>3 automatizált hibás futtatás (automatikus rollback mérése)</td></tr>
+<tr><td>Helm chart, k3s fürt Azure-ban, Terraform</td><td>Az automatizált lépésidők kiértékelése (<code>auto-lepesidok.md</code>)</td></tr>
+<tr><td>Pipeline: build, teszt, szkennelés, telepítés, ellenőrzés, rollback</td><td>SBOM-ok újragenerálása (új alapkép miatt)</td></tr>
+<tr><td>Kézi mérés: 10 telepítés + 3 helyreállítás</td><td>Megfigyelhetőség átvezetése a fürtre (Prometheus/Grafana/Loki)</td></tr>
+<tr><td>Automatizált mérés: 10 telepítés</td><td>A dolgozat megírása (3–6. fejezet először)</td></tr>
+<tr><td>9 ADR, munkanapló, bizonyítékok</td><td></td></tr>
+</table></div>
+
+<div class="box thesis"><strong>A legfontosabb dolog, amit a védésen mondani fogsz</strong>
+A mérés mindkét oldala <em>ugyanarra a fürtre</em> telepít, ugyanabból a registryből, ugyanazon a gépen. Az egyetlen különbség, hogy kézzel adod ki a parancsokat, vagy a pipeline. Így amit mérsz, az tényleg az automatizálás hatása, nem valami más. Erről szól a <a href="09-meres-es-vedes.html">9. tananyag</a>.</div>
+
+<h2 id="kviz">Ellenőrizd magad</h2>
+<div class="quiz">
+<details><summary>Mondd el a dolgozatot egy mondatban.</summary>Építettem egy gépsort, ami a kódot magától kiviszi a szerverre, ellenőrzi, és hiba esetén visszaállítja — és megmértem, mennyivel jobb, mint kézzel.</details>
+<details><summary>Miért kell a registry, miért nem lehet a képet egyből futtatni?</summary>Mert így pontosan az a kép megy ki, amit a pipeline tesztelt és szkennelt, és a fürt bármikor újra le tudja tölteni ugyanazt (pl. rollbacknél). Build egyszer, telepítés ugyanabból (ADR-0002).</details>
+<details><summary>Mit csinál a Terraform, és mit nem?</summary>Létrehozza a gépet, a hálózatot, a tűzfalat, és a cloud-init feltelepíti rá a k3s-t. Az alkalmazást <em>nem</em> ő telepíti — az a Helm dolga.</details>
+<details><summary>Miért egy csomópontos a fürt?</summary>Mert a dolgozat a telepítési láncról szól, nem a fürt üzemeltetéséről. Több csomópont nem változtatna azon, mennyi idő a változtatástól a működő telepítésig. És olcsóbb (ADR-0008).</details>
+</div>
+
+<footer class="page"><span>Utoljára frissítve: 2026. szeptember 22.</span><span>Forrás: naplo.md, 00-terv.md, docs/adr/</span></footer>
+</div>
+<script src="assets/tananyag.js"></script>
+</body>
+</html>

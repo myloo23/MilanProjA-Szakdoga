@@ -13,6 +13,17 @@
 <h1>Tananyagtérkép</h1>
 <p class="lead">Minden, amit az első héten megépítettél: mit csinál, miért pont így, és mi történt volna másképp. Nem a dolgozat szövege, hanem az, hogy te értsd, és meg tudd védeni.</p>
 
+<div class="box key"><strong>Kezdd itt</strong>
+Ha keveset tudsz arról, mit csináltunk eddig: előbb a 0. tananyag (az egész egy oldalon), aztán a 9. (mérés és védés). A többi a részletekhez kell.</div>
+
+<div class="cards">
+  <div class="card">
+    <span class="num">0</span><h3><a href="00-a-projekt-egyszeruen.html">Az egész projekt egyszerűen</a></h3>
+    <label><input type="checkbox" data-progress="00"> kész</label>
+    <p>A dolgozat egy mondatban, a rendszer egy képen, mi történik egy push után, szószedet, hol tartasz.</p>
+  </div>
+</div>
+
 <h2 id="rendszer">A rendszer egy képen</h2>
 <p>A számok azt mutatják, melyik tananyag foglalkozik az adott résszel.</p>
 
@@ -118,10 +129,26 @@
   </div>
 </div>
 
+<h2 id="harmadik-het">Pipeline, mérés, védés</h2>
+<p>A gépsor belülről, a mérés eredménye, és a várható védési kérdések.</p>
+
+<div class="cards">
+  <div class="card">
+    <span class="num">8</span><h3><a href="08-pipeline-biztonsag-megfigyeles.html">Pipeline, biztonság, megfigyelés</a></h3>
+    <label><input type="checkbox" data-progress="08"> kész</label>
+    <p>A két job, build egyszer, rollback, SBOM és Trivy, a „lejáró” zöld szkennelés, Prometheus/Loki/Grafana.</p>
+  </div>
+  <div class="card">
+    <span class="num">9</span><h3><a href="09-meres-es-vedes.html">Mérés és védés</a></h3>
+    <label><input type="checkbox" data-progress="09"> kész</label>
+    <p>Miért fair a mérés, az eredmény ábrákon, miért lassabb összesen, gyenge pontok, 3 mondatos bemutatkozás, várható kérdések.</p>
+  </div>
+</div>
+
 <div class="box thesis"><strong>Hogyan kapcsolódik a dolgozathoz</strong>
 A 2. és a 4. tananyag adja a mérés magyarázatát: a readiness probe és a RollingUpdate miatt nincs kiesés verzióváltáskor, a rollback pedig egy parancs. A 3. tananyag a pipeline alapja: a <code>helm upgrade --install --set image.tag=&lt;sha&gt;</code> váltja ki az Ansible-lépést. A „tudatos egyszerűsítés” dobozokban lévő pontok a továbbfejlesztési fejezetbe valók.</div>
 
-<footer class="page"><span>Utoljára frissítve: 2026. szeptember 21. · 2. hét eleje</span><span>A korábbi <code>01-kubernetes-alapok.md</code> tartalma az 1. tananyagba került.</span></footer>
+<footer class="page"><span>Utoljára frissítve: 2026. szeptember 22.</span><span>A korábbi <code>01-kubernetes-alapok.md</code> tartalma az 1. tananyagba került.</span></footer>
 </div>
 <script src="assets/tananyag.js"></script>
 </body>
