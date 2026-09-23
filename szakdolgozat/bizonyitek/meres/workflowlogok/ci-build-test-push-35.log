@@ -1,0 +1,564 @@
+2026-09-23T07:16:46.4861399Z projecta-azure-runner(version:v0.2.12) received task 35 of job build-test-push, be triggered by event: push
+2026-09-23T07:16:46.4867742Z workflow prepared
+2026-09-23T07:16:46.4868565Z evaluating expression 'success()'
+2026-09-23T07:16:46.4869140Z expression 'success()' evaluated to 'true'
+2026-09-23T07:16:46.4869274Z 🚀  Start image=docker.gitea.com/runner-images:ubuntu-latest
+2026-09-23T07:16:46.4956602Z   🐳  docker pull image=docker.gitea.com/runner-images:ubuntu-latest platform= username= forcePull=true
+2026-09-23T07:16:46.4956847Z   🐳  docker pull docker.gitea.com/runner-images:ubuntu-latest
+2026-09-23T07:16:46.4957168Z pulling image 'docker.gitea.com/runner-images:ubuntu-latest' ()
+2026-09-23T07:16:47.6431051Z Pulling from runner-images :: ubuntu-latest
+2026-09-23T07:16:49.6501081Z Digest: sha256:fd911d7417bfbf0f454530e447da95b58001e1df41bbc5e1a8dd35d432575aae :: 
+2026-09-23T07:16:49.6501655Z Status: Image is up to date for docker.gitea.com/runner-images:ubuntu-latest :: 
+2026-09-23T07:16:49.7298167Z   🐳  docker create image=docker.gitea.com/runner-images:ubuntu-latest platform= entrypoint=["/bin/sleep" "10799"] cmd=[] network="projecta-platform"
+2026-09-23T07:16:50.3562204Z Created container name=GITEA-ACTIONS-TASK-35_WORKFLOW-Pipeline_JOB-build-test-push id=0c6be5fb294a7b5710d355c338b430066478a1c5da4f545d42ff414d2b8bbbf8 from image docker.gitea.com/runner-images:ubuntu-latest (platform: )
+2026-09-23T07:16:50.3562621Z ENV ==> [RUNNER_TOOL_CACHE=/opt/hostedtoolcache RUNNER_OS=Linux RUNNER_ARCH=X64 RUNNER_TEMP=/tmp LANG=C.UTF-8]
+2026-09-23T07:16:50.3562794Z   🐳  docker run image=docker.gitea.com/runner-images:ubuntu-latest platform= entrypoint=["/bin/sleep" "10799"] cmd=[] network="projecta-platform"
+2026-09-23T07:16:50.3562970Z Starting container: 0c6be5fb294a7b5710d355c338b430066478a1c5da4f545d42ff414d2b8bbbf8
+2026-09-23T07:16:50.5222319Z Started container: 0c6be5fb294a7b5710d355c338b430066478a1c5da4f545d42ff414d2b8bbbf8
+2026-09-23T07:16:50.5959456Z Writing entry to tarball workflow/event.json len:5533
+2026-09-23T07:16:50.5960308Z Writing entry to tarball workflow/envs.txt len:0
+2026-09-23T07:16:50.5960507Z Extracting content to '/var/run/act/'
+2026-09-23T07:16:50.6128117Z   ☁  git clone 'https://github.com/actions/checkout' # ref=v4
+2026-09-23T07:16:50.6128389Z   cloning https://github.com/actions/checkout to /root/.cache/act/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab
+2026-09-23T07:16:51.1550298Z Unable to pull refs/heads/v4: non-fast-forward update
+2026-09-23T07:16:51.1550642Z Cloned https://github.com/actions/checkout to /root/.cache/act/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab
+2026-09-23T07:16:51.1824274Z Checked out v4
+2026-09-23T07:16:51.1959400Z   ☁  git clone 'https://github.com/actions/setup-python' # ref=v5
+2026-09-23T07:16:51.1959712Z   cloning https://github.com/actions/setup-python to /root/.cache/act/8dd8b1aead80a801f9b34ee6d45c001ae20a6c2abfe4c7037c4803578f162558
+2026-09-23T07:16:51.5070935Z Non-terminating error while running 'git clone': some refs were not updated
+2026-09-23T07:16:51.5294514Z evaluating expression ''
+2026-09-23T07:16:51.5295090Z expression '' evaluated to 'true'
+2026-09-23T07:16:51.5295212Z ⭐ Run Main Mark the start of the run
+2026-09-23T07:16:51.5295372Z Writing entry to tarball workflow/outputcmd.txt len:0
+2026-09-23T07:16:51.5295574Z Writing entry to tarball workflow/statecmd.txt len:0
+2026-09-23T07:16:51.5295704Z Writing entry to tarball workflow/pathcmd.txt len:0
+2026-09-23T07:16:51.5295800Z Writing entry to tarball workflow/envs.txt len:0
+2026-09-23T07:16:51.5295888Z Writing entry to tarball workflow/SUMMARY.md len:0
+2026-09-23T07:16:51.5295980Z Extracting content to '/var/run/act'
+2026-09-23T07:16:51.5507428Z Wrote command \n\necho "MERES pipeline-start $(date -u +%Y-%m-%dT%H:%M:%SZ)"\n\n to 'workflow/0'
+2026-09-23T07:16:51.5507854Z Writing entry to tarball workflow/0 len:60
+2026-09-23T07:16:51.5508069Z Extracting content to '/var/run/act'
+2026-09-23T07:16:51.5524460Z   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/0] user= workdir=
+2026-09-23T07:16:51.5524718Z Exec command '[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/0]'
+2026-09-23T07:16:51.5525039Z Working directory '/workspace/milan/MilanProjA-Szakdoga'
+2026-09-23T07:16:51.5897721Z MERES pipeline-start 2026-09-23T07:16:51Z
+2026-09-23T07:16:52.0021865Z ::add-matcher::/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/problem-matcher.json
+2026-09-23T07:16:52.0025369Z Syncing repository: milan/MilanProjA-Szakdoga
+2026-09-23T07:16:52.0029074Z ::group::Getting Git version info
+2026-09-23T07:16:52.0030333Z Working directory is '/workspace/milan/MilanProjA-Szakdoga'
+2026-09-23T07:16:52.0061741Z [command]/usr/bin/git version
+2026-09-23T07:16:52.0099831Z git version 2.55.0
+2026-09-23T07:16:52.0132886Z ::endgroup::
+2026-09-23T07:16:52.0186295Z Temporarily overriding HOME='/tmp/d7dbe881-5c06-4f11-a359-505e0c04aff2' before making global git config changes
+2026-09-23T07:16:52.0187645Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-23T07:16:52.0192435Z [command]/usr/bin/git config --global --add safe.directory /workspace/milan/MilanProjA-Szakdoga
+2026-09-23T07:16:52.0225897Z Deleting the contents of '/workspace/milan/MilanProjA-Szakdoga'
+2026-09-23T07:16:52.0230757Z ::group::Initializing the repository
+2026-09-23T07:16:52.0234188Z [command]/usr/bin/git init /workspace/milan/MilanProjA-Szakdoga
+2026-09-23T07:16:52.0270212Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-09-23T07:16:52.0270491Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-09-23T07:16:52.0270774Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-09-23T07:16:52.0270953Z hint: call:
+2026-09-23T07:16:52.0271103Z hint:
+2026-09-23T07:16:52.0271240Z hint: 	git config --global init.defaultBranch <name>
+2026-09-23T07:16:52.0271397Z hint:
+2026-09-23T07:16:52.0271736Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-09-23T07:16:52.0271845Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-09-23T07:16:52.0271931Z hint:
+2026-09-23T07:16:52.0272030Z hint: 	git branch -m <name>
+2026-09-23T07:16:52.0272106Z hint:
+2026-09-23T07:16:52.0272176Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-09-23T07:16:52.0276013Z Initialized empty Git repository in /workspace/milan/MilanProjA-Szakdoga/.git/
+2026-09-23T07:16:52.0287367Z [command]/usr/bin/git remote add origin http://gitea:3000/milan/MilanProjA-Szakdoga
+2026-09-23T07:16:52.0312969Z ::endgroup::
+2026-09-23T07:16:52.0314260Z ::group::Disabling automatic garbage collection
+2026-09-23T07:16:52.0318864Z [command]/usr/bin/git config --local gc.auto 0
+2026-09-23T07:16:52.0347192Z ::endgroup::
+2026-09-23T07:16:52.0347494Z ::group::Setting up auth
+2026-09-23T07:16:52.0351472Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-23T07:16:52.0377767Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-23T07:16:52.0577710Z [command]/usr/bin/git config --local --name-only --get-regexp http\.http\:\/\/gitea\:3000\/\.extraheader
+2026-09-23T07:16:52.0604816Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.http\:\/\/gitea\:3000\/\.extraheader' && git config --local --unset-all 'http.http://gitea:3000/.extraheader' || :"
+2026-09-23T07:16:52.0816800Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-23T07:16:52.0844785Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-23T07:16:52.1037218Z [command]/usr/bin/git config --local http.http://gitea:3000/.extraheader AUTHORIZATION: basic ***
+2026-09-23T07:16:52.1070761Z ::endgroup::
+2026-09-23T07:16:52.1071018Z ::group::Fetching the repository
+2026-09-23T07:16:52.1078723Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +be3a91cf3c0d16aac21528aae0f99b2095eed8ae:refs/remotes/origin/release/meres-hiba
+2026-09-23T07:16:52.3438700Z From http://gitea:3000/milan/MilanProjA-Szakdoga
+2026-09-23T07:16:52.3439178Z  * [new ref]         be3a91cf3c0d16aac21528aae0f99b2095eed8ae -> origin/release/meres-hiba
+2026-09-23T07:16:52.3441242Z ::endgroup::
+2026-09-23T07:16:52.3441729Z ::group::Determining the checkout info
+2026-09-23T07:16:52.3444575Z ::endgroup::
+2026-09-23T07:16:52.3449192Z [command]/usr/bin/git sparse-checkout disable
+2026-09-23T07:16:52.3483188Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-09-23T07:16:52.3522452Z ::group::Checking out the ref
+2026-09-23T07:16:52.3527561Z [command]/usr/bin/git checkout --progress --force -B release/meres-hiba refs/remotes/origin/release/meres-hiba
+2026-09-23T07:16:52.4116415Z Switched to a new branch 'release/meres-hiba'
+2026-09-23T07:16:52.4117582Z branch 'release/meres-hiba' set up to track 'origin/release/meres-hiba'.
+2026-09-23T07:16:52.4122563Z ::endgroup::
+2026-09-23T07:16:52.4156694Z [command]/usr/bin/git log -1 --format=%H
+2026-09-23T07:16:52.4177015Z be3a91cf3c0d16aac21528aae0f99b2095eed8ae
+2026-09-23T07:16:52.4191444Z ::remove-matcher owner=checkout-git::
+2026-09-23T07:16:52.5117938Z refs/heads/release/meres-hiba -> ships=true, tag=be3a91c
+2026-09-23T07:16:52.9467369Z ::group::Installed versions
+2026-09-23T07:16:52.9515284Z (node:156) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-23T07:16:52.9516051Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-23T07:16:52.9517992Z Successfully set up CPython (3.12.14)
+2026-09-23T07:16:52.9518553Z ::endgroup::
+2026-09-23T07:16:52.9786005Z [command]/opt/hostedtoolcache/Python/3.12.14/x64/bin/pip cache dir
+2026-09-23T07:16:53.1689285Z /root/.cache/pip
+2026-09-23T07:16:53.2518015Z Cache Size: ~3 MB (2635070 B)
+2026-09-23T07:16:53.2539662Z [command]/usr/bin/tar -xf /tmp/30756154-31bf-4f7f-afb2-74e8bfb26640/cache.tzst -P -C /workspace/milan/MilanProjA-Szakdoga --use-compress-program unzstd
+2026-09-23T07:16:53.2722469Z Cache restored successfully
+2026-09-23T07:16:53.2752333Z Cache restored from key: setup-python-linux-x64-24.04-ubuntu-python-3.12.14-pip-528535ef8e9e502a48a298e3d6e02ce098910f414be5bb6da735900e1e78fe89
+2026-09-23T07:16:53.2753199Z ##[add-matcher]/run/act/actions/8dd8b1aead80a801f9b34ee6d45c001ae20a6c2abfe4c7037c4803578f162558/.github/python.json
+2026-09-23T07:16:53.7197411Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (26.2.1)
+2026-09-23T07:16:53.8096222Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-09-23T07:16:54.1845572Z Requirement already satisfied: blinker==1.9.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 7)) (1.9.0)
+2026-09-23T07:16:54.1850893Z Requirement already satisfied: build==1.5.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 11)) (1.5.0)
+2026-09-23T07:16:54.1855510Z Requirement already satisfied: cfgv==3.5.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 15)) (3.5.0)
+2026-09-23T07:16:54.1859914Z Requirement already satisfied: click==8.4.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 19)) (8.4.2)
+2026-09-23T07:16:54.1865592Z Requirement already satisfied: coverage==7.15.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 25)) (7.15.2)
+2026-09-23T07:16:54.1870368Z Requirement already satisfied: distlib==0.4.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 118)) (0.4.3)
+2026-09-23T07:16:54.1874810Z Requirement already satisfied: filelock==3.32.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 122)) (3.32.2)
+2026-09-23T07:16:54.1879311Z Requirement already satisfied: flask==3.1.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 128)) (3.1.3)
+2026-09-23T07:16:54.1883742Z Requirement already satisfied: gunicorn==23.0.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 132)) (23.0.0)
+2026-09-23T07:16:54.1888432Z Requirement already satisfied: identify==2.6.19 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 136)) (2.6.19)
+2026-09-23T07:16:54.1892982Z Requirement already satisfied: iniconfig==2.3.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 140)) (2.3.0)
+2026-09-23T07:16:54.1897360Z Requirement already satisfied: itsdangerous==2.2.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 144)) (2.2.0)
+2026-09-23T07:16:54.1901886Z Requirement already satisfied: jinja2==3.1.6 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 148)) (3.1.6)
+2026-09-23T07:16:54.1906400Z Requirement already satisfied: markupsafe==3.0.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 152)) (3.0.3)
+2026-09-23T07:16:54.1910524Z Requirement already satisfied: nodeenv==1.10.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 246)) (1.10.0)
+2026-09-23T07:16:54.1915185Z Requirement already satisfied: packaging==26.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 250)) (26.2)
+2026-09-23T07:16:54.1919596Z Requirement already satisfied: pip-tools==7.6.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 258)) (7.6.0)
+2026-09-23T07:16:54.2058779Z Collecting platformdirs==4.11.1 (from -r requirements-dev.txt (line 262))
+2026-09-23T07:16:54.2073674Z   Using cached platformdirs-4.11.1-py3-none-any.whl (23 kB)
+2026-09-23T07:16:54.2097971Z Requirement already satisfied: pluggy==1.6.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 266)) (1.6.0)
+2026-09-23T07:16:54.2102978Z Requirement already satisfied: pre-commit==4.6.1 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 272)) (4.6.1)
+2026-09-23T07:16:54.2107624Z Requirement already satisfied: prometheus-client==0.26.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 276)) (0.26.0)
+2026-09-23T07:16:54.2112500Z Requirement already satisfied: psycopg==3.3.5 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 280)) (3.3.5)
+2026-09-23T07:16:54.2117156Z Requirement already satisfied: psycopg-binary==3.3.5 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 284)) (3.3.5)
+2026-09-23T07:16:54.2121881Z Requirement already satisfied: pygments==2.20.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 341)) (2.20.0)
+2026-09-23T07:16:54.2126419Z Requirement already satisfied: pyproject-hooks==1.2.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 345)) (1.2.0)
+2026-09-23T07:16:54.2131234Z Requirement already satisfied: pytest==9.1.1 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 351)) (9.1.1)
+2026-09-23T07:16:54.2135518Z Requirement already satisfied: pytest-cov==7.1.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 357)) (7.1.0)
+2026-09-23T07:16:54.2140002Z Requirement already satisfied: python-discovery==1.5.1 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 361)) (1.5.1)
+2026-09-23T07:16:54.2144864Z Requirement already satisfied: pyyaml==6.0.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 365)) (6.0.3)
+2026-09-23T07:16:54.2149556Z Requirement already satisfied: ruff==0.15.22 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 440)) (0.15.22)
+2026-09-23T07:16:54.2154072Z Requirement already satisfied: typing-extensions==4.16.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 460)) (4.16.0)
+2026-09-23T07:16:54.2158869Z Requirement already satisfied: virtualenv==21.7.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 464)) (21.7.3)
+2026-09-23T07:16:54.2192027Z Requirement already satisfied: werkzeug==3.1.8 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 468)) (3.1.8)
+2026-09-23T07:16:54.2192931Z Requirement already satisfied: wheel==0.47.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 472)) (0.47.0)
+2026-09-23T07:16:54.2327061Z Collecting pip==26.1.2 (from -r requirements-dev.txt (line 478))
+2026-09-23T07:16:54.2340584Z   Using cached pip-26.1.2-py3-none-any.whl (1.8 MB)
+2026-09-23T07:16:54.2422279Z Requirement already satisfied: setuptools==83.0.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 482)) (83.0.0)
+2026-09-23T07:16:54.3384208Z Installing collected packages: platformdirs, pip
+2026-09-23T07:16:54.3391225Z   Attempting uninstall: platformdirs
+2026-09-23T07:16:54.3414959Z     Found existing installation: platformdirs 4.11.0
+2026-09-23T07:16:54.3440449Z     Uninstalling platformdirs-4.11.0:
+2026-09-23T07:16:54.3447153Z       Successfully uninstalled platformdirs-4.11.0
+2026-09-23T07:16:54.3825948Z   Attempting uninstall: pip
+2026-09-23T07:16:54.3857685Z     Found existing installation: pip 26.2.1
+2026-09-23T07:16:54.4169377Z     Uninstalling pip-26.2.1:
+2026-09-23T07:16:54.4228755Z       Successfully uninstalled pip-26.2.1
+2026-09-23T07:16:55.6144898Z 
+2026-09-23T07:16:55.6199451Z Successfully installed pip-26.1.2 platformdirs-4.11.1
+2026-09-23T07:16:55.6202938Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-09-23T07:16:55.7935111Z All checks passed!
+2026-09-23T07:16:55.9571582Z trivy 0.72.0: scanning 238 tracked files for secrets
+2026-09-23T07:16:58.6231805Z 2026-09-23T07:16:58Z	INFO	[secret] Secret scanning is enabled
+2026-09-23T07:16:58.6232423Z 2026-09-23T07:16:58Z	INFO	[secret] Please see https://trivy.dev/docs/v0.72/guide/scanner/secret#recommendation for faster secret detection
+2026-09-23T07:16:58.9525691Z 2026-09-23T07:16:58Z	INFO	[npm] Run "npm install" to collect the license information of packages	dir="frontend/node_modules"
+2026-09-23T07:16:58.9562965Z 2026-09-23T07:16:58Z	WARN	[pip] Unable to find python `site-packages` directory. License detection is skipped.	err="unable to find path to Python executable"
+2026-09-23T07:16:58.9612307Z 2026-09-23T07:16:58Z	INFO	Suppressing dependencies for development and testing. To display them, try the '--include-dev-deps' flag.
+2026-09-23T07:16:58.9612619Z 2026-09-23T07:16:58Z	INFO	Number of language-specific files	num=2
+2026-09-23T07:16:58.9616561Z 
+2026-09-23T07:16:58.9616814Z Report Summary
+2026-09-23T07:16:58.9616948Z 
+2026-09-23T07:16:58.9617085Z ┌────────────────────────────┬──────┬─────────┐
+2026-09-23T07:16:58.9617283Z │           Target           │ Type │ Secrets │
+2026-09-23T07:16:58.9617436Z ├────────────────────────────┼──────┼─────────┤
+2026-09-23T07:16:58.9617601Z │ frontend/package-lock.json │ npm  │    -    │
+2026-09-23T07:16:58.9617745Z ├────────────────────────────┼──────┼─────────┤
+2026-09-23T07:16:58.9617914Z │ requirements.txt           │ pip  │    -    │
+2026-09-23T07:16:58.9618060Z └────────────────────────────┴──────┴─────────┘
+2026-09-23T07:16:58.9618214Z Legend:
+2026-09-23T07:16:58.9618356Z - '-': Not scanned
+2026-09-23T07:16:58.9618485Z - '0': Clean (no security findings detected)
+2026-09-23T07:16:58.9618633Z 
+2026-09-23T07:16:58.9618797Z 
+2026-09-23T07:16:58.9618888Z 📣 [34mNotices:[0m
+2026-09-23T07:16:58.9618981Z   - Version 0.74.0 of Trivy is now available, current version is 0.72.0
+2026-09-23T07:16:58.9619076Z 
+2026-09-23T07:16:58.9619145Z To suppress version checks, run Trivy scans with the --skip-version-check flag
+2026-09-23T07:16:58.9619322Z 
+2026-09-23T07:17:00.6052065Z hadolint v2.14.0: no findings at or above info
+2026-09-23T07:17:01.7850678Z ============================= test session starts ==============================
+2026-09-23T07:17:01.7851440Z platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0
+2026-09-23T07:17:01.7851611Z rootdir: /workspace/milan/MilanProjA-Szakdoga
+2026-09-23T07:17:01.7851782Z plugins: cov-7.1.0
+2026-09-23T07:17:01.7851922Z collected 48 items
+2026-09-23T07:17:01.7852062Z 
+2026-09-23T07:17:01.8309368Z tests/test_app.py ...............                                        [ 31%]
+2026-09-23T07:17:01.8701451Z tests/test_notes.py ...............                                      [ 62%]
+2026-09-23T07:17:02.0005760Z tests/test_observability.py ..................                           [100%]
+2026-09-23T07:17:02.0006172Z 
+2026-09-23T07:17:02.0006323Z ================================ tests coverage ================================
+2026-09-23T07:17:02.0006497Z _______________ coverage: platform linux, python 3.12.14-final-0 _______________
+2026-09-23T07:17:02.0006682Z 
+2026-09-23T07:17:02.0006822Z Name                    Stmts   Miss  Cover   Missing
+2026-09-23T07:17:02.0006988Z -----------------------------------------------------
+2026-09-23T07:17:02.0007146Z app/__init__.py             0      0   100%
+2026-09-23T07:17:02.0007297Z app/app.py                100      1    99%   239
+2026-09-23T07:17:02.0007458Z app/db.py                  13      5    62%   22, 36-37, 41-42
+2026-09-23T07:17:02.0007636Z app/logging_config.py      38      0   100%
+2026-09-23T07:17:02.0007785Z app/metrics.py             16      0   100%
+2026-09-23T07:17:02.0007926Z app/notes.py               14      8    43%   14-15, 21-22, 30-31, 39-40
+2026-09-23T07:17:02.0008090Z -----------------------------------------------------
+2026-09-23T07:17:02.0008270Z TOTAL                     181     14    92%
+2026-09-23T07:17:02.0008423Z Required test coverage of 80% reached. Total coverage: 92.27%
+2026-09-23T07:17:02.0008733Z ============================== 48 passed in 0.99s ==============================
+2026-09-23T07:17:02.5561504Z Requirement already satisfied: ansible-compat==26.6.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 7)) (26.6.0)
+2026-09-23T07:17:02.5567124Z Requirement already satisfied: ansible-core==2.21.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 11)) (2.21.2)
+2026-09-23T07:17:02.5571837Z Requirement already satisfied: ansible-lint==26.6.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 18)) (26.6.0)
+2026-09-23T07:17:02.5576439Z Requirement already satisfied: attrs==26.1.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 22)) (26.1.0)
+2026-09-23T07:17:02.5581515Z Requirement already satisfied: black==26.5.1 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 28)) (26.5.1)
+2026-09-23T07:17:02.5586413Z Requirement already satisfied: bracex==3.0.1 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 57)) (3.0.1)
+2026-09-23T07:17:02.5591087Z Requirement already satisfied: certifi==2026.7.22 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 61)) (2026.7.22)
+2026-09-23T07:17:02.5595371Z Requirement already satisfied: cffi==2.1.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 65)) (2.1.0)
+2026-09-23T07:17:02.5599785Z Requirement already satisfied: charset-normalizer==3.4.9 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 169)) (3.4.9)
+2026-09-23T07:17:02.5605045Z Requirement already satisfied: click==8.4.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 264)) (8.4.2)
+2026-09-23T07:17:02.5609693Z Requirement already satisfied: cryptography==50.0.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 268)) (50.0.0)
+2026-09-23T07:17:02.5614851Z Requirement already satisfied: distro==1.9.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 318)) (1.9.0)
+2026-09-23T07:17:02.5619228Z Requirement already satisfied: filelock==3.32.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 322)) (3.32.2)
+2026-09-23T07:17:02.5623833Z Requirement already satisfied: idna==3.18 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 326)) (3.18)
+2026-09-23T07:17:02.5629103Z Requirement already satisfied: jinja2==3.1.6 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 330)) (3.1.6)
+2026-09-23T07:17:02.5633632Z Requirement already satisfied: jsonschema==4.26.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 334)) (4.26.0)
+2026-09-23T07:17:02.5638397Z Requirement already satisfied: jsonschema-specifications==2025.9.1 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 340)) (2025.9.1)
+2026-09-23T07:17:02.5643240Z Requirement already satisfied: markupsafe==3.0.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 344)) (3.0.3)
+2026-09-23T07:17:02.5648682Z Requirement already satisfied: mypy-extensions==1.1.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 435)) (1.1.0)
+2026-09-23T07:17:02.5653093Z Requirement already satisfied: packaging==26.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 439)) (26.2)
+2026-09-23T07:17:02.5657542Z Requirement already satisfied: pathspec==1.1.1 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 447)) (1.1.1)
+2026-09-23T07:17:02.7069684Z Collecting platformdirs==4.11.0 (from -r ansible/requirements-lint.txt (line 454))
+2026-09-23T07:17:02.7084427Z   Using cached platformdirs-4.11.0-py3-none-any.whl (23 kB)
+2026-09-23T07:17:02.7109333Z Requirement already satisfied: pycparser==3.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 458)) (3.0)
+2026-09-23T07:17:02.7113908Z Requirement already satisfied: pytokens==0.4.1 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 462)) (0.4.1)
+2026-09-23T07:17:02.7120508Z Requirement already satisfied: pyyaml==6.0.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 506)) (6.0.3)
+2026-09-23T07:17:02.7124625Z Requirement already satisfied: referencing==0.37.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 585)) (0.37.0)
+2026-09-23T07:17:02.7129327Z Requirement already satisfied: requests==2.33.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 592)) (2.33.0)
+2026-09-23T07:17:02.7134113Z Requirement already satisfied: resolvelib==1.2.1 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 596)) (1.2.1)
+2026-09-23T07:17:02.7138861Z Requirement already satisfied: rpds-py==2026.6.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 600)) (2026.6.3)
+2026-09-23T07:17:02.7143387Z Requirement already satisfied: ruamel-yaml==0.19.1 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 720)) (0.19.1)
+2026-09-23T07:17:02.7147819Z Requirement already satisfied: ruamel-yaml-clib==0.2.15 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 724)) (0.2.15)
+2026-09-23T07:17:02.7152560Z Requirement already satisfied: subprocess-tee==0.4.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 787)) (0.4.2)
+2026-09-23T07:17:02.7157199Z Requirement already satisfied: typing-extensions==4.16.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 793)) (4.16.0)
+2026-09-23T07:17:02.7161926Z Requirement already satisfied: urllib3==2.7.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 797)) (2.7.0)
+2026-09-23T07:17:02.7166627Z Requirement already satisfied: wcmatch==11.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 801)) (11.0)
+2026-09-23T07:17:02.7172025Z Requirement already satisfied: yamllint==1.38.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r ansible/requirements-lint.txt (line 805)) (1.38.0)
+2026-09-23T07:17:02.7960481Z Installing collected packages: platformdirs
+2026-09-23T07:17:02.7962012Z   Attempting uninstall: platformdirs
+2026-09-23T07:17:02.7991304Z     Found existing installation: platformdirs 4.11.1
+2026-09-23T07:17:02.8014229Z     Uninstalling platformdirs-4.11.1:
+2026-09-23T07:17:02.8022505Z       Successfully uninstalled platformdirs-4.11.1
+2026-09-23T07:17:02.8359186Z Successfully installed platformdirs-4.11.0
+2026-09-23T07:17:02.8361810Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-09-23T07:17:02.8380752Z 
+2026-09-23T07:17:02.8381247Z [notice] A new release of pip is available: 26.1.2 -> 26.2.1
+2026-09-23T07:17:02.8381468Z [notice] To update, run: pip install --upgrade pip
+2026-09-23T07:17:29.8686392Z Starting galaxy collection install process
+2026-09-23T07:17:29.8686937Z Process install dependency map
+2026-09-23T07:17:29.8687038Z Starting collection install process
+2026-09-23T07:17:29.8687154Z Downloading https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/artifacts/community-docker-4.8.7.tar.gz to /root/.ansible/tmp/ansible-local-333f0olx33p/tmpcjbzf_47/community-docker-4.8.7-h6rz9kqa
+2026-09-23T07:17:29.8687296Z Installing 'community.docker:4.8.7' to '/root/.ansible/collections/ansible_collections/community/docker'
+2026-09-23T07:17:29.8687418Z community.docker:4.8.7 was installed successfully
+2026-09-23T07:17:29.8687509Z Downloading https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/artifacts/community-library_inventory_filtering_v1-1.1.5.tar.gz to /root/.ansible/tmp/ansible-local-333f0olx33p/tmpcjbzf_47/community-library_inventory_filtering_v1-1.1.5-y3r7uhfw
+2026-09-23T07:17:29.8687640Z Installing 'community.library_inventory_filtering_v1:1.1.5' to '/root/.ansible/collections/ansible_collections/community/library_inventory_filtering_v1'
+2026-09-23T07:17:29.8687763Z community.library_inventory_filtering_v1:1.1.5 was installed successfully
+2026-09-23T07:17:30.5638415Z ansible-lint 26.6.0 using ansible-core:2.21.2 ansible-compat:26.6.0 ruamel-yaml:0.19.1 ruamel-yaml-clib:0.2.15
+2026-09-23T07:17:36.4871836Z 
+2026-09-23T07:17:36.6117174Z Passed: 0 failure(s), 0 warning(s) in 12 files processed of 18 encountered. Profile 'production' was required, and it passed.
+2026-09-23T07:17:37.0870498Z #0 building with "default" instance using docker driver
+2026-09-23T07:17:37.0871436Z 
+2026-09-23T07:17:37.0871589Z #1 [internal] load build definition from Dockerfile
+2026-09-23T07:17:37.0871888Z #1 transferring dockerfile:
+2026-09-23T07:17:37.3109267Z #1 transferring dockerfile: 2.01kB done
+2026-09-23T07:17:37.3109683Z #1 DONE 0.2s
+2026-09-23T07:17:37.3109838Z 
+2026-09-23T07:17:37.3110158Z #2 [internal] load metadata for docker.io/library/python:3.12-slim@sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9
+2026-09-23T07:17:37.3399419Z #2 DONE 0.2s
+2026-09-23T07:17:37.4540699Z 
+2026-09-23T07:17:37.4542832Z #3 [internal] load .dockerignore
+2026-09-23T07:17:37.4543048Z #3 transferring context:
+2026-09-23T07:17:37.5725948Z #3 transferring context: 1.67kB done
+2026-09-23T07:17:37.5726317Z #3 DONE 0.2s
+2026-09-23T07:17:37.7470615Z 
+2026-09-23T07:17:37.7470990Z #4 [builder 1/4] FROM docker.io/library/python:3.12-slim@sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9
+2026-09-23T07:17:37.7471143Z #4 resolve docker.io/library/python:3.12-slim@sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9
+2026-09-23T07:17:38.0672696Z #4 resolve docker.io/library/python:3.12-slim@sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9 0.3s done
+2026-09-23T07:17:38.0676208Z #4 DONE 0.3s
+2026-09-23T07:17:38.0676493Z 
+2026-09-23T07:17:38.0676685Z #5 [internal] load build context
+2026-09-23T07:17:38.0676839Z #5 transferring context: 48.31kB done
+2026-09-23T07:17:38.0676996Z #5 DONE 0.3s
+2026-09-23T07:17:38.0677117Z 
+2026-09-23T07:17:38.0677241Z #6 [runtime 3/6] WORKDIR /app
+2026-09-23T07:17:38.0677374Z #6 CACHED
+2026-09-23T07:17:38.0677516Z 
+2026-09-23T07:17:38.0677680Z #7 [builder 4/4] RUN pip install --no-cache-dir --require-hashes --prefix=/install -r requirements.txt
+2026-09-23T07:17:38.0677847Z #7 CACHED
+2026-09-23T07:17:38.0677993Z 
+2026-09-23T07:17:38.0678129Z #8 [runtime 2/6] RUN useradd --create-home --uid 10001 appuser     && mkdir -p /tmp/prometheus-multiproc     && chown appuser:appuser /tmp/prometheus-multiproc
+2026-09-23T07:17:38.0678302Z #8 CACHED
+2026-09-23T07:17:38.0678437Z 
+2026-09-23T07:17:38.0678581Z #9 [builder 2/4] WORKDIR /app
+2026-09-23T07:17:38.0678718Z #9 CACHED
+2026-09-23T07:17:38.0678843Z 
+2026-09-23T07:17:38.0678974Z #10 [builder 3/4] COPY requirements.txt .
+2026-09-23T07:17:38.0679122Z #10 CACHED
+2026-09-23T07:17:38.0679251Z 
+2026-09-23T07:17:38.0679379Z #11 [runtime 4/6] COPY --from=builder /install /usr/local
+2026-09-23T07:17:38.0679538Z #11 CACHED
+2026-09-23T07:17:38.0679671Z 
+2026-09-23T07:17:38.0679803Z #12 [runtime 5/6] COPY app/ ./app/
+2026-09-23T07:17:38.6502020Z #12 DONE 0.7s
+2026-09-23T07:17:38.8056097Z 
+2026-09-23T07:17:38.8060226Z #13 [runtime 6/6] COPY gunicorn.conf.py .
+2026-09-23T07:17:38.9425006Z #13 DONE 0.3s
+2026-09-23T07:17:39.1043008Z 
+2026-09-23T07:17:39.1043381Z #14 exporting to image
+2026-09-23T07:17:39.1043601Z #14 exporting layers
+2026-09-23T07:17:39.6512922Z #14 exporting layers 0.7s done
+2026-09-23T07:17:39.8124957Z #14 exporting manifest sha256:d468f9edff6a76e8eb25b129f118a53f9d5766c90f82abe801ab85af7fc1d97b 0.1s done
+2026-09-23T07:17:39.8125500Z #14 exporting config sha256:c6c485c58c17302c1d265996a95345347359f233256647c21a10c3e20a628e08 0.1s done
+2026-09-23T07:17:40.0595268Z #14 exporting attestation manifest sha256:279dfc490331c91c4a201539ffb5dc462ad89e1b1e273f1c863fe2baf4aab158
+2026-09-23T07:17:40.1096259Z #14 exporting attestation manifest sha256:279dfc490331c91c4a201539ffb5dc462ad89e1b1e273f1c863fe2baf4aab158 0.2s done
+2026-09-23T07:17:40.1096954Z #14 exporting manifest list sha256:1f407736f0fcd5b96f94843ec26c2e52d812f93c8055a2ad105aa538c9829e83
+2026-09-23T07:17:40.2304904Z #14 exporting manifest list sha256:1f407736f0fcd5b96f94843ec26c2e52d812f93c8055a2ad105aa538c9829e83 0.1s done
+2026-09-23T07:17:40.2306320Z #14 naming to localhost:5001/projecta-flask:be3a91c 0.0s done
+2026-09-23T07:17:40.2306589Z #14 unpacking to localhost:5001/projecta-flask:be3a91c
+2026-09-23T07:17:40.8034559Z #14 unpacking to localhost:5001/projecta-flask:be3a91c 0.6s done
+2026-09-23T07:17:40.9877382Z #14 DONE 1.9s
+2026-09-23T07:17:41.5971956Z #0 building with "default" instance using docker driver
+2026-09-23T07:17:41.5972542Z 
+2026-09-23T07:17:41.5972642Z #1 [internal] load build definition from Dockerfile
+2026-09-23T07:17:41.5972776Z #1 transferring dockerfile: 295B done
+2026-09-23T07:17:41.5972861Z #1 DONE 0.1s
+2026-09-23T07:17:41.5972934Z 
+2026-09-23T07:17:41.5973021Z #2 [internal] load metadata for docker.io/nginxinc/nginx-unprivileged:1.27-alpine
+2026-09-23T07:17:41.6382219Z #2 DONE 0.2s
+2026-09-23T07:17:41.6383046Z 
+2026-09-23T07:17:41.6383294Z #3 [internal] load metadata for docker.io/library/node:22-alpine
+2026-09-23T07:17:41.7463691Z #3 DONE 0.2s
+2026-09-23T07:17:41.7465285Z 
+2026-09-23T07:17:41.7467027Z #4 [internal] load .dockerignore
+2026-09-23T07:17:41.7467223Z #4 transferring context:
+2026-09-23T07:17:41.8555682Z #4 transferring context: 418B done
+2026-09-23T07:17:41.8556404Z #4 DONE 0.2s
+2026-09-23T07:17:42.0500590Z 
+2026-09-23T07:17:42.0501017Z #5 [stage-1 1/3] FROM docker.io/nginxinc/nginx-unprivileged:1.27-alpine@sha256:65e3e85dbaed8ba248841d9d58a899b6197106c23cb0ff1a132b7bfe0547e4c0
+2026-09-23T07:17:42.0501320Z #5 resolve docker.io/nginxinc/nginx-unprivileged:1.27-alpine@sha256:65e3e85dbaed8ba248841d9d58a899b6197106c23cb0ff1a132b7bfe0547e4c0
+2026-09-23T07:17:42.2478302Z #5 resolve docker.io/nginxinc/nginx-unprivileged:1.27-alpine@sha256:65e3e85dbaed8ba248841d9d58a899b6197106c23cb0ff1a132b7bfe0547e4c0 0.3s done
+2026-09-23T07:17:42.2478719Z #5 DONE 0.4s
+2026-09-23T07:17:42.2478900Z 
+2026-09-23T07:17:42.2479005Z #6 [build 1/6] FROM docker.io/library/node:22-alpine@sha256:b6f26b36c8ff49624cfdac716b8ea1138d606df02586a77d364bb5536a634f85
+2026-09-23T07:17:42.2479117Z #6 resolve docker.io/library/node:22-alpine@sha256:b6f26b36c8ff49624cfdac716b8ea1138d606df02586a77d364bb5536a634f85 0.3s done
+2026-09-23T07:17:42.2479221Z #6 DONE 0.4s
+2026-09-23T07:17:42.2479299Z 
+2026-09-23T07:17:42.2479374Z #7 [internal] load build context
+2026-09-23T07:17:42.2479555Z #7 transferring context: 120.51kB 0.0s done
+2026-09-23T07:17:42.3920576Z #7 DONE 0.4s
+2026-09-23T07:17:42.3921125Z 
+2026-09-23T07:17:42.3921288Z #8 [build 5/6] COPY . .
+2026-09-23T07:17:42.3921439Z #8 CACHED
+2026-09-23T07:17:42.3921573Z 
+2026-09-23T07:17:42.3921743Z #9 [build 6/6] RUN npm run build
+2026-09-23T07:17:42.3921875Z #9 CACHED
+2026-09-23T07:17:42.3921994Z 
+2026-09-23T07:17:42.3922135Z #10 [stage-1 2/3] COPY --from=build /app/dist /usr/share/nginx/html
+2026-09-23T07:17:42.3922323Z #10 CACHED
+2026-09-23T07:17:42.3922457Z 
+2026-09-23T07:17:42.3922579Z #11 [build 4/6] RUN npm ci
+2026-09-23T07:17:42.3922788Z #11 CACHED
+2026-09-23T07:17:42.3922872Z 
+2026-09-23T07:17:42.3922950Z #12 [build 2/6] WORKDIR /app
+2026-09-23T07:17:42.3923061Z #12 CACHED
+2026-09-23T07:17:42.3923209Z 
+2026-09-23T07:17:42.3923343Z #13 [build 3/6] COPY package*.json ./
+2026-09-23T07:17:42.3923478Z #13 CACHED
+2026-09-23T07:17:42.3923587Z 
+2026-09-23T07:17:42.3923672Z #14 [stage-1 3/3] COPY nginx.conf /etc/nginx/conf.d/default.conf
+2026-09-23T07:17:42.3923824Z #14 CACHED
+2026-09-23T07:17:42.3923953Z 
+2026-09-23T07:17:42.3924071Z #15 exporting to image
+2026-09-23T07:17:42.3924229Z #15 exporting layers done
+2026-09-23T07:17:42.3924339Z #15 exporting manifest sha256:ce83986d936e7daa20759be5fd6ddc428d62ff02a0d25c6fcdd2237f74c12978 0.0s done
+2026-09-23T07:17:42.3924456Z #15 exporting config sha256:ea2207fae4dbe0289395739fa240e95939f9502fc69f90285009cf301b7aecd6
+2026-09-23T07:17:42.5156594Z #15 exporting config sha256:ea2207fae4dbe0289395739fa240e95939f9502fc69f90285009cf301b7aecd6 0.1s done
+2026-09-23T07:17:42.5157197Z #15 exporting attestation manifest sha256:7bcfb51d640006694115210231bbf1638ce36f746ce9f145c3b7d4605560a1e7
+2026-09-23T07:17:42.6934075Z #15 exporting attestation manifest sha256:7bcfb51d640006694115210231bbf1638ce36f746ce9f145c3b7d4605560a1e7 0.2s done
+2026-09-23T07:17:42.6934594Z #15 exporting manifest list sha256:661b8483466119fb06512aa5c327a081c362e5d088893386802b337ac57439a7
+2026-09-23T07:17:42.8073585Z #15 exporting manifest list sha256:661b8483466119fb06512aa5c327a081c362e5d088893386802b337ac57439a7 0.1s done
+2026-09-23T07:17:42.8074798Z #15 naming to localhost:5001/projecta-frontend:be3a91c
+2026-09-23T07:17:42.9692252Z #15 naming to localhost:5001/projecta-frontend:be3a91c 0.0s done
+2026-09-23T07:17:42.9692621Z #15 unpacking to localhost:5001/projecta-frontend:be3a91c
+2026-09-23T07:17:42.9901087Z #15 unpacking to localhost:5001/projecta-frontend:be3a91c 0.2s done
+2026-09-23T07:17:43.1685590Z #15 DONE 0.7s
+2026-09-23T07:17:44.7467484Z 5bb2f8fe5ea360a2cdc70f5dbb733cca4616ce7b243541e11fcd32a5bc645185
+2026-09-23T07:17:50.3707096Z container healthy (running:healthy)
+2026-09-23T07:17:50.4931909Z {"status":"UP"}
+2026-09-23T07:17:51.4734923Z 2026-09-23T07:17:51Z	INFO	[vulndb] Need to update DB
+2026-09-23T07:17:51.4735727Z 2026-09-23T07:17:51Z	INFO	[vulndb] Downloading vulnerability DB...
+2026-09-23T07:17:51.4735892Z 2026-09-23T07:17:51Z	INFO	[vulndb] Downloading artifact...	repo="mirror.gcr.io/aquasec/trivy-db:2"
+2026-09-23T07:18:00.6072337Z 1.11 MiB / 116.37 MiB [>_____________________________________________________________] 0.95% ? p/s ?19.07 MiB / 116.37 MiB [--------->__________________________________________________] 16.39% ? p/s ?42.43 MiB / 116.37 MiB [--------------------->______________________________________] 36.46% ? p/s ?65.47 MiB / 116.37 MiB [------------------------->____________________] 56.26% 107.32 MiB p/s ETA 0s88.68 MiB / 116.37 MiB [----------------------------------->__________] 76.21% 107.32 MiB p/s ETA 0s112.28 MiB / 116.37 MiB [------------------------------------------->_] 96.49% 107.32 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [------------------------------------------->] 100.00% 105.86 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [------------------------------------------->] 100.00% 105.86 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [------------------------------------------->] 100.00% 105.86 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 99.03 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 99.03 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 99.03 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 92.64 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 92.64 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 92.64 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 86.67 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 86.67 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 86.67 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 81.07 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 81.07 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 81.07 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 75.84 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 75.84 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 75.84 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 70.95 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 70.95 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 70.95 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 66.37 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 66.37 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 66.37 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 62.09 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 62.09 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 62.09 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 58.09 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 58.09 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 58.09 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 54.34 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 54.34 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 54.34 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 50.83 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-------------------------------------------->] 100.00% 50.83 MiB p/s ETA 0s116.37 MiB / 116.37 MiB [-----------------------------------------------] 100.00% 14.43 MiB p/s 8.3s2026-09-23T07:18:00Z	INFO	[vulndb] Artifact successfully downloaded	repo="mirror.gcr.io/aquasec/trivy-db:2"
+2026-09-23T07:18:00.6455601Z 2026-09-23T07:18:00Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-09-23T07:18:00.6456074Z 2026-09-23T07:18:00Z	INFO	[secret] Secret scanning is enabled
+2026-09-23T07:18:00.6456236Z 2026-09-23T07:18:00Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-09-23T07:18:00.6456421Z 2026-09-23T07:18:00Z	INFO	[secret] Please see https://trivy.dev/docs/v0.72/guide/scanner/secret#recommendation for faster secret detection
+2026-09-23T07:18:12.1986801Z 2026-09-23T07:18:12Z	INFO	[python] Licenses acquired from one or more METADATA files may be subject to additional terms. Use `--debug` flag to see all affected packages.
+2026-09-23T07:18:12.8252540Z 2026-09-23T07:18:12Z	INFO	Detected OS	family="debian" version="13.7"
+2026-09-23T07:18:12.8254939Z 2026-09-23T07:18:12Z	INFO	[debian] Detecting vulnerabilities...	os_version="13" pkg_num=87
+2026-09-23T07:18:12.8405041Z 2026-09-23T07:18:12Z	INFO	Number of language-specific files	num=1
+2026-09-23T07:18:12.8406420Z 2026-09-23T07:18:12Z	INFO	[python-pkg] Detecting vulnerabilities...
+2026-09-23T07:18:12.8420979Z 2026-09-23T07:18:12Z	WARN	Using severities from other vendors for some vulnerabilities. Read https://trivy.dev/docs/v0.72/guide/scanner/vulnerability#severity-selection for details.
+2026-09-23T07:18:12.8515742Z 
+2026-09-23T07:18:12.8516013Z Report Summary
+2026-09-23T07:18:12.8516858Z 
+2026-09-23T07:18:12.8517647Z ┌──────────────────────────────────────────────────────────────────────────────────┬────────────┬─────────────────┬─────────┐
+2026-09-23T07:18:12.8517905Z │                                      Target                                      │    Type    │ Vulnerabilities │ Secrets │
+2026-09-23T07:18:12.8518075Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8518308Z │ localhost:5001/projecta-flask:be3a91c (debian 13.7)                              │   debian   │        0        │    -    │
+2026-09-23T07:18:12.8518484Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8518733Z │ usr/local/lib/python3.12/site-packages/blinker-1.9.0.dist-info/METADATA          │ python-pkg │        0        │    -    │
+2026-09-23T07:18:12.8518902Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8519134Z │ usr/local/lib/python3.12/site-packages/click-8.4.2.dist-info/METADATA            │ python-pkg │        0        │    -    │
+2026-09-23T07:18:12.8519287Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8519506Z │ usr/local/lib/python3.12/site-packages/flask-3.1.3.dist-info/METADATA            │ python-pkg │        0        │    -    │
+2026-09-23T07:18:12.8519673Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8519917Z │ usr/local/lib/python3.12/site-packages/gunicorn-23.0.0.dist-info/METADATA        │ python-pkg │        0        │    -    │
+2026-09-23T07:18:12.8520254Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8520487Z │ usr/local/lib/python3.12/site-packages/itsdangerous-2.2.0.dist-info/METADATA     │ python-pkg │        0        │    -    │
+2026-09-23T07:18:12.8520661Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8520888Z │ usr/local/lib/python3.12/site-packages/jinja2-3.1.6.dist-info/METADATA           │ python-pkg │        0        │    -    │
+2026-09-23T07:18:12.8521045Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8521269Z │ usr/local/lib/python3.12/site-packages/markupsafe-3.0.3.dist-info/METADATA       │ python-pkg │        0        │    -    │
+2026-09-23T07:18:12.8521424Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8521651Z │ usr/local/lib/python3.12/site-packages/packaging-26.2.dist-info/METADATA         │ python-pkg │        0        │    -    │
+2026-09-23T07:18:12.8521803Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8522026Z │ usr/local/lib/python3.12/site-packages/pip-25.0.1.dist-info/METADATA             │ python-pkg │        0        │    -    │
+2026-09-23T07:18:12.8522170Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8522396Z │ usr/local/lib/python3.12/site-packages/prometheus_client-0.26.0.dist-info/METAD- │ python-pkg │        0        │    -    │
+2026-09-23T07:18:12.8522550Z │ ATA                                                                              │            │                 │         │
+2026-09-23T07:18:12.8522702Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8522926Z │ usr/local/lib/python3.12/site-packages/psycopg-3.3.5.dist-info/METADATA          │ python-pkg │        0        │    -    │
+2026-09-23T07:18:12.8523103Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8523331Z │ usr/local/lib/python3.12/site-packages/psycopg_binary-3.3.5.dist-info/METADATA   │ python-pkg │        0        │    -    │
+2026-09-23T07:18:12.8523479Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8523701Z │ usr/local/lib/python3.12/site-packages/typing_extensions-4.16.0.dist-info/METAD- │ python-pkg │        0        │    -    │
+2026-09-23T07:18:12.8523846Z │ ATA                                                                              │            │                 │         │
+2026-09-23T07:18:12.8524005Z ├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+2026-09-23T07:18:12.8524246Z │ usr/local/lib/python3.12/site-packages/werkzeug-3.1.8.dist-info/METADATA         │ python-pkg │        0        │    -    │
+2026-09-23T07:18:12.8524380Z └──────────────────────────────────────────────────────────────────────────────────┴────────────┴─────────────────┴─────────┘
+2026-09-23T07:18:12.8524582Z Legend:
+2026-09-23T07:18:12.8524701Z - '-': Not scanned
+2026-09-23T07:18:12.8524828Z - '0': Clean (no security findings detected)
+2026-09-23T07:18:12.8524962Z 
+2026-09-23T07:18:12.8525181Z 
+2026-09-23T07:18:12.8525309Z 📣 [34mNotices:[0m
+2026-09-23T07:18:12.8525460Z   - Version 0.74.0 of Trivy is now available, current version is 0.72.0
+2026-09-23T07:18:12.8525604Z 
+2026-09-23T07:18:12.8525721Z To suppress version checks, run Trivy scans with the --skip-version-check flag
+2026-09-23T07:18:12.8525869Z 
+2026-09-23T07:18:22.7916088Z flask-test
+2026-09-23T07:18:22.8646198Z flask-test
+2026-09-23T07:18:23.0119107Z The push refers to repository [localhost:5001/projecta-flask]
+2026-09-23T07:18:23.1191390Z b0dc7f87bef1: Layer already exists
+2026-09-23T07:18:23.1191869Z ab766a21349d: Layer already exists
+2026-09-23T07:18:23.1192028Z f9cf49659019: Layer already exists
+2026-09-23T07:18:23.1192369Z 6b37362b3da7: Layer already exists
+2026-09-23T07:18:23.1192527Z 3764a9a7d1e8: Layer already exists
+2026-09-23T07:18:23.1192709Z 5c9c9e3da0ce: Layer already exists
+2026-09-23T07:18:23.1192868Z 06ad939ed42b: Layer already exists
+2026-09-23T07:18:23.2189483Z bdece588f11f: Pushed
+2026-09-23T07:18:23.2190298Z 9d1b753826fb: Pushed
+2026-09-23T07:18:23.2190460Z 925d95fbf860: Pushed
+2026-09-23T07:18:23.6094986Z be3a91c: digest: sha256:1f407736f0fcd5b96f94843ec26c2e52d812f93c8055a2ad105aa538c9829e83 size: 856
+2026-09-23T07:18:23.6623566Z The push refers to repository [localhost:5001/projecta-frontend]
+2026-09-23T07:18:23.7931513Z 945f5aaec3d7: Layer already exists
+2026-09-23T07:18:23.7933017Z 513bae533eb2: Layer already exists
+2026-09-23T07:18:23.7933210Z b16687ec2b7b: Layer already exists
+2026-09-23T07:18:23.7933478Z 8f7ead5f2dc0: Layer already exists
+2026-09-23T07:18:23.7933637Z f79056b7935e: Layer already exists
+2026-09-23T07:18:23.7933805Z 400c1de759f4: Layer already exists
+2026-09-23T07:18:23.7933928Z 020526ffd99f: Layer already exists
+2026-09-23T07:18:23.7934071Z d0f12bef4f13: Pushed
+2026-09-23T07:18:23.7934303Z 0cd650f950e9: Layer already exists
+2026-09-23T07:18:23.7934458Z 048c29a61317: Layer already exists
+2026-09-23T07:18:23.7934585Z f18232174bc9: Layer already exists
+2026-09-23T07:18:23.7934718Z 576fe098e846: Layer already exists
+2026-09-23T07:18:24.0154645Z be3a91c: digest: sha256:661b8483466119fb06512aa5c327a081c362e5d088893386802b337ac57439a7 size: 856
+2026-09-23T07:18:24.2540858Z Untagged: localhost:5001/projecta-flask:be3a91c
+2026-09-23T07:18:24.2541499Z Deleted: sha256:1f407736f0fcd5b96f94843ec26c2e52d812f93c8055a2ad105aa538c9829e83
+2026-09-23T07:18:24.3113485Z Untagged: localhost:5001/projecta-frontend:be3a91c
+2026-09-23T07:18:24.3113966Z Deleted: sha256:661b8483466119fb06512aa5c327a081c362e5d088893386802b337ac57439a7
+2026-09-23T07:18:24.3465595Z evaluating expression 'success()'
+2026-09-23T07:18:24.3466272Z expression 'success()' evaluated to 'true'
+2026-09-23T07:18:24.3466522Z ⭐ Run Post Set up Python
+2026-09-23T07:18:24.3467113Z Writing entry to tarball workflow/outputcmd.txt len:0
+2026-09-23T07:18:24.3467426Z Writing entry to tarball workflow/statecmd.txt len:0
+2026-09-23T07:18:24.3468164Z Writing entry to tarball workflow/pathcmd.txt len:0
+2026-09-23T07:18:24.3468753Z Writing entry to tarball workflow/envs.txt len:0
+2026-09-23T07:18:24.3468955Z Writing entry to tarball workflow/SUMMARY.md len:0
+2026-09-23T07:18:24.3469646Z Extracting content to '/var/run/act'
+2026-09-23T07:18:24.3509616Z run post step for 'Set up Python'
+2026-09-23T07:18:24.3510569Z executing remote job container: [node /var/run/act/actions/8dd8b1aead80a801f9b34ee6d45c001ae20a6c2abfe4c7037c4803578f162558/dist/cache-save/index.js]
+2026-09-23T07:18:24.3887449Z   🐳  docker exec cmd=[node /var/run/act/actions/8dd8b1aead80a801f9b34ee6d45c001ae20a6c2abfe4c7037c4803578f162558/dist/cache-save/index.js] user= workdir=
+2026-09-23T07:18:24.3887747Z Exec command '[node /var/run/act/actions/8dd8b1aead80a801f9b34ee6d45c001ae20a6c2abfe4c7037c4803578f162558/dist/cache-save/index.js]'
+2026-09-23T07:18:24.3888089Z Working directory '/workspace/milan/MilanProjA-Szakdoga'
+2026-09-23T07:18:24.5442416Z (node:606) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-23T07:18:24.5443032Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-23T07:18:24.5625155Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /workspace/milan/MilanProjA-Szakdoga --files-from manifest.txt --use-compress-program zstdmt
+2026-09-23T07:18:24.6136988Z Cache Size: ~3 MB (2635101 B)
+2026-09-23T07:18:24.6204602Z Cache saved successfully
+2026-09-23T07:18:24.6215285Z Cache saved with the key: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.14-pip-528535ef8e9e502a48a298e3d6e02ce098910f414be5bb6da735900e1e78fe89
+2026-09-23T07:18:24.6300644Z   ✅  Success - Post Set up Python
+2026-09-23T07:18:24.6674968Z evaluating expression 'always()'
+2026-09-23T07:18:24.6675497Z expression 'always()' evaluated to 'true'
+2026-09-23T07:18:24.6675791Z ⭐ Run Post Checkout repository
+2026-09-23T07:18:24.6676046Z Writing entry to tarball workflow/outputcmd.txt len:0
+2026-09-23T07:18:24.6676267Z Writing entry to tarball workflow/statecmd.txt len:0
+2026-09-23T07:18:24.6676649Z Writing entry to tarball workflow/pathcmd.txt len:0
+2026-09-23T07:18:24.6676803Z Writing entry to tarball workflow/envs.txt len:0
+2026-09-23T07:18:24.6676945Z Writing entry to tarball workflow/SUMMARY.md len:0
+2026-09-23T07:18:24.6677088Z Extracting content to '/var/run/act'
+2026-09-23T07:18:24.6709821Z run post step for 'Checkout repository'
+2026-09-23T07:18:24.6710943Z executing remote job container: [node /var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/index.js]
+2026-09-23T07:18:24.7005171Z   🐳  docker exec cmd=[node /var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/index.js] user= workdir=
+2026-09-23T07:18:24.7005514Z Exec command '[node /var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/index.js]'
+2026-09-23T07:18:24.7005940Z Working directory '/workspace/milan/MilanProjA-Szakdoga'
+2026-09-23T07:18:24.8222894Z [command]/usr/bin/git version
+2026-09-23T07:18:24.8262458Z git version 2.55.0
+2026-09-23T07:18:24.8287768Z ***
+2026-09-23T07:18:24.8302765Z Temporarily overriding HOME='/tmp/46ef6360-1ab8-45b9-96f9-921fbae571d5' before making global git config changes
+2026-09-23T07:18:24.8303207Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-23T07:18:24.8309281Z [command]/usr/bin/git config --global --add safe.directory /workspace/milan/MilanProjA-Szakdoga
+2026-09-23T07:18:24.8346789Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-23T07:18:24.8384221Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-23T07:18:24.8605161Z [command]/usr/bin/git config --local --name-only --get-regexp http\.http\:\/\/gitea\:3000\/\.extraheader
+2026-09-23T07:18:24.8625591Z http.http://gitea:3000/.extraheader
+2026-09-23T07:18:24.8638186Z [command]/usr/bin/git config --local --unset-all http.http://gitea:3000/.extraheader
+2026-09-23T07:18:24.8666231Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.http\:\/\/gitea\:3000\/\.extraheader' && git config --local --unset-all 'http.http://gitea:3000/.extraheader' || :"
+2026-09-23T07:18:24.8900469Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-23T07:18:24.8935252Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-23T07:18:24.9216413Z   ✅  Success - Post Checkout repository
+2026-09-23T07:18:24.9286964Z Cleaning up container for job build-test-push
+2026-09-23T07:18:25.7338258Z Removed container: 0c6be5fb294a7b5710d355c338b430066478a1c5da4f545d42ff414d2b8bbbf8
+2026-09-23T07:18:25.7347365Z   🐳  docker volume rm GITEA-ACTIONS-TASK-35_WORKFLOW-Pipeline_JOB-build-test-push
+2026-09-23T07:18:25.7554376Z   🐳  docker volume rm GITEA-ACTIONS-TASK-35_WORKFLOW-Pipeline_JOB-build-test-push-env
+2026-09-23T07:18:25.8403579Z 🏁  Job succeeded
+2026-09-23T07:18:25.8497446Z expression '${{ steps.ref_gate.outputs.sha_short }}' rewritten to 'format('{0}', steps.ref_gate.outputs.sha_short)'
+2026-09-23T07:18:25.8497788Z evaluating expression 'format('{0}', steps.ref_gate.outputs.sha_short)'
+2026-09-23T07:18:25.8498066Z expression 'format('{0}', steps.ref_gate.outputs.sha_short)' evaluated to '%!t(string=be3a91c)'
+2026-09-23T07:18:25.8498207Z expression '${{ steps.ref_gate.outputs.ships }}' rewritten to 'format('{0}', steps.ref_gate.outputs.ships)'
+2026-09-23T07:18:25.8498277Z evaluating expression 'format('{0}', steps.ref_gate.outputs.ships)'
+2026-09-23T07:18:25.8498519Z expression 'format('{0}', steps.ref_gate.outputs.ships)' evaluated to '%!t(string=true)'
