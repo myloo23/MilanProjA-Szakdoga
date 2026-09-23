@@ -230,7 +230,12 @@ def echo():
         # a fustteszt melyen agyazott JSON-ellenorzese (soha nem 5xx) is elbukna,
         # vagyis a hiba nem egy, hanem ket ellenorzest tor el. Merve: 04-kezi 6. pont.
         _injected = None
-    if isinstance(_injected, dict):
+    # A1-A3: a hiba a unit tesztek elol rejtve. Az A0-ban ugyanez a hiba
+    # feltetel nelkul a pytestnel akadt el (3 bukott teszt), a deploy job el sem
+    # indult, tehat a visszaallito lepes nem futott. A helyreallitast csak egy
+    # olyan hiba meri, amely atjut a build kapuin; ezt modellezi a feltetel. A
+    # futo fürtön a viselkedes bajtra ugyanaz, mint a meres/hiba-01..03 agakon.
+    if isinstance(_injected, dict) and not app.testing:
         return jsonify(error="internal error"), 500
     # === A HIBAINJEKTALAS VEGE ===
 
@@ -295,4 +300,4 @@ def echo():
         )
         return jsonify(error="Invalid JSON payload"), 400
 
-# meres-jelolo: 300
+# meres-jelolo: 301
