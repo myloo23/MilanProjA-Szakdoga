@@ -1,42 +1,43 @@
 # Software inventory / SBOM
 
-Ad-hoc inventory of every software component ProjectA builds on, runs on, or is
-tested with. Generated 2026-08-03 against commit `a6a4d33`.
+Inventory of every software component ProjectA builds on, runs on, or is tested
+with. **Third generation**, generated 2026-09-23 against commit `e4da1d9` — the
+release the automated measurement series ran on and the one the cluster runs —
+**on the measurement host** (`szakdoga2-vm`, amd64), from its own registry.
 
-**This is the second generation, and the first one was retired by its own
-guard.** The report below carries a staleness check; the check fired within
-three days, which is the only real evidence that a check works. See
-[Guard history](#guard-history).
+**Why a third generation.** Two reasons, and only the first was known before
+the rescan. The 2026-09-22 base-image bump (last section) made the application
+image SBOM describe an image that no longer exists. And the rescan showed that
+the previous generation had described *arm64* builds made on the laptop, not
+the amd64 images the cluster runs (finding 6).
 
 **Valid for the current branch tip.** Verify with:
 
 ```bash
-git diff --name-only a6a4d33..HEAD -- Dockerfile requirements.txt app/ .dockerignore
+git diff --name-only e4da1d9..HEAD -- Dockerfile frontend/ requirements*.txt ansible/requirements* app/ .dockerignore
 ```
 
-Empty output means no regeneration is needed. If that command ever prints a
-path, rebuild and rescan before reusing this report.
+Empty output means no regeneration is needed. The guard is wider than the
+previous one: it now covers the frontend and every requirement file, because
+this generation inventories them.
 
 The scope is **inventory and preparedness**, not a security audit. No
-vulnerability data is included — `--format cyclonedx` disables the vulnerability
-scanners by design, and adding them would answer a different question than the
-one asked.
+vulnerability data is included — `--format cyclonedx` disables the
+vulnerability scanners by design.
 
 ## Scope note
 
-The generic deployment-asset checklist asks for Dockerfiles, docker-compose
-files, Kubernetes manifests and Jenkins pipelines. Two of those do not exist
-here, and their absence is a fact about the project rather than a gap in this
-report:
-
 | Asset | Present | Where |
 |---|---|---|
-| Dockerfile | yes | `Dockerfile` |
-| Compose file | yes | `platform/compose.yaml` |
-| CI pipeline | yes, **Gitea Actions** — not Jenkins | `.gitea/workflows/ci.yml` |
+| Dockerfile | yes, two | `Dockerfile`, `frontend/Dockerfile` |
+| Compose file | yes, platform services | `platform/compose.yaml` |
+| CI/CD pipeline | yes, **Gitea Actions** — not Jenkins | `.gitea/workflows/ci.yml` |
 | Config management | yes, **Ansible** | `ansible/` |
-| Kubernetes manifests | no | — |
+| Kubernetes manifests | yes, **Helm chart** | `chart/` |
 | Jenkinsfile | no | — |
+
+The Kubernetes row changed since the previous generation: the chart was added
+with the move to k3s (ADR-0009).
 
 ## Tool
 
@@ -47,126 +48,96 @@ report:
 | Image digest | `sha256:cffe3f5161a47a6823fbd23d985795b3ed72a4c806da4c4df16266c02accdd6f` |
 | SBOM format | CycloneDX 1.7 (JSON) |
 | Output location | `docs/sbom/` |
+| Run record | `generation-e4da1d9.txt` — time, host, Trivy, and the digest of every scanned image |
 
-## Commands executed
+## How it was generated
 
-Runtime dependencies (what ships):
-
-```bash
-docker run --rm -v "$PWD":/work -w /work \
-  aquasec/trivy:0.72.0 \
-  fs --format cyclonedx --skip-dirs .venv --skip-dirs .git \
-  --output docs/sbom/projecta-repo-fs.cdx.json .
-```
-
-Development and CI toolchain. The `--file-patterns` flags are required: Trivy's
-pip analyzer matches the exact filename `requirements.txt`, so the dev, Ansible
-and lint requirement files are invisible to it by default.
+One script, run on the measurement VM over ssh, from the laptop's repository
+root:
 
 ```bash
-docker run --rm -v "$PWD":/work -w /work \
-  aquasec/trivy:0.72.0 \
-  fs --format cyclonedx --skip-dirs .venv --skip-dirs .git \
-  --file-patterns 'pip:.*requirements-dev\.txt' \
-  --file-patterns 'pip:.*requirements-(ansible|lint)\.txt' \
-  --output docs/sbom/projecta-dev-toolchain.cdx.json .
+IP=$(terraform -chdir=terraform output -raw public_ip)
+git archive e4da1d9 | ssh azureuser@$IP 'rm -rf ~/sbom-src && mkdir ~/sbom-src && tar -x -C ~/sbom-src'
+ssh azureuser@$IP 'bash -s' -- e4da1d9 < scripts/sbom-generate.sh
+scp "azureuser@$IP:~/sbom-out/*" docs/sbom/
+python3 scripts/sbom-inventory-xlsx.py e4da1d9
 ```
 
-Application image, including the Debian base layer:
-
-```bash
-SHA=$(git rev-parse --short HEAD)
-docker build -t localhost:5001/projecta-flask:$SHA .
-docker run --rm \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v "$PWD":/work -w /work \
-  aquasec/trivy:0.72.0 \
-  image --format cyclonedx \
-  --output docs/sbom/projecta-flask-$SHA.cdx.json \
-  localhost:5001/projecta-flask:$SHA
-```
-
-Platform images:
-
-```bash
-for img in docker.gitea.com/gitea:1.27.0 docker.io/gitea/act_runner:0.2.12 registry:2; do
-  out=$(echo "$img" | sed 's#.*/##; s#:#-#')
-  docker run --rm \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v "$PWD":/work -w /work \
-    aquasec/trivy:0.72.0 \
-    image --format cyclonedx --output "docs/sbom/platform-$out.cdx.json" "$img"
-done
-```
+The script (`scripts/sbom-generate.sh`) carries the reasoning in its comments.
+In short: the filesystem scans run on a `git archive` of the tag, so no local
+edit, `.venv` or `node_modules` leaks in; the image scans pull the two
+application images from the VM's registry, so the SBOM describes the artifact
+the cluster runs; the platform scans use the image each *running* container
+was started from, not the tag in `.env.example`. The `--file-patterns` flags of
+the toolchain scan are unchanged (finding 5).
 
 ## Generated files
 
 | File | Subject | Components |
 |---|---|---|
-| `projecta-repo-fs.cdx.json` | `requirements.txt` — runtime deps | 10 |
-| `projecta-dev-toolchain.cdx.json` | dev, CI and Ansible deps | 38 |
-| `projecta-flask-a6a4d33.cdx.json` | application image | 98 (1 OS + 87 deb + 10 pypi) |
+| `projecta-repo-fs.cdx.json` | `requirements.txt` + `frontend/package-lock.json` | 18 |
+| `projecta-dev-toolchain.cdx.json` | dev, CI, Ansible and lint requirement files | 107 (73 unique) |
+| `projecta-flask-e4da1d9.cdx.json` | backend image (Debian 13.7) | 102 (1 OS + 87 deb + 14 pypi) |
+| `projecta-frontend-e4da1d9.cdx.json` | frontend image (Alpine 3.21.3) — **new** | 69 (1 OS + 68 apk) |
 | `platform-gitea-1.27.0.cdx.json` | Gitea server image (Alpine 3.24.1) | 340 |
 | `platform-act_runner-0.2.12.cdx.json` | Actions runner image (Alpine 3.22.0) | 116 |
 | `platform-registry-2.cdx.json` | Docker registry image (Alpine 3.18.12) | 19 |
 
-Total: **621 components** across six SBOMs. A consolidated spreadsheet view is
-in `ProjectA-software-inventory-2026-08-03.xlsx` alongside this file. That file
-is a derived view, regenerated from these JSONs rather than maintained by hand —
-if the two ever disagree, the JSONs win.
+Total: **771 components** across seven SBOMs (previous generation: 621 across
+six). The spreadsheet view, `ProjectA-software-inventory-2026-09-23.xlsx`, is
+generated from these files by `scripts/sbom-inventory-xlsx.py`; if the two ever
+disagree, the JSONs win. `projecta-flask-a6a4d33.cdx.json` and the 2026-08-03
+spreadsheet are retired; git history keeps them.
 
-The count is identical to the 2026-07-31 generation, and so is almost
-everything else. Across all six SBOMs nothing was added or removed, and exactly
-two components changed — both in the dev toolchain:
+## What changed since the previous generation
 
-| Component | Was | Now | Closed by |
-|---|---|---|---|
-| `gunicorn` | `23.0.0` **and** `26.0.0` | `23.0.0` | finding 1 |
-| `requests` | `2.32.3` | `2.33.0` | Dependabot #1, #2 |
+Compared on (ecosystem, name, version). Nothing was removed anywhere.
 
-The old toolchain SBOM carried gunicorn twice, at two versions. That is what
-finding 1 looked like in the data, and its disappearance is what the fix looks
-like.
+| SBOM | Changed | Added | Why |
+|---|---:|---:|---|
+| backend image | 26 | 4 | Debian 13.6 → 13.7 (the base-image bump: `util-linux` family, `openssl`, `libc6`, `perl-base`, `gzip`, `libsqlite3-0`, `libpcre2-8-0`, `tzdata`, …) and the runtime dependencies added since: `psycopg`, `psycopg-binary`, `prometheus_client`, `typing_extensions` |
+| repo filesystem | 0 | 8 | the same four Python packages, and the frontend's lockfile with its three production npm packages (`react`, `react-dom`, `scheduler`) |
+| dev toolchain | 0 | 43 unique | the lint and Ansible requirement files grew with the pipeline (ansible-lint's dependency tree: `ansible-compat`, `black`, `yamllint`, `ruamel-yaml`, `jsonschema`, …) and the new runtime packages |
+| three platform images | 0 | 0 | same versions — but a different architecture (finding 6) |
+| frontend image | — | 69 | first inventory |
 
-The application image SBOM is unchanged component-for-component. The image was
-never affected — `requirements.txt` moved only in its pip-compile header
-comment, and the runtime package set was identical throughout.
-
-The three platform images run three different Alpine releases — 3.24.1, 3.22.0
-and 3.18.12 — because each upstream pins its own base. The registry's 3.18.12
-is the oldest by a wide margin, which follows from `registry:2` being a
-floating major tag that upstream has effectively stopped moving.
+The 26 backend changes include the 43 CI findings of 2026-09-22 seen from the
+other side: every package family named there (`util-linux`, `perl-base`, `libpcre2`,
+`libsqlite3`, `openssl`, `gzip`) are the ones that moved.
 
 ## Components not covered by any SBOM
 
 CycloneDX captures package ecosystems. It does not capture pipeline tooling,
-base-image pins or Galaxy collections, so those are listed here by hand. This
-table is the actual answer to "what software versions is the project using".
+base-image pins or Galaxy collections, so those are listed here by hand.
 
 | Component | Version | Source file | Pinning |
 |---|---|---|---|
 | Python (runtime + CI) | 3.12 | `Dockerfile`, `.gitea/workflows/ci.yml` | minor version |
-| Base image `python:3.12-slim` | digest `sha256:2f17fc04…06a9` | `Dockerfile` | **digest** |
-| Debian (in base image) | 13.7 | derived | inherited from digest |
+| Backend base image `python:3.12-slim` | digest `sha256:2f17fc04…06a9` | `Dockerfile` | **digest** |
+| Debian (in backend base image) | 13.7 | derived | inherited from digest |
+| Frontend build image `node:22-alpine` | 22-alpine | `frontend/Dockerfile` | tag |
+| Frontend runtime image `nginxinc/nginx-unprivileged` | 1.27-alpine (Alpine 3.21.3) | `frontend/Dockerfile` | tag |
 | Gitea | 1.27.0 | `platform/.env.example` | exact tag |
 | Gitea act_runner | 0.2.12 | `platform/.env.example` | exact tag |
-| Docker Registry | 2 | `platform/.env.example` | **floating major tag** |
-| ansible-core | 2.21.2 | `ansible/requirements-ansible.txt` | exact |
-| requests (Ansible control node) | 2.33.0 | `ansible/requirements-ansible.txt` | exact |
-| ansible-lint | 26.6.0 | `ansible/requirements-lint.txt` | exact |
+| Docker Registry | 2 (running: `sha256:a3d8aaa6…5373`) | `platform/.env.example` | **floating major tag** |
+| Helm (deploy job) | 3.22.0 (`alpine/helm`) | `.gitea/workflows/ci.yml` | exact tag |
+| ansible-core | 2.21.2 | `ansible/requirements-ansible.txt` | exact + hash |
+| requests (Ansible control node) | 2.33.0 | `ansible/requirements-ansible.txt` | exact + hash |
+| ansible-lint | 26.6.0 | `ansible/requirements-lint.txt` | exact + hash |
 | community.docker collection | 4.8.7 | `ansible/requirements.yml` | exact |
 | hadolint | v2.14.0 | `.gitea/workflows/ci.yml` | exact tag |
 | Trivy (in CI) | 0.72.0 | `.gitea/workflows/ci.yml` | exact tag |
-| Trivy (this report) | 0.72.0 | this document | exact + digest |
+| Trivy (this report) | 0.72.0 | `scripts/sbom-generate.sh` | exact + digest |
 | `actions/checkout` | v4 | `.gitea/workflows/ci.yml` | major tag |
 | `actions/setup-python` | v5 | `.gitea/workflows/ci.yml` | major tag |
 | Coverage gate | 80% minimum | `.gitea/workflows/ci.yml` | — |
 
 ## Findings
 
-Findings 1 and 2 were raised by the 2026-07-31 generation and are **closed** as
-of this one. They are kept rather than deleted: an inventory whose findings
-vanish once fixed cannot show that it was ever worth running.
+Findings 1 and 2 were raised by the 2026-07-31 generation and closed by the
+2026-08-03 one; 6 was raised and closed by this (2026-09-23) generation. They
+are kept rather than deleted: an inventory whose findings vanish once fixed
+cannot show that it was ever worth running.
 
 1. ~~**gunicorn version drift between production and CI.**~~ **Closed** in
    `c6ddbf9` (#28). `requirements.txt` pinned `gunicorn==23.0.0` while
@@ -193,12 +164,47 @@ vanish once fixed cannot show that it was ever worth running.
 3. **`registry:2` is a floating major tag**, so the registry can change
    underneath the platform between `docker compose pull` runs. **Open.**
 
+   Mitigated in this generation: `scripts/sbom-generate.sh` records the
+   digest the running registry container was started from
+   (`generation-e4da1d9.txt`), so the report at least says which image it
+   inventoried.
+
 4. **License data is absent from the filesystem SBOMs.** Trivy's pip analyzer
    needs an installed `site-packages` tree to read license metadata, and none
    exists inside the scanner container. The image SBOM does carry licenses,
    because the packages are installed there. If license inventory is needed
    from the filesystem scan, it has to run outside the container against the
    active virtualenv. **Open.**
+
+5. **Trivy's pip analyzer only matches the exact filename `requirements.txt`.**
+   Without the `--file-patterns` flags the dev, Ansible and lint requirement
+   files are silently left out. Kept in `scripts/sbom-generate.sh`. **Open
+   (mitigated).**
+
+6. ~~**The previous generation described arm64 artifacts, not the measured
+   ones.**~~ **Closed** by this generation. Every architecture-specific purl in
+   the 2026-08-03 image SBOMs carried `arm64`/`aarch64`; every one in this
+   generation carries `amd64`/`x86_64`. The earlier image SBOM inventoried a
+   laptop build of the Dockerfile, and the platform SBOMs the laptop's platform
+   — before the platform moved to Azure (naplo 2.4). For the three platform
+   images the package names and versions are identical across the two
+   architectures, which is exactly why nothing in the component lists gave it
+   away: the difference is only in the purl qualifier. This generation runs on
+   the measurement host against its registry, by construction.
+
+7. **The frontend image SBOM cannot see the frontend's JavaScript
+   dependencies.** The `projecta-frontend` image SBOM lists 68 Alpine packages
+   and the OS, and no npm component: the runtime stage is nginx serving static
+   files, and React is bundled into them. An image-only inventory would conclude
+   that the frontend carries no third-party code. The npm dependencies are in
+   `projecta-repo-fs.cdx.json`, read from `frontend/package-lock.json`. **Open,
+   by design** — it is a property of the artifact, not of the scan.
+
+8. **The frontend base images are tag-pinned and not scanned in CI.**
+   `node:22-alpine` and `nginxinc/nginx-unprivileged:1.27-alpine` in
+   `frontend/Dockerfile`; the scanned runtime layer is Alpine 3.21.3. Recorded
+   with the frontend build step in `ci.yml` and deliberately not closed before
+   the measurement series (see the base-image bump section below). **Open.**
 
 ## Guard history
 
@@ -222,12 +228,18 @@ that will eventually decide wrongly, and it will do so silently. A guard that
 occasionally costs a rescan you did not need fails in the direction you can
 afford.
 
+**The third generation adds a second lesson.** The guard is about *content*:
+it fires when the inputs change. It cannot notice that the artifact scanned was
+never the artifact deployed — the arm64 build passed every path check, because
+the paths were right and the machine was wrong. That failure mode is closed by
+*where* the scan runs, not by what it checks, which is why the generation now
+happens on the measurement host by script.
+
 ## Reproducing
 
-Everything above is reproducible from a clean checkout with the commands in
-this file. Nothing was collected by hand except the table of components not
-covered by any SBOM, which is read directly from the source files cited in its
-last-but-one column.
+Everything above is reproducible with the commands in "How it was generated".
+Nothing was collected by hand except the table of components not covered by any
+SBOM, which is read directly from the source files cited in it.
 
 ## Possible follow-up
 

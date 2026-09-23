@@ -370,8 +370,8 @@ szkennelése 0 találat); a részletek a `docs/sbom/README.md` végén.
 
 1. ~~Három automatizált helyreállítási futtatás~~ — kész (2026-09-23), fent.
 2. ~~Az `auto-lepesidok.md`~~ — kész (2026-09-23): [`auto-lepesidok.md`](auto-lepesidok.md). Fő eredménye: a minőségi kapuk nélküli rész 67–72 mp, a kézi beállt szakasz 64–79 mp; a teljes idő többlete a kapuk ára.
-3. Az `SBOM`-ok újragenerálása: a `projecta-flask-a6a4d33.cdx.json` más
-   alapképről készült.
+3. ~~Az SBOM-ok újragenerálása~~ — kész (2026-09-23), `e4da1d9`-re, a
+   mérőgépen: [`docs/sbom/README.md`](../../../docs/sbom/README.md).
 4. A 6.1 két kérdése **eldöntve** (naplo.md, 2026-09-22): mindkét oldalra két
    időt közlünk (teljes és telepítési szakasz), és a kimenet elolvasása
    beavatkozás. Az utóbbi átvezetve: az automatizált sorozat 2 beavatkozás

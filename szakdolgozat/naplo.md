@@ -216,6 +216,38 @@ pipeline maga igazolta a version-assert-tel.
 
 ---
 
+## 2.9 — Az SBOM-ok harmadik generációja (2026-09-23)
+
+**Mit csináltam.** Újrageneráltam az SBOM-okat az `e4da1d9`-re, vagyis arra a
+release-re, amelyen a mérés futott, és amely most a fürtön fut. A generálás a
+mérőgépen, a saját regisztrijéből történt, egy scripttel
+(`scripts/sbom-generate.sh`). Új elem a frontend image SBOM-ja. Hét fájl, 771
+komponens (előtte hat fájl, 621). Az xlsx nézetet is script építi
+(`scripts/sbom-inventory-xlsx.py`), így az nem térhet el a JSON-októl.
+
+**Amit nem vártam.** Az előző generáció **arm64** artifaktumokat írt le: a
+laptopon épített image-et és a laptopon futó platformot, a 2.4-es költözés
+előtt. Az új SBOM-okban minden architektúrafüggő purl `amd64`/`x86_64`. A
+platform-image-eknél a csomagnevek és a verziók mindkét architektúrán
+azonosak, ezért ez a komponenslistából nem látszott; csak a purl
+`arch=` minősítője árulta el. A régi elavulás-őr útvonalakat figyelt, és
+azok rendben voltak: nem a fájlok voltak rosszak, hanem a gép. **A 6.x-ben ezt
+ki kell mondani: egy SBOM annyit ér, amennyire bizonyított, hogy ugyanarról az
+artifaktumról szól, amely fut.** Ezt nem egy ellenőrzés, hanem a generálás
+helye zárja ki.
+
+**A többi változás megmagyarázható.** A backend image 26 csomagja a Debian
+13.6 → 13.7 bumppal mozdult. Köztük van mind a hat csomagcsalád, amelyen a
+2026-09-22-i CI-szkennelés a 43 találatot adta (`util-linux`, `perl-base`,
+`libpcre2`, `libsqlite3`, `openssl`, `gzip`), most a leltár oldaláról nézve. A
+4 új Python-csomag (`psycopg`, `psycopg-binary`, `prometheus_client`,
+`typing_extensions`) a közben bejött adatbázis- és metrikaréteg. A frontend
+image SBOM-jában nincs egyetlen npm-komponens sem, mert a React statikus
+fájlokba van fordítva; ezeket csak a fájlrendszer-SBOM látja
+(`frontend/package-lock.json`).
+
+---
+
 ## Hol tartok (2026-09-23)
 
 **Kész:** a kézi telepítési sorozat (tíz futtatás), a kézi helyreállítási mérés
@@ -231,8 +263,7 @@ mp. Közben kiderült, hogy a README és ez a napló a kézi 10+11. lépést 19�
 mp-nek írta; a `lepesidok.md` tábla szerint a beállt szakaszban 19–22 mp.
 Javítva, a következtetést nem érinti.
 
-**Következik:** az SBOM-ok újragenerálása — az
-alapkép-bump miatt a `projecta-flask-a6a4d33.cdx.json` már más képről szól.
+**Kész 2026-09-23-án:** az SBOM-ok újragenerálása (2.9).
 
 **A rollback útja mérve van.** Az A1–A3-ban a visszaállító lépés háromszor
 futott le éles hibára, és mindháromszor a gépi version-assert igazolta, hogy az

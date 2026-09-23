@@ -2,10 +2,10 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.7.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.7",
-  "serialNumber": "urn:uuid:5d483591-8200-4051-adb3-d3d38e9ffd79",
+  "serialNumber": "urn:uuid:719c6dc2-dc53-41cf-a4e3-c8e8f269e64d",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-08-03T12:00:45+00:00",
+    "timestamp": "2026-09-23T07:34:59+00:00",
     "tools": {
       "components": [
         {
@@ -20,58 +20,74 @@
       ]
     },
     "component": {
-      "bom-ref": "pkg:oci/projecta-flask@sha256:64fc09c928d3daff211cfba236faee4587710fe7b8a3687c887762714e8dfb01?arch=arm64&repository_url=localhost:5001%2Fprojecta-flask",
+      "bom-ref": "pkg:oci/projecta-flask@sha256:a592a1b9bc86966a3b94fca9b0795424dd6e3e3188cee9a4254ed6d0b33a99ae?arch=amd64&repository_url=localhost:5001%2Fprojecta-flask",
       "type": "container",
-      "name": "localhost:5001/projecta-flask:a6a4d33",
-      "purl": "pkg:oci/projecta-flask@sha256:64fc09c928d3daff211cfba236faee4587710fe7b8a3687c887762714e8dfb01?arch=arm64&repository_url=localhost:5001%2Fprojecta-flask",
+      "name": "localhost:5001/projecta-flask:e4da1d9",
+      "purl": "pkg:oci/projecta-flask@sha256:a592a1b9bc86966a3b94fca9b0795424dd6e3e3188cee9a4254ed6d0b33a99ae?arch=amd64&repository_url=localhost:5001%2Fprojecta-flask",
       "properties": [
         {
           "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:1f6945ab3a1b6c4a2410d7a0a7384e91af9b5356cdbd63d725454651b14b2818"
+          "value": "sha256:07a55a48568c2581889979a5c256166c51343fcbd160215c2e199338984029e0"
         },
         {
           "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:22f9e005d9dff973a5f1d3a5e00f6caefa217ba606d10261b8dfacf5c263ff76"
+          "value": "sha256:498d5f429c6076c3bfe3910a00c4d3710006d7b4640b7898f30ce5fe8177a76c"
         },
         {
           "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:2e658fd22ca550d2a0a629d8988d94b22233b56fe77e2b2adee739ab274ab948"
+          "value": "sha256:68107cfb10323e816259e2c8543d832fbb434156aaf15e0ae3a2e03bbe2502d2"
         },
         {
           "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:370d77453e400f6276b3d5b9b329bf4c4a419983d9e08703a8c1a0388ea5035c"
+          "value": "sha256:7ca599ccfc97fa428fcf941eda7c2d643f066feb947020dcdbbf913cec34d5dc"
         },
         {
           "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a054b2d7b6cb62ebe667328a80c18c429659e53aea5ff1067856113b565cbbb5"
         },
         {
           "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:63c79a2c67834fe8e9226a750708a2e6399ebfa9e9630b48a5c620d1afadbf54"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:92e43e3934d11abe153198ffb0401027d24a6aa365d456f65b8c070caef41156"
+          "value": "sha256:b54011271bdbf69ae643cb5a4af6a5bc2f834ae8bc0833b736b52bbd2396e99f"
         },
         {
           "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:f52241bd08541c775533109caf6be52a9160f5000537b8dd0148bbce15dee151"
+          "value": "sha256:c321a426ca693e386f4df5f198d7f32c2da49e29f53ff77d695ceb02dfb0a421"
+        },
+        {
+          "name": "aquasecurity:trivy:DiffID",
+          "value": "sha256:dc2764899a713a535ea6df58111ced4ea0e5579dfcef5b4253ee8febd3707aff"
         },
         {
           "name": "aquasecurity:trivy:ImageID",
-          "value": "sha256:64fc09c928d3daff211cfba236faee4587710fe7b8a3687c887762714e8dfb01"
+          "value": "sha256:a592a1b9bc86966a3b94fca9b0795424dd6e3e3188cee9a4254ed6d0b33a99ae"
+        },
+        {
+          "name": "aquasecurity:trivy:Labels:org.opencontainers.image.revision",
+          "value": "e4da1d9"
+        },
+        {
+          "name": "aquasecurity:trivy:Labels:org.opencontainers.image.source",
+          "value": "https://github.com/myloo23/MilanProjA-Szakdoga"
+        },
+        {
+          "name": "aquasecurity:trivy:Labels:org.opencontainers.image.title",
+          "value": "ProjectA backend"
         },
         {
           "name": "aquasecurity:trivy:Reference",
-          "value": "localhost:5001/projecta-flask:a6a4d33"
+          "value": "localhost:5001/projecta-flask:e4da1d9"
         },
         {
           "name": "aquasecurity:trivy:RepoDigest",
-          "value": "localhost:5001/projecta-flask@sha256:64fc09c928d3daff211cfba236faee4587710fe7b8a3687c887762714e8dfb01"
+          "value": "localhost:5001/projecta-flask@sha256:a592a1b9bc86966a3b94fca9b0795424dd6e3e3188cee9a4254ed6d0b33a99ae"
         },
         {
           "name": "aquasecurity:trivy:RepoTag",
-          "value": "localhost:5001/projecta-flask:a6a4d33"
+          "value": "localhost:5001/projecta-flask:e4da1d9"
         },
         {
           "name": "aquasecurity:trivy:SchemaVersion",
@@ -79,17 +95,17 @@
         },
         {
           "name": "aquasecurity:trivy:Size",
-          "value": "155253248"
+          "value": "152736256"
         }
       ]
     }
   },
   "components": [
     {
-      "bom-ref": "e14269df-c6f1-4769-b50d-1d5ac68e559e",
+      "bom-ref": "b138930d-7224-4247-90bc-ec78083210d6",
       "type": "operating-system",
       "name": "debian",
-      "version": "13.6",
+      "version": "13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:Class",
@@ -102,7 +118,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/adduser@3.152?arch=all&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/adduser@3.152?arch=all&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian Adduser Developers <adduser@packages.debian.org>"
@@ -121,15 +137,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/adduser@3.152?arch=all&distro=debian-13.6",
+      "purl": "pkg:deb/debian/adduser@3.152?arch=all&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:92e43e3934d11abe153198ffb0401027d24a6aa365d456f65b8c070caef41156"
+          "value": "sha256:b54011271bdbf69ae643cb5a4af6a5bc2f834ae8bc0833b736b52bbd2396e99f"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ba2b6cc1d0cb930490ba58e48e88bf524ed964ab8a7455cbf8c1a1fba9f33311"
+          "value": "sha256:b0dc7f87bef15c2536cb182d6c48b52f90a0522884ec9eb222f833fa97ffebf0"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -150,7 +166,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/apt@3.0.3?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/apt@3.0.3?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "APT Development Team <deity@lists.debian.org>"
@@ -184,15 +200,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/apt@3.0.3?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/apt@3.0.3?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -213,13 +229,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/base-files@13.8%2Bdeb13u6?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/base-files@13.8%2Bdeb13u7?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Santiago Vila <sanvila@debian.org>"
       },
       "name": "base-files",
-      "version": "13.8+deb13u6",
+      "version": "13.8+deb13u7",
       "licenses": [
         {
           "license": {
@@ -228,23 +244,28 @@
         },
         {
           "license": {
+            "id": "GPL-2.0-only"
+          }
+        },
+        {
+          "license": {
             "name": "verbatim"
           }
         }
       ],
-      "purl": "pkg:deb/debian/base-files@13.8%2Bdeb13u6?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/base-files@13.8%2Bdeb13u7?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "base-files@13.8+deb13u6"
+          "value": "base-files@13.8+deb13u7"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -256,12 +277,12 @@
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
-          "value": "13.8+deb13u6"
+          "value": "13.8+deb13u7"
         }
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/base-passwd@3.6.7?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/base-passwd@3.6.7?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Shadow package maintainers <pkg-shadow-devel@lists.alioth.debian.org>"
@@ -280,15 +301,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/base-passwd@3.6.7?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/base-passwd@3.6.7?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -309,13 +330,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/bash@5.2.37-2%2Bb9?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/bash@5.2.37-2%2Bb10?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Matthias Klose <doko@debian.org>"
       },
       "name": "bash",
-      "version": "5.2.37-2+b9",
+      "version": "5.2.37-2+b10",
       "licenses": [
         {
           "license": {
@@ -373,19 +394,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/bash@5.2.37-2%2Bb9?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/bash@5.2.37-2%2Bb10?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "bash@5.2.37-2+b9"
+          "value": "bash@5.2.37-2+b10"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -406,13 +427,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/bsdutils@2.41-5?arch=arm64&distro=debian-13.6&epoch=1",
+      "bom-ref": "pkg:deb/debian/bsdutils@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
       "type": "library",
       "supplier": {
         "name": "Chris Hofstaedtler <zeha@debian.org>"
       },
       "name": "bsdutils",
-      "version": "1:2.41-5",
+      "version": "1:2.41.5-0+deb13u1",
       "licenses": [
         {
           "license": {
@@ -500,19 +521,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/bsdutils@2.41-5?arch=arm64&distro=debian-13.6&epoch=1",
+      "purl": "pkg:deb/debian/bsdutils@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "bsdutils@1:2.41-5"
+          "value": "bsdutils@1:2.41.5-0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -524,16 +545,16 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "5"
+          "value": "0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
-          "value": "2.41"
+          "value": "2.41.5"
         }
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/ca-certificates@20250419?arch=all&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/ca-certificates@20250419?arch=all&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Julien Cristau <jcristau@debian.org>"
@@ -557,15 +578,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/ca-certificates@20250419?arch=all&distro=debian-13.6",
+      "purl": "pkg:deb/debian/ca-certificates@20250419?arch=all&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:1f6945ab3a1b6c4a2410d7a0a7384e91af9b5356cdbd63d725454651b14b2818"
+          "value": "sha256:7ca599ccfc97fa428fcf941eda7c2d643f066feb947020dcdbbf913cec34d5dc"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:d8ee943bca380540d4a6a754c2560c34c25209969f88dd37f983749a61ac44e5"
+          "value": "sha256:3764a9a7d1e8a98213ab2201a41dbf3da9c60240ea35a5ea96ab994555070a70"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -586,7 +607,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/coreutils@9.7-3?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/coreutils@9.7-3?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Michael Stone <mstone@debian.org>"
@@ -630,15 +651,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/coreutils@9.7-3?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/coreutils@9.7-3?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -663,7 +684,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/dash@0.5.12-12?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/dash@0.5.12-12?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Andrej Shadura <andrewsh@debian.org>"
@@ -692,15 +713,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/dash@0.5.12-12?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/dash@0.5.12-12?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -725,7 +746,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/debconf@1.5.91?arch=all&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/debconf@1.5.91?arch=all&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debconf Developers <debconf-devel@lists.alioth.debian.org>"
@@ -739,15 +760,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/debconf@1.5.91?arch=all&distro=debian-13.6",
+      "purl": "pkg:deb/debian/debconf@1.5.91?arch=all&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -768,7 +789,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/debian-archive-keyring@2025.1?arch=all&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/debian-archive-keyring@2025.1?arch=all&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian Release Team <packages@release.debian.org>"
@@ -782,15 +803,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/debian-archive-keyring@2025.1?arch=all&distro=debian-13.6",
+      "purl": "pkg:deb/debian/debian-archive-keyring@2025.1?arch=all&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -811,7 +832,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/debianutils@5.23.2?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/debianutils@5.23.2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Ileana Dumitrescu <ileanadumitrescu95@gmail.com>"
@@ -840,15 +861,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/debianutils@5.23.2?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/debianutils@5.23.2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -869,7 +890,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/diffutils@3.10-4?arch=arm64&distro=debian-13.6&epoch=1",
+      "bom-ref": "pkg:deb/debian/diffutils@3.10-4?arch=amd64&distro=debian-13.7&epoch=1",
       "type": "library",
       "supplier": {
         "name": "Santiago Vila <sanvila@debian.org>"
@@ -968,15 +989,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/diffutils@3.10-4?arch=arm64&distro=debian-13.6&epoch=1",
+      "purl": "pkg:deb/debian/diffutils@3.10-4?arch=amd64&distro=debian-13.7&epoch=1",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -1005,7 +1026,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/dpkg@1.22.22?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/dpkg@1.22.22?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Dpkg Developers <debian-dpkg@lists.debian.org>"
@@ -1029,15 +1050,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/dpkg@1.22.22?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/dpkg@1.22.22?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -1058,7 +1079,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/findutils@4.10.0-3?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/findutils@4.10.0-3?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Andreas Metzler <ametzler@debian.org>"
@@ -1177,15 +1198,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/findutils@4.10.0-3?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/findutils@4.10.0-3?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -1210,7 +1231,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/gcc-14-base@14.2.0-19?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/gcc-14-base@14.2.0-19?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian GCC Maintainers <debian-gcc@lists.debian.org>"
@@ -1244,15 +1265,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/gcc-14-base@14.2.0-19?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/gcc-14-base@14.2.0-19?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -1277,13 +1298,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/grep@3.11-4%2Bb1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/grep@3.11-4?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Anibal Monsalve Salazar <anibal@debian.org>"
       },
       "name": "grep",
-      "version": "3.11-4+b1",
+      "version": "3.11-4",
       "licenses": [
         {
           "license": {
@@ -1296,19 +1317,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/grep@3.11-4%2Bb1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/grep@3.11-4?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "grep@3.11-4+b1"
+          "value": "grep@3.11-4"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -1329,13 +1350,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/gzip@1.13-1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/gzip@1.13-1%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Milan Kupcevic <milan@debian.org>"
       },
       "name": "gzip",
-      "version": "1.13-1",
+      "version": "1.13-1+deb13u1",
       "licenses": [
         {
           "license": {
@@ -1363,19 +1384,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/gzip@1.13-1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/gzip@1.13-1%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "gzip@1.13-1"
+          "value": "gzip@1.13-1+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -1387,7 +1408,7 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "1"
+          "value": "1+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
@@ -1396,7 +1417,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/hostname@3.25?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/hostname@3.25?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Michael Meskes <meskes@debian.org>"
@@ -1410,15 +1431,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/hostname@3.25?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/hostname@3.25?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -1439,7 +1460,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/init-system-helpers@1.69~deb13u1?arch=all&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/init-system-helpers@1.69~deb13u1?arch=all&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian systemd Maintainers <pkg-systemd-maintainers@lists.alioth.debian.org>"
@@ -1463,15 +1484,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/init-system-helpers@1.69~deb13u1?arch=all&distro=debian-13.6",
+      "purl": "pkg:deb/debian/init-system-helpers@1.69~deb13u1?arch=all&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -1492,7 +1513,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libacl1@2.3.2-2%2Bb1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libacl1@2.3.2-2%2Bb1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Guillem Jover <guillem@debian.org>"
@@ -1521,15 +1542,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libacl1@2.3.2-2%2Bb1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libacl1@2.3.2-2%2Bb1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -1554,7 +1575,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libapt-pkg7.0@3.0.3?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libapt-pkg7.0@3.0.3?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "APT Development Team <deity@lists.debian.org>"
@@ -1588,15 +1609,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libapt-pkg7.0@3.0.3?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libapt-pkg7.0@3.0.3?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -1617,7 +1638,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libattr1@2.5.2-3?arch=arm64&distro=debian-13.6&epoch=1",
+      "bom-ref": "pkg:deb/debian/libattr1@2.5.2-3?arch=amd64&distro=debian-13.7&epoch=1",
       "type": "library",
       "supplier": {
         "name": "Guillem Jover <guillem@debian.org>"
@@ -1646,15 +1667,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libattr1@2.5.2-3?arch=arm64&distro=debian-13.6&epoch=1",
+      "purl": "pkg:deb/debian/libattr1@2.5.2-3?arch=amd64&distro=debian-13.7&epoch=1",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -1683,13 +1704,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libaudit-common@4.0.2-2?arch=all&distro=debian-13.6&epoch=1",
+      "bom-ref": "pkg:deb/debian/libaudit-common@4.0.2-2%2Bdeb13u1?arch=all&distro=debian-13.7&epoch=1",
       "type": "library",
       "supplier": {
         "name": "Laurent Bigonville <bigon@debian.org>"
       },
       "name": "libaudit-common",
-      "version": "1:4.0.2-2",
+      "version": "1:4.0.2-2+deb13u1",
       "licenses": [
         {
           "license": {
@@ -1707,19 +1728,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libaudit-common@4.0.2-2?arch=all&distro=debian-13.6&epoch=1",
+      "purl": "pkg:deb/debian/libaudit-common@4.0.2-2%2Bdeb13u1?arch=all&distro=debian-13.7&epoch=1",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "libaudit-common@1:4.0.2-2"
+          "value": "libaudit-common@1:4.0.2-2+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -1735,7 +1756,7 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "2"
+          "value": "2+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
@@ -1744,13 +1765,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libaudit1@4.0.2-2%2Bb2?arch=arm64&distro=debian-13.6&epoch=1",
+      "bom-ref": "pkg:deb/debian/libaudit1@4.0.2-2%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
       "type": "library",
       "supplier": {
         "name": "Laurent Bigonville <bigon@debian.org>"
       },
       "name": "libaudit1",
-      "version": "1:4.0.2-2+b2",
+      "version": "1:4.0.2-2+deb13u1",
       "licenses": [
         {
           "license": {
@@ -1768,19 +1789,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libaudit1@4.0.2-2%2Bb2?arch=arm64&distro=debian-13.6&epoch=1",
+      "purl": "pkg:deb/debian/libaudit1@4.0.2-2%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "libaudit1@1:4.0.2-2+b2"
+          "value": "libaudit1@1:4.0.2-2+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -1796,7 +1817,7 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "2"
+          "value": "2+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
@@ -1805,13 +1826,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libblkid1@2.41-5?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libblkid1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Chris Hofstaedtler <zeha@debian.org>"
       },
       "name": "libblkid1",
-      "version": "2.41-5",
+      "version": "2.41.5-0+deb13u1",
       "licenses": [
         {
           "license": {
@@ -1899,19 +1920,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libblkid1@2.41-5?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libblkid1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "libblkid1@2.41-5"
+          "value": "libblkid1@2.41.5-0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -1923,16 +1944,16 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "5"
+          "value": "0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
-          "value": "2.41"
+          "value": "2.41.5"
         }
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libbsd0@0.12.2-2?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libbsd0@0.12.2-2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Guillem Jover <guillem@debian.org>"
@@ -2011,15 +2032,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libbsd0@0.12.2-2?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libbsd0@0.12.2-2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -2044,7 +2065,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libbz2-1.0@1.0.8-6?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libbz2-1.0@1.0.8-6?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Anibal Monsalve Salazar <anibal@debian.org>"
@@ -2063,15 +2084,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libbz2-1.0@1.0.8-6?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libbz2-1.0@1.0.8-6?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -2096,13 +2117,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libc-bin@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libc-bin@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "GNU Libc Maintainers <debian-glibc@lists.debian.org>"
       },
       "name": "libc-bin",
-      "version": "2.41-12+deb13u3",
+      "version": "2.41-12+deb13u4",
       "licenses": [
         {
           "license": {
@@ -2265,19 +2286,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libc-bin@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libc-bin@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "libc-bin@2.41-12+deb13u3"
+          "value": "libc-bin@2.41-12+deb13u4"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -2289,7 +2310,7 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "12+deb13u3"
+          "value": "12+deb13u4"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
@@ -2298,13 +2319,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "GNU Libc Maintainers <debian-glibc@lists.debian.org>"
       },
       "name": "libc6",
-      "version": "2.41-12+deb13u3",
+      "version": "2.41-12+deb13u4",
       "licenses": [
         {
           "license": {
@@ -2467,19 +2488,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "libc6@2.41-12+deb13u3"
+          "value": "libc6@2.41-12+deb13u4"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -2491,7 +2512,7 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "12+deb13u3"
+          "value": "12+deb13u4"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
@@ -2500,7 +2521,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libcap-ng0@0.8.5-4%2Bb1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libcap-ng0@0.8.5-4%2Bb1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Håvard F. Aasen <havard.f.aasen@pfft.no>"
@@ -2534,15 +2555,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libcap-ng0@0.8.5-4%2Bb1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libcap-ng0@0.8.5-4%2Bb1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -2567,13 +2588,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libcap2@2.75-10%2Bdeb13u1%2Bb1?arch=arm64&distro=debian-13.6&epoch=1",
+      "bom-ref": "pkg:deb/debian/libcap2@2.75-10%2Bdeb13u1%2Bb3?arch=amd64&distro=debian-13.7&epoch=1",
       "type": "library",
       "supplier": {
         "name": "Christian Kastner <ckk@debian.org>"
       },
       "name": "libcap2",
-      "version": "1:2.75-10+deb13u1+b1",
+      "version": "1:2.75-10+deb13u1+b3",
       "licenses": [
         {
           "license": {
@@ -2591,19 +2612,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libcap2@2.75-10%2Bdeb13u1%2Bb1?arch=arm64&distro=debian-13.6&epoch=1",
+      "purl": "pkg:deb/debian/libcap2@2.75-10%2Bdeb13u1%2Bb3?arch=amd64&distro=debian-13.7&epoch=1",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "libcap2@1:2.75-10+deb13u1+b1"
+          "value": "libcap2@1:2.75-10+deb13u1+b3"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -2628,22 +2649,22 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libcrypt1@4.4.38-1?arch=arm64&distro=debian-13.6&epoch=1",
+      "bom-ref": "pkg:deb/debian/libcrypt1@4.4.38-1?arch=amd64&distro=debian-13.7&epoch=1",
       "type": "library",
       "supplier": {
         "name": "Marco d'Itri <md@linux.it>"
       },
       "name": "libcrypt1",
       "version": "1:4.4.38-1",
-      "purl": "pkg:deb/debian/libcrypt1@4.4.38-1?arch=arm64&distro=debian-13.6&epoch=1",
+      "purl": "pkg:deb/debian/libcrypt1@4.4.38-1?arch=amd64&distro=debian-13.7&epoch=1",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -2672,7 +2693,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libdb5.3t64@5.3.28%2Bdfsg2-9?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libdb5.3t64@5.3.28%2Bdfsg2-9?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian QA Group <packages@qa.debian.org>"
@@ -2736,15 +2757,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libdb5.3t64@5.3.28%2Bdfsg2-9?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libdb5.3t64@5.3.28%2Bdfsg2-9?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -2769,7 +2790,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libdebconfclient0@0.280?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libdebconfclient0@0.280?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian Install System Team <debian-boot@lists.debian.org>"
@@ -2793,15 +2814,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libdebconfclient0@0.280?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libdebconfclient0@0.280?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -2822,7 +2843,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libffi8@3.4.8-2?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libffi8@3.4.8-2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian GCC Maintainers <debian-gcc@lists.debian.org>"
@@ -2866,15 +2887,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libffi8@3.4.8-2?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libffi8@3.4.8-2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:92e43e3934d11abe153198ffb0401027d24a6aa365d456f65b8c070caef41156"
+          "value": "sha256:b54011271bdbf69ae643cb5a4af6a5bc2f834ae8bc0833b736b52bbd2396e99f"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ba2b6cc1d0cb930490ba58e48e88bf524ed964ab8a7455cbf8c1a1fba9f33311"
+          "value": "sha256:b0dc7f87bef15c2536cb182d6c48b52f90a0522884ec9eb222f833fa97ffebf0"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -2899,22 +2920,22 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian GCC Maintainers <debian-gcc@lists.debian.org>"
       },
       "name": "libgcc-s1",
       "version": "14.2.0-19",
-      "purl": "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -2939,7 +2960,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libgdbm6t64@1.24-2?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libgdbm6t64@1.24-2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Nicolas Mora <babelouest@debian.org>"
@@ -2973,15 +2994,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libgdbm6t64@1.24-2?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libgdbm6t64@1.24-2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:92e43e3934d11abe153198ffb0401027d24a6aa365d456f65b8c070caef41156"
+          "value": "sha256:b54011271bdbf69ae643cb5a4af6a5bc2f834ae8bc0833b736b52bbd2396e99f"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ba2b6cc1d0cb930490ba58e48e88bf524ed964ab8a7455cbf8c1a1fba9f33311"
+          "value": "sha256:b0dc7f87bef15c2536cb182d6c48b52f90a0522884ec9eb222f833fa97ffebf0"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -3006,7 +3027,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libgmp10@6.3.0%2Bdfsg-3?arch=arm64&distro=debian-13.6&epoch=2",
+      "bom-ref": "pkg:deb/debian/libgmp10@6.3.0%2Bdfsg-3?arch=amd64&distro=debian-13.7&epoch=2",
       "type": "library",
       "supplier": {
         "name": "Debian Science Maintainers <debian-science-maintainers@lists.alioth.debian.org>"
@@ -3050,15 +3071,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libgmp10@6.3.0%2Bdfsg-3?arch=arm64&distro=debian-13.6&epoch=2",
+      "purl": "pkg:deb/debian/libgmp10@6.3.0%2Bdfsg-3?arch=amd64&distro=debian-13.7&epoch=2",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -3087,7 +3108,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libhogweed6t64@3.10.1-1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libhogweed6t64@3.10.1-1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Magnus Holmgren <holmgren@debian.org>"
@@ -3141,15 +3162,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libhogweed6t64@3.10.1-1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libhogweed6t64@3.10.1-1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -3174,13 +3195,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/liblastlog2-2@2.41-5?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/liblastlog2-2@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Chris Hofstaedtler <zeha@debian.org>"
       },
       "name": "liblastlog2-2",
-      "version": "2.41-5",
+      "version": "2.41.5-0+deb13u1",
       "licenses": [
         {
           "license": {
@@ -3268,19 +3289,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/liblastlog2-2@2.41-5?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/liblastlog2-2@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "liblastlog2-2@2.41-5"
+          "value": "liblastlog2-2@2.41.5-0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -3292,16 +3313,16 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "5"
+          "value": "0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
-          "value": "2.41"
+          "value": "2.41.5"
         }
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/liblz4-1@1.10.0-4?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/liblz4-1@1.10.0-4?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Nobuhiro Iwamatsu <iwamatsu@debian.org>"
@@ -3325,15 +3346,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/liblz4-1@1.10.0-4?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/liblz4-1@1.10.0-4?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -3358,7 +3379,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/liblzma5@5.8.1-1%2Bdeb13u1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/liblzma5@5.8.1-1%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Sebastian Andrzej Siewior <sebastian@breakpoint.cc>"
@@ -3437,15 +3458,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/liblzma5@5.8.1-1%2Bdeb13u1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/liblzma5@5.8.1-1%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -3470,7 +3491,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libmd0@1.1.0-2%2Bb1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libmd0@1.1.0-2%2Bb1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Guillem Jover <guillem@debian.org>"
@@ -3524,15 +3545,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libmd0@1.1.0-2%2Bb1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libmd0@1.1.0-2%2Bb1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -3557,13 +3578,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libmount1@2.41-5?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libmount1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Chris Hofstaedtler <zeha@debian.org>"
       },
       "name": "libmount1",
-      "version": "2.41-5",
+      "version": "2.41.5-0+deb13u1",
       "licenses": [
         {
           "license": {
@@ -3651,19 +3672,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libmount1@2.41-5?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libmount1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "libmount1@2.41-5"
+          "value": "libmount1@2.41.5-0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -3675,31 +3696,31 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "5"
+          "value": "0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
-          "value": "2.41"
+          "value": "2.41.5"
         }
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libncursesw6@6.5%2B20250216-2?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libncursesw6@6.5%2B20250216-2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Ncurses Maintainers <ncurses@packages.debian.org>"
       },
       "name": "libncursesw6",
       "version": "6.5+20250216-2",
-      "purl": "pkg:deb/debian/libncursesw6@6.5%2B20250216-2?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libncursesw6@6.5%2B20250216-2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:92e43e3934d11abe153198ffb0401027d24a6aa365d456f65b8c070caef41156"
+          "value": "sha256:b54011271bdbf69ae643cb5a4af6a5bc2f834ae8bc0833b736b52bbd2396e99f"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ba2b6cc1d0cb930490ba58e48e88bf524ed964ab8a7455cbf8c1a1fba9f33311"
+          "value": "sha256:b0dc7f87bef15c2536cb182d6c48b52f90a0522884ec9eb222f833fa97ffebf0"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -3724,7 +3745,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libnettle8t64@3.10.1-1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libnettle8t64@3.10.1-1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Magnus Holmgren <holmgren@debian.org>"
@@ -3778,15 +3799,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libnettle8t64@3.10.1-1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libnettle8t64@3.10.1-1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -3811,7 +3832,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libpam-modules-bin@1.7.0-5?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libpam-modules-bin@1.7.0-5?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Sam Hartman <hartmans@debian.org>"
@@ -3875,15 +3896,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libpam-modules-bin@1.7.0-5?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libpam-modules-bin@1.7.0-5?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -3908,7 +3929,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libpam-modules@1.7.0-5?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libpam-modules@1.7.0-5?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Sam Hartman <hartmans@debian.org>"
@@ -3972,15 +3993,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libpam-modules@1.7.0-5?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libpam-modules@1.7.0-5?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -4005,7 +4026,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libpam-runtime@1.7.0-5?arch=all&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libpam-runtime@1.7.0-5?arch=all&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Sam Hartman <hartmans@debian.org>"
@@ -4069,15 +4090,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libpam-runtime@1.7.0-5?arch=all&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libpam-runtime@1.7.0-5?arch=all&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -4102,7 +4123,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libpam0g@1.7.0-5?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libpam0g@1.7.0-5?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Sam Hartman <hartmans@debian.org>"
@@ -4166,15 +4187,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libpam0g@1.7.0-5?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libpam0g@1.7.0-5?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -4199,13 +4220,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libpcre2-8-0@10.46-1~deb13u1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libpcre2-8-0@10.46-1~deb13u2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Matthew Vernon <matthew@debian.org>"
       },
       "name": "libpcre2-8-0",
-      "version": "10.46-1~deb13u1",
+      "version": "10.46-1~deb13u2",
       "licenses": [
         {
           "license": {
@@ -4233,19 +4254,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libpcre2-8-0@10.46-1~deb13u1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libpcre2-8-0@10.46-1~deb13u2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "libpcre2-8-0@10.46-1~deb13u1"
+          "value": "libpcre2-8-0@10.46-1~deb13u2"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -4257,7 +4278,7 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "1~deb13u1"
+          "value": "1~deb13u2"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
@@ -4266,7 +4287,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libreadline8t64@8.2-6?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libreadline8t64@8.2-6?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Matthias Klose <doko@debian.org>"
@@ -4310,15 +4331,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libreadline8t64@8.2-6?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libreadline8t64@8.2-6?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:92e43e3934d11abe153198ffb0401027d24a6aa365d456f65b8c070caef41156"
+          "value": "sha256:b54011271bdbf69ae643cb5a4af6a5bc2f834ae8bc0833b736b52bbd2396e99f"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ba2b6cc1d0cb930490ba58e48e88bf524ed964ab8a7455cbf8c1a1fba9f33311"
+          "value": "sha256:b0dc7f87bef15c2536cb182d6c48b52f90a0522884ec9eb222f833fa97ffebf0"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -4343,7 +4364,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libseccomp2@2.6.0-2?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libseccomp2@2.6.0-2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Kees Cook <kees@debian.org>"
@@ -4357,15 +4378,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libseccomp2@2.6.0-2?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libseccomp2@2.6.0-2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -4390,7 +4411,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libselinux1@3.8.1-1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libselinux1@3.8.1-1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian SELinux maintainers <selinux-devel@lists.alioth.debian.org>"
@@ -4409,15 +4430,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libselinux1@3.8.1-1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libselinux1@3.8.1-1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -4442,7 +4463,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libsemanage-common@3.8.1-1?arch=all&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libsemanage-common@3.8.1-1?arch=all&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian SELinux maintainers <selinux-devel@lists.alioth.debian.org>"
@@ -4466,15 +4487,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libsemanage-common@3.8.1-1?arch=all&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libsemanage-common@3.8.1-1?arch=all&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -4499,7 +4520,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libsemanage2@3.8.1-1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libsemanage2@3.8.1-1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian SELinux maintainers <selinux-devel@lists.alioth.debian.org>"
@@ -4523,15 +4544,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libsemanage2@3.8.1-1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libsemanage2@3.8.1-1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -4556,7 +4577,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libsepol2@3.8.1-1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libsepol2@3.8.1-1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian SELinux maintainers <selinux-devel@lists.alioth.debian.org>"
@@ -4590,15 +4611,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libsepol2@3.8.1-1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libsepol2@3.8.1-1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -4623,13 +4644,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libsmartcols1@2.41-5?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libsmartcols1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Chris Hofstaedtler <zeha@debian.org>"
       },
       "name": "libsmartcols1",
-      "version": "2.41-5",
+      "version": "2.41.5-0+deb13u1",
       "licenses": [
         {
           "license": {
@@ -4717,19 +4738,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libsmartcols1@2.41-5?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libsmartcols1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "libsmartcols1@2.41-5"
+          "value": "libsmartcols1@2.41.5-0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -4741,22 +4762,22 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "5"
+          "value": "0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
-          "value": "2.41"
+          "value": "2.41.5"
         }
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libsqlite3-0@3.46.1-7%2Bdeb13u1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libsqlite3-0@3.46.1-7%2Bdeb13u2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Laszlo Boszormenyi (GCS) <gcs@debian.org>"
       },
       "name": "libsqlite3-0",
-      "version": "3.46.1-7+deb13u1",
+      "version": "3.46.1-7+deb13u2",
       "licenses": [
         {
           "license": {
@@ -4774,19 +4795,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libsqlite3-0@3.46.1-7%2Bdeb13u1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libsqlite3-0@3.46.1-7%2Bdeb13u2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "libsqlite3-0@3.46.1-7+deb13u1"
+          "value": "libsqlite3-0@3.46.1-7+deb13u2"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -4798,7 +4819,7 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "7+deb13u1"
+          "value": "7+deb13u2"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
@@ -4807,13 +4828,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libssl3t64@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libssl3t64@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian OpenSSL Team <pkg-openssl-devel@alioth-lists.debian.net>"
       },
       "name": "libssl3t64",
-      "version": "3.5.6-1~deb13u2",
+      "version": "3.5.7-1~deb13u2",
       "licenses": [
         {
           "license": {
@@ -4836,19 +4857,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libssl3t64@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libssl3t64@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "libssl3t64@3.5.6-1~deb13u2"
+          "value": "libssl3t64@3.5.7-1~deb13u2"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -4864,27 +4885,27 @@
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
-          "value": "3.5.6"
+          "value": "3.5.7"
         }
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libstdc%2B%2B6@14.2.0-19?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libstdc%2B%2B6@14.2.0-19?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian GCC Maintainers <debian-gcc@lists.debian.org>"
       },
       "name": "libstdc++6",
       "version": "14.2.0-19",
-      "purl": "pkg:deb/debian/libstdc%2B%2B6@14.2.0-19?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libstdc%2B%2B6@14.2.0-19?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -4909,7 +4930,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libsystemd0@257.13-1~deb13u1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libsystemd0@257.13-1~deb13u1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian systemd Maintainers <pkg-systemd-maintainers@lists.alioth.debian.org>"
@@ -4958,15 +4979,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libsystemd0@257.13-1~deb13u1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libsystemd0@257.13-1~deb13u1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -4991,7 +5012,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libtinfo6@6.5%2B20250216-2?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libtinfo6@6.5%2B20250216-2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Ncurses Maintainers <ncurses@packages.debian.org>"
@@ -5015,15 +5036,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libtinfo6@6.5%2B20250216-2?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libtinfo6@6.5%2B20250216-2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -5048,7 +5069,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libudev1@257.13-1~deb13u1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libudev1@257.13-1~deb13u1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian systemd Maintainers <pkg-systemd-maintainers@lists.alioth.debian.org>"
@@ -5097,15 +5118,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libudev1@257.13-1~deb13u1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libudev1@257.13-1~deb13u1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -5130,13 +5151,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libuuid1@2.41-5?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libuuid1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Chris Hofstaedtler <zeha@debian.org>"
       },
       "name": "libuuid1",
-      "version": "2.41-5",
+      "version": "2.41.5-0+deb13u1",
       "licenses": [
         {
           "license": {
@@ -5224,19 +5245,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libuuid1@2.41-5?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libuuid1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "libuuid1@2.41-5"
+          "value": "libuuid1@2.41.5-0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -5248,16 +5269,16 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "5"
+          "value": "0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
-          "value": "2.41"
+          "value": "2.41.5"
         }
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libxxhash0@0.8.3-2?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libxxhash0@0.8.3-2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Josue Ortega <josue@debian.org>"
@@ -5281,15 +5302,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libxxhash0@0.8.3-2?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libxxhash0@0.8.3-2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -5314,7 +5335,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/libzstd1@1.5.7%2Bdfsg-1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/libzstd1@1.5.7%2Bdfsg-1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "RPM packaging team <team+pkg-rpm@tracker.debian.org>"
@@ -5343,15 +5364,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/libzstd1@1.5.7%2Bdfsg-1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/libzstd1@1.5.7%2Bdfsg-1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -5376,7 +5397,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/login.defs@4.17.4-2?arch=all&distro=debian-13.6&epoch=1",
+      "bom-ref": "pkg:deb/debian/login.defs@4.17.4-2?arch=all&distro=debian-13.7&epoch=1",
       "type": "library",
       "supplier": {
         "name": "Shadow package maintainers <pkg-shadow-devel@lists.alioth.debian.org>"
@@ -5405,15 +5426,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/login.defs@4.17.4-2?arch=all&distro=debian-13.6&epoch=1",
+      "purl": "pkg:deb/debian/login.defs@4.17.4-2?arch=all&distro=debian-13.7&epoch=1",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -5442,13 +5463,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/login@4.16.0-2%2Breally2.41-5?arch=arm64&distro=debian-13.6&epoch=1",
+      "bom-ref": "pkg:deb/debian/login@4.16.0-2%2Breally2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
       "type": "library",
       "supplier": {
         "name": "Chris Hofstaedtler <zeha@debian.org>"
       },
       "name": "login",
-      "version": "1:4.16.0-2+really2.41-5",
+      "version": "1:4.16.0-2+really2.41.5-0+deb13u1",
       "licenses": [
         {
           "license": {
@@ -5536,19 +5557,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/login@4.16.0-2%2Breally2.41-5?arch=arm64&distro=debian-13.6&epoch=1",
+      "purl": "pkg:deb/debian/login@4.16.0-2%2Breally2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "login@1:4.16.0-2+really2.41-5"
+          "value": "login@1:4.16.0-2+really2.41.5-0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -5560,16 +5581,16 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "5"
+          "value": "0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
-          "value": "2.41"
+          "value": "2.41.5"
         }
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/mawk@1.3.4.20250131-1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/mawk@1.3.4.20250131-1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Boyuan Yang <byang@debian.org>"
@@ -5593,15 +5614,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/mawk@1.3.4.20250131-1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/mawk@1.3.4.20250131-1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -5626,13 +5647,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/mount@2.41-5?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/mount@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Chris Hofstaedtler <zeha@debian.org>"
       },
       "name": "mount",
-      "version": "2.41-5",
+      "version": "2.41.5-0+deb13u1",
       "licenses": [
         {
           "license": {
@@ -5720,19 +5741,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/mount@2.41-5?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/mount@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "mount@2.41-5"
+          "value": "mount@2.41.5-0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -5744,16 +5765,16 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "5"
+          "value": "0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
-          "value": "2.41"
+          "value": "2.41.5"
         }
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/ncurses-base@6.5%2B20250216-2?arch=all&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/ncurses-base@6.5%2B20250216-2?arch=all&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Ncurses Maintainers <ncurses@packages.debian.org>"
@@ -5777,15 +5798,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/ncurses-base@6.5%2B20250216-2?arch=all&distro=debian-13.6",
+      "purl": "pkg:deb/debian/ncurses-base@6.5%2B20250216-2?arch=all&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -5810,7 +5831,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/ncurses-bin@6.5%2B20250216-2?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/ncurses-bin@6.5%2B20250216-2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Ncurses Maintainers <ncurses@packages.debian.org>"
@@ -5834,15 +5855,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/ncurses-bin@6.5%2B20250216-2?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/ncurses-bin@6.5%2B20250216-2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -5867,7 +5888,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/netbase@6.5?arch=all&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/netbase@6.5?arch=all&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Marco d'Itri <md@linux.it>"
@@ -5881,15 +5902,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/netbase@6.5?arch=all&distro=debian-13.6",
+      "purl": "pkg:deb/debian/netbase@6.5?arch=all&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:1f6945ab3a1b6c4a2410d7a0a7384e91af9b5356cdbd63d725454651b14b2818"
+          "value": "sha256:7ca599ccfc97fa428fcf941eda7c2d643f066feb947020dcdbbf913cec34d5dc"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:d8ee943bca380540d4a6a754c2560c34c25209969f88dd37f983749a61ac44e5"
+          "value": "sha256:3764a9a7d1e8a98213ab2201a41dbf3da9c60240ea35a5ea96ab994555070a70"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -5910,13 +5931,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/openssl-provider-legacy@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/openssl-provider-legacy@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian OpenSSL Team <pkg-openssl-devel@alioth-lists.debian.net>"
       },
       "name": "openssl-provider-legacy",
-      "version": "3.5.6-1~deb13u2",
+      "version": "3.5.7-1~deb13u2",
       "licenses": [
         {
           "license": {
@@ -5939,19 +5960,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/openssl-provider-legacy@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/openssl-provider-legacy@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "openssl-provider-legacy@3.5.6-1~deb13u2"
+          "value": "openssl-provider-legacy@3.5.7-1~deb13u2"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -5967,18 +5988,18 @@
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
-          "value": "3.5.6"
+          "value": "3.5.7"
         }
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/openssl@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/openssl@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian OpenSSL Team <pkg-openssl-devel@alioth-lists.debian.net>"
       },
       "name": "openssl",
-      "version": "3.5.6-1~deb13u2",
+      "version": "3.5.7-1~deb13u2",
       "licenses": [
         {
           "license": {
@@ -6001,19 +6022,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/openssl@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/openssl@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:1f6945ab3a1b6c4a2410d7a0a7384e91af9b5356cdbd63d725454651b14b2818"
+          "value": "sha256:7ca599ccfc97fa428fcf941eda7c2d643f066feb947020dcdbbf913cec34d5dc"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:d8ee943bca380540d4a6a754c2560c34c25209969f88dd37f983749a61ac44e5"
+          "value": "sha256:3764a9a7d1e8a98213ab2201a41dbf3da9c60240ea35a5ea96ab994555070a70"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "openssl@3.5.6-1~deb13u2"
+          "value": "openssl@3.5.7-1~deb13u2"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -6029,12 +6050,12 @@
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
-          "value": "3.5.6"
+          "value": "3.5.7"
         }
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/passwd@4.17.4-2?arch=arm64&distro=debian-13.6&epoch=1",
+      "bom-ref": "pkg:deb/debian/passwd@4.17.4-2?arch=amd64&distro=debian-13.7&epoch=1",
       "type": "library",
       "supplier": {
         "name": "Shadow package maintainers <pkg-shadow-devel@lists.alioth.debian.org>"
@@ -6063,15 +6084,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/passwd@4.17.4-2?arch=arm64&distro=debian-13.6&epoch=1",
+      "purl": "pkg:deb/debian/passwd@4.17.4-2?arch=amd64&distro=debian-13.7&epoch=1",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -6100,13 +6121,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/perl-base@5.40.1-6?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/perl-base@5.40.1-6%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Niko Tyni <ntyni@debian.org>"
       },
       "name": "perl-base",
-      "version": "5.40.1-6",
+      "version": "5.40.1-6+deb13u1",
       "licenses": [
         {
           "license": {
@@ -6224,19 +6245,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/perl-base@5.40.1-6?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/perl-base@5.40.1-6%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "perl-base@5.40.1-6"
+          "value": "perl-base@5.40.1-6+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -6248,7 +6269,7 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "6"
+          "value": "6+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
@@ -6257,7 +6278,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/readline-common@8.2-6?arch=all&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/readline-common@8.2-6?arch=all&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Matthias Klose <doko@debian.org>"
@@ -6301,15 +6322,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/readline-common@8.2-6?arch=all&distro=debian-13.6",
+      "purl": "pkg:deb/debian/readline-common@8.2-6?arch=all&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:92e43e3934d11abe153198ffb0401027d24a6aa365d456f65b8c070caef41156"
+          "value": "sha256:b54011271bdbf69ae643cb5a4af6a5bc2f834ae8bc0833b736b52bbd2396e99f"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ba2b6cc1d0cb930490ba58e48e88bf524ed964ab8a7455cbf8c1a1fba9f33311"
+          "value": "sha256:b0dc7f87bef15c2536cb182d6c48b52f90a0522884ec9eb222f833fa97ffebf0"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -6334,7 +6355,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/sed@4.9-2%2Bdeb13u1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/sed@4.9-2%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Clint Adams <clint@debian.org>"
@@ -6388,15 +6409,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/sed@4.9-2%2Bdeb13u1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/sed@4.9-2%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -6421,7 +6442,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/sqv@1.3.0-3%2Bb2?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/sqv@1.3.0-3%2Bb2?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian Rust Maintainers <pkg-rust-maintainers@alioth-lists.debian.net>"
@@ -6440,15 +6461,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/sqv@1.3.0-3%2Bb2?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/sqv@1.3.0-3%2Bb2?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -6473,7 +6494,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/sysvinit-utils@3.14-4?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/sysvinit-utils@3.14-4?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Debian sysvinit maintainers <debian-init-diversity@chiark.greenend.org.uk>"
@@ -6507,15 +6528,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/sysvinit-utils@3.14-4?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/sysvinit-utils@3.14-4?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -6540,7 +6561,7 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/tar@1.35%2Bdfsg-3.1?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/tar@1.35%2Bdfsg-3.1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Janos Lenart <ocsi@debian.org>"
@@ -6594,15 +6615,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/tar@1.35%2Bdfsg-3.1?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/tar@1.35%2Bdfsg-3.1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -6627,13 +6648,13 @@
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/tzdata@2026b-0%2Bdeb13u1?arch=all&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/tzdata@2026c-0%2Bdeb13u1?arch=all&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "GNU Libc Maintainers <debian-glibc@lists.debian.org>"
       },
       "name": "tzdata",
-      "version": "2026b-0+deb13u1",
+      "version": "2026c-0+deb13u1",
       "licenses": [
         {
           "license": {
@@ -6641,19 +6662,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/tzdata@2026b-0%2Bdeb13u1?arch=all&distro=debian-13.6",
+      "purl": "pkg:deb/debian/tzdata@2026c-0%2Bdeb13u1?arch=all&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "tzdata@2026b-0+deb13u1"
+          "value": "tzdata@2026c-0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -6669,18 +6690,18 @@
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
-          "value": "2026b"
+          "value": "2026c"
         }
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/util-linux@2.41-5?arch=arm64&distro=debian-13.6",
+      "bom-ref": "pkg:deb/debian/util-linux@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "type": "library",
       "supplier": {
         "name": "Chris Hofstaedtler <zeha@debian.org>"
       },
       "name": "util-linux",
-      "version": "2.41-5",
+      "version": "2.41.5-0+deb13u1",
       "licenses": [
         {
           "license": {
@@ -6768,19 +6789,19 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/util-linux@2.41-5?arch=arm64&distro=debian-13.6",
+      "purl": "pkg:deb/debian/util-linux@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
-          "value": "util-linux@2.41-5"
+          "value": "util-linux@2.41.5-0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -6792,16 +6813,16 @@
         },
         {
           "name": "aquasecurity:trivy:SrcRelease",
-          "value": "5"
+          "value": "0+deb13u1"
         },
         {
           "name": "aquasecurity:trivy:SrcVersion",
-          "value": "2.41"
+          "value": "2.41.5"
         }
       ]
     },
     {
-      "bom-ref": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=arm64&distro=debian-13.6&epoch=1",
+      "bom-ref": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
       "type": "library",
       "supplier": {
         "name": "Mark Brown <broonie@debian.org>"
@@ -6815,15 +6836,15 @@
           }
         }
       ],
-      "purl": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=arm64&distro=debian-13.6&epoch=1",
+      "purl": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
       "properties": [
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:4e6fee325600a0377566ca159a4da9833f6e35e04eaa4194c47dd3b2fe901717"
+          "value": "sha256:a6dc765193a52cbaede3c93a9ff48b9540948dd0774bbe7031fcb5847606f9ac"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:59f54fbcd984beca03fd8b78569fa57268ecf78d291c0b6fe1623c2467f5a075"
+          "value": "sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8"
         },
         {
           "name": "aquasecurity:trivy:PkgID",
@@ -6877,11 +6898,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:63c79a2c67834fe8e9226a750708a2e6399ebfa9e9630b48a5c620d1afadbf54"
+          "value": "sha256:68107cfb10323e816259e2c8543d832fbb434156aaf15e0ae3a2e03bbe2502d2"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:9a62e5c9e230ff26d5d765d0d8185ae835e8cbfb58092520a28621684c762c6c"
+          "value": "sha256:f9cf49659019f098423dab582e45dd4d774b3a5344922ffd8a3dff54a0c76bea"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -6915,11 +6936,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:63c79a2c67834fe8e9226a750708a2e6399ebfa9e9630b48a5c620d1afadbf54"
+          "value": "sha256:68107cfb10323e816259e2c8543d832fbb434156aaf15e0ae3a2e03bbe2502d2"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:9a62e5c9e230ff26d5d765d0d8185ae835e8cbfb58092520a28621684c762c6c"
+          "value": "sha256:f9cf49659019f098423dab582e45dd4d774b3a5344922ffd8a3dff54a0c76bea"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -6953,11 +6974,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:63c79a2c67834fe8e9226a750708a2e6399ebfa9e9630b48a5c620d1afadbf54"
+          "value": "sha256:68107cfb10323e816259e2c8543d832fbb434156aaf15e0ae3a2e03bbe2502d2"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:9a62e5c9e230ff26d5d765d0d8185ae835e8cbfb58092520a28621684c762c6c"
+          "value": "sha256:f9cf49659019f098423dab582e45dd4d774b3a5344922ffd8a3dff54a0c76bea"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -6991,11 +7012,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:63c79a2c67834fe8e9226a750708a2e6399ebfa9e9630b48a5c620d1afadbf54"
+          "value": "sha256:68107cfb10323e816259e2c8543d832fbb434156aaf15e0ae3a2e03bbe2502d2"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:9a62e5c9e230ff26d5d765d0d8185ae835e8cbfb58092520a28621684c762c6c"
+          "value": "sha256:f9cf49659019f098423dab582e45dd4d774b3a5344922ffd8a3dff54a0c76bea"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -7029,11 +7050,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:63c79a2c67834fe8e9226a750708a2e6399ebfa9e9630b48a5c620d1afadbf54"
+          "value": "sha256:68107cfb10323e816259e2c8543d832fbb434156aaf15e0ae3a2e03bbe2502d2"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:9a62e5c9e230ff26d5d765d0d8185ae835e8cbfb58092520a28621684c762c6c"
+          "value": "sha256:f9cf49659019f098423dab582e45dd4d774b3a5344922ffd8a3dff54a0c76bea"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -7067,11 +7088,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:63c79a2c67834fe8e9226a750708a2e6399ebfa9e9630b48a5c620d1afadbf54"
+          "value": "sha256:68107cfb10323e816259e2c8543d832fbb434156aaf15e0ae3a2e03bbe2502d2"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:9a62e5c9e230ff26d5d765d0d8185ae835e8cbfb58092520a28621684c762c6c"
+          "value": "sha256:f9cf49659019f098423dab582e45dd4d774b3a5344922ffd8a3dff54a0c76bea"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -7105,11 +7126,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:63c79a2c67834fe8e9226a750708a2e6399ebfa9e9630b48a5c620d1afadbf54"
+          "value": "sha256:68107cfb10323e816259e2c8543d832fbb434156aaf15e0ae3a2e03bbe2502d2"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:9a62e5c9e230ff26d5d765d0d8185ae835e8cbfb58092520a28621684c762c6c"
+          "value": "sha256:f9cf49659019f098423dab582e45dd4d774b3a5344922ffd8a3dff54a0c76bea"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -7141,11 +7162,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:63c79a2c67834fe8e9226a750708a2e6399ebfa9e9630b48a5c620d1afadbf54"
+          "value": "sha256:68107cfb10323e816259e2c8543d832fbb434156aaf15e0ae3a2e03bbe2502d2"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:9a62e5c9e230ff26d5d765d0d8185ae835e8cbfb58092520a28621684c762c6c"
+          "value": "sha256:f9cf49659019f098423dab582e45dd4d774b3a5344922ffd8a3dff54a0c76bea"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -7179,11 +7200,161 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:92e43e3934d11abe153198ffb0401027d24a6aa365d456f65b8c070caef41156"
+          "value": "sha256:b54011271bdbf69ae643cb5a4af6a5bc2f834ae8bc0833b736b52bbd2396e99f"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ba2b6cc1d0cb930490ba58e48e88bf524ed964ab8a7455cbf8c1a1fba9f33311"
+          "value": "sha256:b0dc7f87bef15c2536cb182d6c48b52f90a0522884ec9eb222f833fa97ffebf0"
+        },
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "python-pkg"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/prometheus-client@0.26.0",
+      "type": "library",
+      "name": "prometheus_client",
+      "version": "0.26.0",
+      "hashes": [
+        {
+          "alg": "SHA-1",
+          "content": "0e95ea1c5009aa0f790ae9e93acba596c5583000"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0 AND BSD-2-Clause"
+        }
+      ],
+      "purl": "pkg:pypi/prometheus-client@0.26.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:FilePath",
+          "value": "usr/local/lib/python3.12/site-packages/prometheus_client-0.26.0.dist-info/METADATA"
+        },
+        {
+          "name": "aquasecurity:trivy:LayerDiffID",
+          "value": "sha256:68107cfb10323e816259e2c8543d832fbb434156aaf15e0ae3a2e03bbe2502d2"
+        },
+        {
+          "name": "aquasecurity:trivy:LayerDigest",
+          "value": "sha256:f9cf49659019f098423dab582e45dd4d774b3a5344922ffd8a3dff54a0c76bea"
+        },
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "python-pkg"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/psycopg-binary@3.3.5",
+      "type": "library",
+      "name": "psycopg-binary",
+      "version": "3.3.5",
+      "hashes": [
+        {
+          "alg": "SHA-1",
+          "content": "30e3456e9ee8d1d8a5053f44012d5096e221aed6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "LGPL-3.0-only"
+          }
+        }
+      ],
+      "purl": "pkg:pypi/psycopg-binary@3.3.5",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:FilePath",
+          "value": "usr/local/lib/python3.12/site-packages/psycopg_binary-3.3.5.dist-info/METADATA"
+        },
+        {
+          "name": "aquasecurity:trivy:LayerDiffID",
+          "value": "sha256:68107cfb10323e816259e2c8543d832fbb434156aaf15e0ae3a2e03bbe2502d2"
+        },
+        {
+          "name": "aquasecurity:trivy:LayerDigest",
+          "value": "sha256:f9cf49659019f098423dab582e45dd4d774b3a5344922ffd8a3dff54a0c76bea"
+        },
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "python-pkg"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/psycopg@3.3.5",
+      "type": "library",
+      "name": "psycopg",
+      "version": "3.3.5",
+      "hashes": [
+        {
+          "alg": "SHA-1",
+          "content": "b32c6ed7524e4d9e2e0dbe2980642d8b63c5ac19"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "LGPL-3.0-only"
+          }
+        }
+      ],
+      "purl": "pkg:pypi/psycopg@3.3.5",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:FilePath",
+          "value": "usr/local/lib/python3.12/site-packages/psycopg-3.3.5.dist-info/METADATA"
+        },
+        {
+          "name": "aquasecurity:trivy:LayerDiffID",
+          "value": "sha256:68107cfb10323e816259e2c8543d832fbb434156aaf15e0ae3a2e03bbe2502d2"
+        },
+        {
+          "name": "aquasecurity:trivy:LayerDigest",
+          "value": "sha256:f9cf49659019f098423dab582e45dd4d774b3a5344922ffd8a3dff54a0c76bea"
+        },
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "python-pkg"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/typing-extensions@4.16.0",
+      "type": "library",
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "hashes": [
+        {
+          "alg": "SHA-1",
+          "content": "510f2798ee23c416b9c396ef607b3da53555e29a"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "PSF-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:pypi/typing-extensions@4.16.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:FilePath",
+          "value": "usr/local/lib/python3.12/site-packages/typing_extensions-4.16.0.dist-info/METADATA"
+        },
+        {
+          "name": "aquasecurity:trivy:LayerDiffID",
+          "value": "sha256:68107cfb10323e816259e2c8543d832fbb434156aaf15e0ae3a2e03bbe2502d2"
+        },
+        {
+          "name": "aquasecurity:trivy:LayerDigest",
+          "value": "sha256:f9cf49659019f098423dab582e45dd4d774b3a5344922ffd8a3dff54a0c76bea"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -7217,11 +7388,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:63c79a2c67834fe8e9226a750708a2e6399ebfa9e9630b48a5c620d1afadbf54"
+          "value": "sha256:68107cfb10323e816259e2c8543d832fbb434156aaf15e0ae3a2e03bbe2502d2"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:9a62e5c9e230ff26d5d765d0d8185ae835e8cbfb58092520a28621684c762c6c"
+          "value": "sha256:f9cf49659019f098423dab582e45dd4d774b3a5344922ffd8a3dff54a0c76bea"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -7232,600 +7403,600 @@
   ],
   "dependencies": [
     {
-      "ref": "e14269df-c6f1-4769-b50d-1d5ac68e559e",
+      "ref": "b138930d-7224-4247-90bc-ec78083210d6",
       "dependsOn": [
-        "pkg:deb/debian/apt@3.0.3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/bash@5.2.37-2%2Bb9?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/bsdutils@2.41-5?arch=arm64&distro=debian-13.6&epoch=1",
-        "pkg:deb/debian/ca-certificates@20250419?arch=all&distro=debian-13.6",
-        "pkg:deb/debian/coreutils@9.7-3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/dash@0.5.12-12?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/diffutils@3.10-4?arch=arm64&distro=debian-13.6&epoch=1",
-        "pkg:deb/debian/dpkg@1.22.22?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/findutils@4.10.0-3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/grep@3.11-4%2Bb1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/gzip@1.13-1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/hostname@3.25?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/init-system-helpers@1.69~deb13u1?arch=all&distro=debian-13.6",
-        "pkg:deb/debian/libc-bin@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libdb5.3t64@5.3.28%2Bdfsg2-9?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libffi8@3.4.8-2?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libgdbm6t64@1.24-2?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/liblastlog2-2@2.41-5?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libmount1@2.41-5?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libncursesw6@6.5%2B20250216-2?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libpam-modules-bin@1.7.0-5?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libreadline8t64@8.2-6?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libsmartcols1@2.41-5?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libuuid1@2.41-5?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/login@4.16.0-2%2Breally2.41-5?arch=arm64&distro=debian-13.6&epoch=1",
-        "pkg:deb/debian/mawk@1.3.4.20250131-1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/mount@2.41-5?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/ncurses-base@6.5%2B20250216-2?arch=all&distro=debian-13.6",
-        "pkg:deb/debian/ncurses-bin@6.5%2B20250216-2?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/netbase@6.5?arch=all&distro=debian-13.6",
-        "pkg:deb/debian/perl-base@5.40.1-6?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/sed@4.9-2%2Bdeb13u1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/sysvinit-utils@3.14-4?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/tzdata@2026b-0%2Bdeb13u1?arch=all&distro=debian-13.6",
-        "pkg:deb/debian/util-linux@2.41-5?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/apt@3.0.3?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/bash@5.2.37-2%2Bb10?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/bsdutils@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
+        "pkg:deb/debian/ca-certificates@20250419?arch=all&distro=debian-13.7",
+        "pkg:deb/debian/coreutils@9.7-3?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/dash@0.5.12-12?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/diffutils@3.10-4?arch=amd64&distro=debian-13.7&epoch=1",
+        "pkg:deb/debian/dpkg@1.22.22?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/findutils@4.10.0-3?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/grep@3.11-4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/gzip@1.13-1%2Bdeb13u1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/hostname@3.25?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/init-system-helpers@1.69~deb13u1?arch=all&distro=debian-13.7",
+        "pkg:deb/debian/libc-bin@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libdb5.3t64@5.3.28%2Bdfsg2-9?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libffi8@3.4.8-2?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libgdbm6t64@1.24-2?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/liblastlog2-2@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libmount1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libncursesw6@6.5%2B20250216-2?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libpam-modules-bin@1.7.0-5?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libreadline8t64@8.2-6?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libsmartcols1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libuuid1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/login@4.16.0-2%2Breally2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
+        "pkg:deb/debian/mawk@1.3.4.20250131-1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/mount@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/ncurses-base@6.5%2B20250216-2?arch=all&distro=debian-13.7",
+        "pkg:deb/debian/ncurses-bin@6.5%2B20250216-2?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/netbase@6.5?arch=all&distro=debian-13.7",
+        "pkg:deb/debian/perl-base@5.40.1-6%2Bdeb13u1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/sed@4.9-2%2Bdeb13u1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/sysvinit-utils@3.14-4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/tzdata@2026c-0%2Bdeb13u1?arch=all&distro=debian-13.7",
+        "pkg:deb/debian/util-linux@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/adduser@3.152?arch=all&distro=debian-13.6",
+      "ref": "pkg:deb/debian/adduser@3.152?arch=all&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/passwd@4.17.4-2?arch=arm64&distro=debian-13.6&epoch=1"
+        "pkg:deb/debian/passwd@4.17.4-2?arch=amd64&distro=debian-13.7&epoch=1"
       ]
     },
     {
-      "ref": "pkg:deb/debian/apt@3.0.3?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/apt@3.0.3?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/adduser@3.152?arch=all&distro=debian-13.6",
-        "pkg:deb/debian/base-passwd@3.6.7?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/debian-archive-keyring@2025.1?arch=all&distro=debian-13.6",
-        "pkg:deb/debian/libapt-pkg7.0@3.0.3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libseccomp2@2.6.0-2?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libssl3t64@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libstdc%2B%2B6@14.2.0-19?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libsystemd0@257.13-1~deb13u1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/sqv@1.3.0-3%2Bb2?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/adduser@3.152?arch=all&distro=debian-13.7",
+        "pkg:deb/debian/base-passwd@3.6.7?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/debian-archive-keyring@2025.1?arch=all&distro=debian-13.7",
+        "pkg:deb/debian/libapt-pkg7.0@3.0.3?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libseccomp2@2.6.0-2?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libssl3t64@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libstdc%2B%2B6@14.2.0-19?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libsystemd0@257.13-1~deb13u1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/sqv@1.3.0-3%2Bb2?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/base-files@13.8%2Bdeb13u6?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/base-files@13.8%2Bdeb13u7?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/base-passwd@3.6.7?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/base-passwd@3.6.7?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libdebconfclient0@0.280?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libselinux1@3.8.1-1?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libdebconfclient0@0.280?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libselinux1@3.8.1-1?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/bash@5.2.37-2%2Bb9?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/bash@5.2.37-2%2Bb10?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/base-files@13.8%2Bdeb13u6?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/debianutils@5.23.2?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/base-files@13.8%2Bdeb13u7?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/debianutils@5.23.2?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/bsdutils@2.41-5?arch=arm64&distro=debian-13.6&epoch=1",
+      "ref": "pkg:deb/debian/bsdutils@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/ca-certificates@20250419?arch=all&distro=debian-13.6",
+      "ref": "pkg:deb/debian/ca-certificates@20250419?arch=all&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/debconf@1.5.91?arch=all&distro=debian-13.6",
-        "pkg:deb/debian/openssl@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/debconf@1.5.91?arch=all&distro=debian-13.7",
+        "pkg:deb/debian/openssl@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/coreutils@9.7-3?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/coreutils@9.7-3?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/dash@0.5.12-12?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/dash@0.5.12-12?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/debianutils@5.23.2?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/debianutils@5.23.2?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/debconf@1.5.91?arch=all&distro=debian-13.6",
+      "ref": "pkg:deb/debian/debconf@1.5.91?arch=all&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/debian-archive-keyring@2025.1?arch=all&distro=debian-13.6",
+      "ref": "pkg:deb/debian/debian-archive-keyring@2025.1?arch=all&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/debianutils@5.23.2?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/debianutils@5.23.2?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/diffutils@3.10-4?arch=arm64&distro=debian-13.6&epoch=1",
+      "ref": "pkg:deb/debian/diffutils@3.10-4?arch=amd64&distro=debian-13.7&epoch=1",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/dpkg@1.22.22?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/dpkg@1.22.22?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/tar@1.35%2Bdfsg-3.1?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/tar@1.35%2Bdfsg-3.1?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/findutils@4.10.0-3?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/findutils@4.10.0-3?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/gcc-14-base@14.2.0-19?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/gcc-14-base@14.2.0-19?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/grep@3.11-4%2Bb1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/grep@3.11-4?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/gzip@1.13-1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/gzip@1.13-1%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/hostname@3.25?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/hostname@3.25?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/init-system-helpers@1.69~deb13u1?arch=all&distro=debian-13.6",
+      "ref": "pkg:deb/debian/init-system-helpers@1.69~deb13u1?arch=all&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/libacl1@2.3.2-2%2Bb1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libacl1@2.3.2-2%2Bb1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libapt-pkg7.0@3.0.3?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libapt-pkg7.0@3.0.3?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libbz2-1.0@1.0.8-6?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/liblz4-1@1.10.0-4?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/liblzma5@5.8.1-1%2Bdeb13u1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libssl3t64@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libstdc%2B%2B6@14.2.0-19?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libsystemd0@257.13-1~deb13u1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libudev1@257.13-1~deb13u1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libxxhash0@0.8.3-2?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libzstd1@1.5.7%2Bdfsg-1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=arm64&distro=debian-13.6&epoch=1"
+        "pkg:deb/debian/libbz2-1.0@1.0.8-6?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/liblz4-1@1.10.0-4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/liblzma5@5.8.1-1%2Bdeb13u1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libssl3t64@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libstdc%2B%2B6@14.2.0-19?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libsystemd0@257.13-1~deb13u1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libudev1@257.13-1~deb13u1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libxxhash0@0.8.3-2?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libzstd1@1.5.7%2Bdfsg-1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libattr1@2.5.2-3?arch=arm64&distro=debian-13.6&epoch=1",
+      "ref": "pkg:deb/debian/libattr1@2.5.2-3?arch=amd64&distro=debian-13.7&epoch=1",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libaudit-common@4.0.2-2?arch=all&distro=debian-13.6&epoch=1",
+      "ref": "pkg:deb/debian/libaudit-common@4.0.2-2%2Bdeb13u1?arch=all&distro=debian-13.7&epoch=1",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/libaudit1@4.0.2-2%2Bb2?arch=arm64&distro=debian-13.6&epoch=1",
+      "ref": "pkg:deb/debian/libaudit1@4.0.2-2%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
       "dependsOn": [
-        "pkg:deb/debian/libaudit-common@4.0.2-2?arch=all&distro=debian-13.6&epoch=1",
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libcap-ng0@0.8.5-4%2Bb1?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libaudit-common@4.0.2-2%2Bdeb13u1?arch=all&distro=debian-13.7&epoch=1",
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libcap-ng0@0.8.5-4%2Bb1?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libblkid1@2.41-5?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libblkid1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libbsd0@0.12.2-2?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libbsd0@0.12.2-2?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libmd0@1.1.0-2%2Bb1?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libmd0@1.1.0-2%2Bb1?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libbz2-1.0@1.0.8-6?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libbz2-1.0@1.0.8-6?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libc-bin@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libc-bin@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libcap-ng0@0.8.5-4%2Bb1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libcap-ng0@0.8.5-4%2Bb1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libcap2@2.75-10%2Bdeb13u1%2Bb1?arch=arm64&distro=debian-13.6&epoch=1",
+      "ref": "pkg:deb/debian/libcap2@2.75-10%2Bdeb13u1%2Bb3?arch=amd64&distro=debian-13.7&epoch=1",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libcrypt1@4.4.38-1?arch=arm64&distro=debian-13.6&epoch=1",
+      "ref": "pkg:deb/debian/libcrypt1@4.4.38-1?arch=amd64&distro=debian-13.7&epoch=1",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libdb5.3t64@5.3.28%2Bdfsg2-9?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libdb5.3t64@5.3.28%2Bdfsg2-9?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libdebconfclient0@0.280?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libdebconfclient0@0.280?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libffi8@3.4.8-2?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libffi8@3.4.8-2?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/gcc-14-base@14.2.0-19?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/gcc-14-base@14.2.0-19?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libgdbm6t64@1.24-2?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libgdbm6t64@1.24-2?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libgmp10@6.3.0%2Bdfsg-3?arch=arm64&distro=debian-13.6&epoch=2",
+      "ref": "pkg:deb/debian/libgmp10@6.3.0%2Bdfsg-3?arch=amd64&distro=debian-13.7&epoch=2",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libhogweed6t64@3.10.1-1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libhogweed6t64@3.10.1-1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libgmp10@6.3.0%2Bdfsg-3?arch=arm64&distro=debian-13.6&epoch=2",
-        "pkg:deb/debian/libnettle8t64@3.10.1-1?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libgmp10@6.3.0%2Bdfsg-3?arch=amd64&distro=debian-13.7&epoch=2",
+        "pkg:deb/debian/libnettle8t64@3.10.1-1?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/liblastlog2-2@2.41-5?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/liblastlog2-2@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libsqlite3-0@3.46.1-7%2Bdeb13u1?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libsqlite3-0@3.46.1-7%2Bdeb13u2?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/liblz4-1@1.10.0-4?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/liblz4-1@1.10.0-4?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libxxhash0@0.8.3-2?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libxxhash0@0.8.3-2?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/liblzma5@5.8.1-1%2Bdeb13u1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/liblzma5@5.8.1-1%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libmd0@1.1.0-2%2Bb1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libmd0@1.1.0-2%2Bb1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libmount1@2.41-5?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libmount1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libblkid1@2.41-5?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libselinux1@3.8.1-1?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libblkid1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libselinux1@3.8.1-1?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libncursesw6@6.5%2B20250216-2?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libncursesw6@6.5%2B20250216-2?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libtinfo6@6.5%2B20250216-2?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libtinfo6@6.5%2B20250216-2?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libnettle8t64@3.10.1-1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libnettle8t64@3.10.1-1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libpam-modules-bin@1.7.0-5?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libpam-modules-bin@1.7.0-5?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libaudit1@4.0.2-2%2Bb2?arch=arm64&distro=debian-13.6&epoch=1",
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libcrypt1@4.4.38-1?arch=arm64&distro=debian-13.6&epoch=1",
-        "pkg:deb/debian/libpam0g@1.7.0-5?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libselinux1@3.8.1-1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libsystemd0@257.13-1~deb13u1?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libaudit1@4.0.2-2%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libcrypt1@4.4.38-1?arch=amd64&distro=debian-13.7&epoch=1",
+        "pkg:deb/debian/libpam0g@1.7.0-5?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libselinux1@3.8.1-1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libsystemd0@257.13-1~deb13u1?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libpam-modules@1.7.0-5?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libpam-modules@1.7.0-5?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/libpam-runtime@1.7.0-5?arch=all&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libpam-runtime@1.7.0-5?arch=all&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/debconf@1.5.91?arch=all&distro=debian-13.6",
-        "pkg:deb/debian/libpam-modules@1.7.0-5?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/debconf@1.5.91?arch=all&distro=debian-13.7",
+        "pkg:deb/debian/libpam-modules@1.7.0-5?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libpam0g@1.7.0-5?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libpam0g@1.7.0-5?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/debconf@1.5.91?arch=all&distro=debian-13.6",
-        "pkg:deb/debian/libaudit1@4.0.2-2%2Bb2?arch=arm64&distro=debian-13.6&epoch=1",
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/debconf@1.5.91?arch=all&distro=debian-13.7",
+        "pkg:deb/debian/libaudit1@4.0.2-2%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libpcre2-8-0@10.46-1~deb13u1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libpcre2-8-0@10.46-1~deb13u2?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libreadline8t64@8.2-6?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libreadline8t64@8.2-6?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libtinfo6@6.5%2B20250216-2?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/readline-common@8.2-6?arch=all&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libtinfo6@6.5%2B20250216-2?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/readline-common@8.2-6?arch=all&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libseccomp2@2.6.0-2?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libseccomp2@2.6.0-2?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libselinux1@3.8.1-1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libselinux1@3.8.1-1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libpcre2-8-0@10.46-1~deb13u1?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libpcre2-8-0@10.46-1~deb13u2?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libsemanage-common@3.8.1-1?arch=all&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libsemanage-common@3.8.1-1?arch=all&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/libsemanage2@3.8.1-1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libsemanage2@3.8.1-1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libaudit1@4.0.2-2%2Bb2?arch=arm64&distro=debian-13.6&epoch=1",
-        "pkg:deb/debian/libbz2-1.0@1.0.8-6?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libselinux1@3.8.1-1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libsemanage-common@3.8.1-1?arch=all&distro=debian-13.6",
-        "pkg:deb/debian/libsepol2@3.8.1-1?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libaudit1@4.0.2-2%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
+        "pkg:deb/debian/libbz2-1.0@1.0.8-6?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libselinux1@3.8.1-1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libsemanage-common@3.8.1-1?arch=all&distro=debian-13.7",
+        "pkg:deb/debian/libsepol2@3.8.1-1?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libsepol2@3.8.1-1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libsepol2@3.8.1-1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libsmartcols1@2.41-5?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libsmartcols1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libsqlite3-0@3.46.1-7%2Bdeb13u1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libsqlite3-0@3.46.1-7%2Bdeb13u2?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libssl3t64@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libssl3t64@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libzstd1@1.5.7%2Bdfsg-1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/openssl-provider-legacy@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=arm64&distro=debian-13.6&epoch=1"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libzstd1@1.5.7%2Bdfsg-1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/openssl-provider-legacy@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libstdc%2B%2B6@14.2.0-19?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libstdc%2B%2B6@14.2.0-19?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/gcc-14-base@14.2.0-19?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/gcc-14-base@14.2.0-19?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libsystemd0@257.13-1~deb13u1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libsystemd0@257.13-1~deb13u1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libcap2@2.75-10%2Bdeb13u1%2Bb1?arch=arm64&distro=debian-13.6&epoch=1"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libcap2@2.75-10%2Bdeb13u1%2Bb3?arch=amd64&distro=debian-13.7&epoch=1"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libtinfo6@6.5%2B20250216-2?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libtinfo6@6.5%2B20250216-2?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libudev1@257.13-1~deb13u1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libudev1@257.13-1~deb13u1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libcap2@2.75-10%2Bdeb13u1%2Bb1?arch=arm64&distro=debian-13.6&epoch=1"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libcap2@2.75-10%2Bdeb13u1%2Bb3?arch=amd64&distro=debian-13.7&epoch=1"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libuuid1@2.41-5?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libuuid1@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libxxhash0@0.8.3-2?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libxxhash0@0.8.3-2?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/libzstd1@1.5.7%2Bdfsg-1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/libzstd1@1.5.7%2Bdfsg-1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/login.defs@4.17.4-2?arch=all&distro=debian-13.6&epoch=1",
+      "ref": "pkg:deb/debian/login.defs@4.17.4-2?arch=all&distro=debian-13.7&epoch=1",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/login@4.16.0-2%2Breally2.41-5?arch=arm64&distro=debian-13.6&epoch=1",
+      "ref": "pkg:deb/debian/login@4.16.0-2%2Breally2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
       "dependsOn": [
-        "pkg:deb/debian/libaudit1@4.0.2-2%2Bb2?arch=arm64&distro=debian-13.6&epoch=1",
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libcrypt1@4.4.38-1?arch=arm64&distro=debian-13.6&epoch=1",
-        "pkg:deb/debian/libpam-modules@1.7.0-5?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libpam-runtime@1.7.0-5?arch=all&distro=debian-13.6",
-        "pkg:deb/debian/libpam0g@1.7.0-5?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libaudit1@4.0.2-2%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libcrypt1@4.4.38-1?arch=amd64&distro=debian-13.7&epoch=1",
+        "pkg:deb/debian/libpam-modules@1.7.0-5?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libpam-runtime@1.7.0-5?arch=all&distro=debian-13.7",
+        "pkg:deb/debian/libpam0g@1.7.0-5?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/mawk@1.3.4.20250131-1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/mawk@1.3.4.20250131-1?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/mount@2.41-5?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/mount@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/ncurses-base@6.5%2B20250216-2?arch=all&distro=debian-13.6",
+      "ref": "pkg:deb/debian/ncurses-base@6.5%2B20250216-2?arch=all&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/ncurses-bin@6.5%2B20250216-2?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/ncurses-bin@6.5%2B20250216-2?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/netbase@6.5?arch=all&distro=debian-13.6",
+      "ref": "pkg:deb/debian/netbase@6.5?arch=all&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/openssl-provider-legacy@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/openssl-provider-legacy@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libssl3t64@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libssl3t64@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/openssl@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/openssl@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libssl3t64@3.5.6-1~deb13u2?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libssl3t64@3.5.7-1~deb13u2?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/passwd@4.17.4-2?arch=arm64&distro=debian-13.6&epoch=1",
+      "ref": "pkg:deb/debian/passwd@4.17.4-2?arch=amd64&distro=debian-13.7&epoch=1",
       "dependsOn": [
-        "pkg:deb/debian/base-passwd@3.6.7?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libacl1@2.3.2-2%2Bb1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libattr1@2.5.2-3?arch=arm64&distro=debian-13.6&epoch=1",
-        "pkg:deb/debian/libaudit1@4.0.2-2%2Bb2?arch=arm64&distro=debian-13.6&epoch=1",
-        "pkg:deb/debian/libbsd0@0.12.2-2?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libcrypt1@4.4.38-1?arch=arm64&distro=debian-13.6&epoch=1",
-        "pkg:deb/debian/libpam-modules@1.7.0-5?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libpam0g@1.7.0-5?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libselinux1@3.8.1-1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libsemanage2@3.8.1-1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/login.defs@4.17.4-2?arch=all&distro=debian-13.6&epoch=1"
+        "pkg:deb/debian/base-passwd@3.6.7?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libacl1@2.3.2-2%2Bb1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libattr1@2.5.2-3?arch=amd64&distro=debian-13.7&epoch=1",
+        "pkg:deb/debian/libaudit1@4.0.2-2%2Bdeb13u1?arch=amd64&distro=debian-13.7&epoch=1",
+        "pkg:deb/debian/libbsd0@0.12.2-2?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libcrypt1@4.4.38-1?arch=amd64&distro=debian-13.7&epoch=1",
+        "pkg:deb/debian/libpam-modules@1.7.0-5?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libpam0g@1.7.0-5?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libselinux1@3.8.1-1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libsemanage2@3.8.1-1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/login.defs@4.17.4-2?arch=all&distro=debian-13.7&epoch=1"
       ]
     },
     {
-      "ref": "pkg:deb/debian/perl-base@5.40.1-6?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/perl-base@5.40.1-6%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/readline-common@8.2-6?arch=all&distro=debian-13.6",
+      "ref": "pkg:deb/debian/readline-common@8.2-6?arch=all&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/sed@4.9-2%2Bdeb13u1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/sed@4.9-2%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/sqv@1.3.0-3%2Bb2?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/sqv@1.3.0-3%2Bb2?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libgmp10@6.3.0%2Bdfsg-3?arch=arm64&distro=debian-13.6&epoch=2",
-        "pkg:deb/debian/libhogweed6t64@3.10.1-1?arch=arm64&distro=debian-13.6",
-        "pkg:deb/debian/libnettle8t64@3.10.1-1?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libgcc-s1@14.2.0-19?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libgmp10@6.3.0%2Bdfsg-3?arch=amd64&distro=debian-13.7&epoch=2",
+        "pkg:deb/debian/libhogweed6t64@3.10.1-1?arch=amd64&distro=debian-13.7",
+        "pkg:deb/debian/libnettle8t64@3.10.1-1?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/sysvinit-utils@3.14-4?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/sysvinit-utils@3.14-4?arch=amd64&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/tar@1.35%2Bdfsg-3.1?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/tar@1.35%2Bdfsg-3.1?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/tzdata@2026b-0%2Bdeb13u1?arch=all&distro=debian-13.6",
+      "ref": "pkg:deb/debian/tzdata@2026c-0%2Bdeb13u1?arch=all&distro=debian-13.7",
       "dependsOn": [
-        "pkg:deb/debian/debconf@1.5.91?arch=all&distro=debian-13.6"
+        "pkg:deb/debian/debconf@1.5.91?arch=all&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:deb/debian/util-linux@2.41-5?arch=arm64&distro=debian-13.6",
+      "ref": "pkg:deb/debian/util-linux@2.41.5-0%2Bdeb13u1?arch=amd64&distro=debian-13.7",
       "dependsOn": []
     },
     {
-      "ref": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=arm64&distro=debian-13.6&epoch=1",
+      "ref": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
       "dependsOn": [
-        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u3?arch=arm64&distro=debian-13.6"
+        "pkg:deb/debian/libc6@2.41-12%2Bdeb13u4?arch=amd64&distro=debian-13.7"
       ]
     },
     {
-      "ref": "pkg:oci/projecta-flask@sha256:64fc09c928d3daff211cfba236faee4587710fe7b8a3687c887762714e8dfb01?arch=arm64&repository_url=localhost:5001%2Fprojecta-flask",
+      "ref": "pkg:oci/projecta-flask@sha256:a592a1b9bc86966a3b94fca9b0795424dd6e3e3188cee9a4254ed6d0b33a99ae?arch=amd64&repository_url=localhost:5001%2Fprojecta-flask",
       "dependsOn": [
-        "e14269df-c6f1-4769-b50d-1d5ac68e559e",
+        "b138930d-7224-4247-90bc-ec78083210d6",
         "pkg:pypi/blinker@1.9.0",
         "pkg:pypi/click@8.4.2",
         "pkg:pypi/flask@3.1.3",
@@ -7835,6 +8006,10 @@
         "pkg:pypi/markupsafe@3.0.3",
         "pkg:pypi/packaging@26.2",
         "pkg:pypi/pip@25.0.1",
+        "pkg:pypi/prometheus-client@0.26.0",
+        "pkg:pypi/psycopg-binary@3.3.5",
+        "pkg:pypi/psycopg@3.3.5",
+        "pkg:pypi/typing-extensions@4.16.0",
         "pkg:pypi/werkzeug@3.1.8"
       ]
     },
@@ -7872,6 +8047,22 @@
     },
     {
       "ref": "pkg:pypi/pip@25.0.1",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/prometheus-client@0.26.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/psycopg-binary@3.3.5",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/psycopg@3.3.5",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/typing-extensions@4.16.0",
       "dependsOn": []
     },
     {

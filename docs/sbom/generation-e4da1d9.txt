@@ -1,0 +1,10 @@
+generated_utc: 2026-09-23T07:34:48Z
+tag: e4da1d9
+host: szakdoga2-vm
+trivy_image: aquasec/trivy:0.72.0@sha256:cffe3f5161a47a6823fbd23d985795b3ed72a4c806da4c4df16266c02accdd6f
+trivy_version: Version: 0.72.0
+image projecta-flask: localhost:5001/projecta-flask@sha256:a592a1b9bc86966a3b94fca9b0795424dd6e3e3188cee9a4254ed6d0b33a99ae
+image projecta-frontend: localhost:5001/projecta-frontend@sha256:da6e3a22206864d6a0148e7a2c30d323954e10342584fa36eb91d10e4f356370
+container projecta-gitea: docker.gitea.com/gitea:1.27.0 docker.gitea.com/gitea@sha256:7dff60d7ea6df9d0bdf78971cdb1350e9b7df3fda5f115c77afe12122887bd64
+container projecta-act-runner: docker.io/gitea/act_runner:0.2.12 gitea/act_runner@sha256:62a561c82dd67ec77ea600db7eac78ac5fed8e2244950fbf1829c54da12e8e54
+container projecta-registry: registry:2 registry@sha256:a3d8aaa63ed8681a604f1dea0aa03f100d5895b6a58ace528858a7b332415373

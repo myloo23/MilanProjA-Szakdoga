@@ -393,6 +393,11 @@ today's warm-host rollback number into a defensible one.
       not as of today. A rescan is queued rather than rushed before the review;
       a guard that fires and gets ignored would be worse than no guard, so this
       is written down with a date rather than quietly reset
+      **Rescanned 2026-09-23** against `e4da1d9`, the measured release: seven
+      files, 771 components, generated on the measurement host by
+      `scripts/sbom-generate.sh`. The rescan also showed the previous
+      generation had inventoried arm64 laptop builds, not the amd64 images the
+      cluster runs — see `docs/sbom/README.md`, finding 6
 - [ ] Alert routing, zero-downtime swap, auto-changelog
 - [ ] **Dynamic fan-out to N parallel jobs** — a matrix built from a previous
       job's output. P2 because this pipeline has nothing to parallelise: one
