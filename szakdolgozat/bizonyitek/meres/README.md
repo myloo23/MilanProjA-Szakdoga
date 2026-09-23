@@ -307,7 +307,7 @@ tartalmazza a lintelést, a teszteket és a szkenneléseket, amelyekből a kézi
 egyet sem végez.
 
 **A `lepesidok.md` előrejelzése beigazolódott.** Ott az áll, hogy a gördülő csere
-kivárása az automatizált oldalon sem lesz gyorsabb: a kézi 10+11. lépés 19–21 mp,
+kivárása az automatizált oldalon sem lesz gyorsabb: a kézi 10+11. lépés 19–22 mp,
 a `helm upgrade --wait` 19–22 mp. Ugyanaz a tétel, ugyanaz a nagyságrend. A 24
 mp-es automatizált szakaszból tehát ~20 mp az, amit a kézi oldal is fizet, és a
 javulás a maradékból jön. Ugyanott az is szerepel, hogy lényegesen nagyobb
@@ -369,7 +369,7 @@ szkennelése 0 találat); a részletek a `docs/sbom/README.md` végén.
 ## Ami még hátravan
 
 1. ~~Három automatizált helyreállítási futtatás~~ — kész (2026-09-23), fent.
-2. A `auto-lepesidok.md` — a `lepesidok.md` párja, a szakaszbontással.
+2. ~~Az `auto-lepesidok.md`~~ — kész (2026-09-23): [`auto-lepesidok.md`](auto-lepesidok.md). Fő eredménye: a minőségi kapuk nélküli rész 67–72 mp, a kézi beállt szakasz 64–79 mp; a teljes idő többlete a kapuk ára.
 3. Az `SBOM`-ok újragenerálása: a `projecta-flask-a6a4d33.cdx.json` más
    alapképről készült.
 4. A 6.1 két kérdése **eldöntve** (naplo.md, 2026-09-22): mindkét oldalra két

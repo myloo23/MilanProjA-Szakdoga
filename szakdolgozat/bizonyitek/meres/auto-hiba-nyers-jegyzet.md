@@ -37,12 +37,12 @@ sorának időbélyege; a többi a joblog `MERES` sorai.
 helyreállítás gépi tétele (a gördülő csere kivárása) az automatizált oldalon sem
 lesz rövidebb. Nem lett: 18–19 mp kézzel, 19–21 mp a pipeline-ban. A 37 → 24 mp
 javulás teljes egészében a nem gépi részből jön: a kézi V2 (rollback begépelése,
-5–11 mp) és V5–V6 (verzió és füstteszt, 9–15 mp) helyére egy ~4 mp-es gépi
+5–11 mp) és V5–V6 (verzió és füstteszt, 9–12 mp) helyére egy ~4 mp-es gépi
 ellenőrzés lép.
 
 **Az észlelés 17 → 2 mp csak ezen a felálláson igaz.** Mindkét oldalon közvetlenül
 a telepítés után fut az ellenőrzés; a különbség az, hogy kézzel a 12–13. lépés
-begépelése és a kimenet elolvasása 14–20 mp, gépileg a verify play első öt
+begépelése és a kimenet elolvasása 16–20 mp, gépileg a verify play első öt
 feladata ~2 mp. Olyan hibára, amelyet a füstteszt nem fed, egyik oldal sem észlel
 semmit — ez a 6.5-be tartozik, ugyanúgy, mint a kézi oldalon.
 

@@ -40,13 +40,21 @@ mért helyreállítási ablakot nem érinti; részletesen a [`README.md`](README
 | észlelés (11. lépés vége → 13. lépés bukása) | 16 mp | 17 mp | 20 mp | 17 mp | 16–20 mp |
 | helyreállítás (bukás → V6 vége) | 34 mp | 39 mp | 37 mp | 37 mp | 34–39 mp |
 | **teljes (hibás verzió él → szolgáltatás jó)** | **50 mp** | **56 mp** | **57 mp** | **56 mp** | **50–57 mp** |
-| emberi beavatkozás | 18 | 18 | 18 | 18 | — |
+| emberi beavatkozás | 19 | 19 | 19 | 19 | — |
 | telepítési szakasz (1–13. lépés) | 86 mp | 76 mp | 79 mp | 79 mp | 76–86 mp |
 
 Mindhárom futtatásban a V5 a `be36f74`-et adta vissza, a V6 füstteszt mind a hét
 ellenőrzésen a várt státuszt, és a hibás verzió pontosan egy ellenőrzésen bukott
 (`POST /echo · valid JSON` → 500) — a beinjektált hiba hatóköre tehát mind a
 három futtatásban azonos volt.
+
+**A beavatkozásszám 18-ról 19-re javítva (2026-09-23).** Az első kiértékelés 18-at
+írt: a 13 telepítési lépést és a V2–V6 öt parancsát. A V1 — a bukó füstteszt
+kimenetének elbírálása — nem parancs, ezért kimaradt. A 04-es protokoll 1. pontja
+szerint viszont beavatkozás az is, amikor az operátor „elolvas egy kimenetet és
+dönt róla", és itt a döntést csak ember hozhatja meg, mert a `scripts/smoke.sh`
+kilépési kódja mindig 0. A 2026-09-22-i döntés (naplo.md) ezt mindkét sorozatra
+egyformán alkalmazza; a `hiba-sorozat.csv` megjegyzés-oszlopa ugyanezt rögzíti.
 
 ## Amit ebből a 6.4-nek ki kell mondania
 

@@ -133,7 +133,7 @@ kiértékelés: `bizonyitek/meres/README.md`, joblogok: `bizonyitek/meres/workfl
 **Mit bizonyít.** Hogy a `lepesidok.md` előrejelzése állt. Azt írtam benne, hogy
 a gördülő csere kivárása az automatizált oldalon sem lesz gyorsabb, és hogy ha
 lényegesen nagyobb javulás jönne ki, a mérés felállását kell megnézni. A kézi
-10+11. lépés 19–21 mp, a `helm upgrade --wait` 19–22 mp — ugyanaz a tétel. A
+10+11. lépés 19–22 mp, a `helm upgrade --wait` 19–22 mp — ugyanaz a tétel. A
 javulás 31 → 24 mp, vagyis a telepítési szakaszból az a rész javult, ami
 gépelés és kimenetolvasás volt, a gépi rész nem. **Az előrejelzés teljesülése
 itt erősebb bizonyíték, mint maga a szám**, mert azt mutatja, hogy a mérés azt
@@ -224,16 +224,22 @@ automatizált telepítési sorozat (tíz futtatás).
 
 **Kész 2026-09-23-án:** az automatizált helyreállítási sorozat (A0 + A1–A3, 2.8).
 
-**Következik:** az
-`auto-lepesidok.md` (a `lepesidok.md` párja) és az SBOM-ok újragenerálása — az
+**Kész 2026-09-23-án:** az `auto-lepesidok.md`. A teljes idő 115–144 mp-éből
+48–73 mp a minőségi kapuké (Trivy secret, hadolint, pytest, ansible-lint,
+Trivy image); a többi 67–72 mp, ugyanabban a sávban, mint a kézi beállt 64–79
+mp. Közben kiderült, hogy a README és ez a napló a kézi 10+11. lépést 19–21
+mp-nek írta; a `lepesidok.md` tábla szerint a beállt szakaszban 19–22 mp.
+Javítva, a következtetést nem érinti.
+
+**Következik:** az SBOM-ok újragenerálása — az
 alapkép-bump miatt a `projecta-flask-a6a4d33.cdx.json` már más képről szól.
 
 **A rollback útja mérve van.** Az A1–A3-ban a visszaállító lépés háromszor
 futott le éles hibára, és mindháromszor a gépi version-assert igazolta, hogy az
 `e4da1d9`-re lépett vissza.
 
-**Nyitott, apró:** a `hiba-lepesidok.md` szövege még 18 beavatkozást ír; a
-2026-09-22-i döntés szerint 19 (a CSV már javítva).
+**Javítva 2026-09-23-án:** a `hiba-lepesidok.md` beavatkozásszáma 18 → 19, a
+javítás indoklásával együtt.
 
 ---
 
