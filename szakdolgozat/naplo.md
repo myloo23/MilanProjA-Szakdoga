@@ -265,6 +265,13 @@ Javítva, a következtetést nem érinti.
 
 **Kész 2026-09-23-án:** az SBOM-ok újragenerálása (2.9).
 
+**Következik:** a 6. fejezet (Mérés és értékelés) vázlata, 6.1–6.5, állításonként
+a bizonyítékfájlra hivatkozva, és a bíráló által legkönnyebben megtámadható
+pontok listájával. A mérés lezárva, új futtatás nem kell.
+
+**Függőben:** a `release/meres` pusholása az `azure`-ra (csak dokumentáció és
+két script; a következő VM-indításkor).
+
 **A rollback útja mérve van.** Az A1–A3-ban a visszaállító lépés háromszor
 futott le éles hibára, és mindháromszor a gépi version-assert igazolta, hogy az
 `e4da1d9`-re lépett vissza.
