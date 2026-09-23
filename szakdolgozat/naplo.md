@@ -183,25 +183,57 @@ ami nem a vizsgált változtatásról szól — és az mérési futtatásokat é
 
 ---
 
-## Hol tartok (2026-09-22, este)
+## 2.8 — Az automatizált helyreállítási sorozat (2026-09-23)
+
+**Mit csináltam.** Négy futtatás a `release/meres-hiba` ágon: A0 a kézi
+sorozat injektálásával változatlanul, A1–A3 egy feltétellel (`and not
+app.testing`).
+
+**Mi derült ki a futtatás előtt.** A kézi sorozat hibája a pipeline-on el sem
+jutott volna a fürtig: a `test_echo_valid_json` és még két teszt elbukik rajta,
+a `deploy` job a `needs:` miatt nem indul, a visszaállító lépés tehát ebben a
+formában soha nem futott volna le. Ha ezt nem ellenőrzöm előre, három futtatás
+égett volna el úgy, hogy a CSV-ben üres `detect`/`restored` oszlopok maradnak.
+
+**Az eredmény.** A0: a pytest megállította a hibát, push → megállás 24 mp,
+kiesés 0. A1–A3: kiesés 25–28 mp (medián 26), a kézi 50–57 mp (medián 56)
+ellenében; helyreállítás 23–25 mp a 34–39 mp ellenében; 2 beavatkozás a 19
+ellenében. A rollback mindháromszor az `e4da1d9`-re lépett vissza, és ezt a
+pipeline maga igazolta a version-assert-tel.
+
+**Amit közben megtanultam.**
+
+1. *Ugyanaz a hiba nem ugyanaz a kísérlet a két oldalon.* A kézi út nem futtat
+   unit tesztet, tehát ott a hiba mindig kijut; a pipeline-on nem. A „mennyi
+   idő alatt áll helyre" kérdés az automatizált oldalon csak olyan hibára
+   értelmezhető, amely átjut a build kapuin — ezért kellett a feltétel, és
+   ezért kellett az A0 is, hogy a feltétel ne rejtse el azt, hogy az eredeti
+   hibát a pipeline meg sem engedi. A 6.5-ben mindkettőt ki kell mondani.
+2. *Az előrejelzés másodszor is állt.* A gördülő csere kivárása a pipeline-ban
+   19–21 mp, kézzel 18–19 mp. A javulás nem a gépi részből jön, hanem abból,
+   hogy a V2 és a V5–V6 begépelése és elolvasása helyett ~4 mp gépi ellenőrzés
+   fut.
+
+---
+
+## Hol tartok (2026-09-23)
 
 **Kész:** a kézi telepítési sorozat (tíz futtatás), a kézi helyreállítási mérés
 (három futtatás), a pipeline telepítő–ellenőrző–visszaállító szakasza, és az
 automatizált telepítési sorozat (tíz futtatás).
 
-**Következik:** három automatizált helyreállítási futtatás, ugyanazzal a
-hibainjektálással, mint a `meres/hiba-*` ágakon. Az adatsor fejléce kész
-(`bizonyitek/meres/auto-hiba-sorozat.csv`), a sorok még nincsenek. Utána a
+**Kész 2026-09-23-án:** az automatizált helyreállítási sorozat (A0 + A1–A3, 2.8).
+
+**Következik:** az
 `auto-lepesidok.md` (a `lepesidok.md` párja) és az SBOM-ok újragenerálása — az
 alapkép-bump miatt a `projecta-flask-a6a4d33.cdx.json` már más képről szól.
 
-**A rollback útja igazolva van, de még nem mérve.** A tíz zöld futtatásban a
-visszaállító lépés definíció szerint kimaradt. Amit tudok róla: az `if:
-failure()` működik ezen a runneren (ADR-0005 kiegészítés), a védőfeltétel
-működik (a `deploy` job egy korai hibájánál a rollback lefutott, megnézte, hogy
-nem telepített semmit, és nem görgetett vissza egy egészséges release-t), és a
-`helm rollback` a kézi sorozatban háromszor a hibás revízió előttire lépett. A
-három futtatás ezt méri, nem bizonyítja először.
+**A rollback útja mérve van.** Az A1–A3-ban a visszaállító lépés háromszor
+futott le éles hibára, és mindháromszor a gépi version-assert igazolta, hogy az
+`e4da1d9`-re lépett vissza.
+
+**Nyitott, apró:** a `hiba-lepesidok.md` szövege még 18 beavatkozást ír; a
+2026-09-22-i döntés szerint 19 (a CSV már javítva).
 
 ---
 

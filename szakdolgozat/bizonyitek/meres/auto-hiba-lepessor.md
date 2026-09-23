@@ -56,6 +56,15 @@ indult, a fürtön továbbra is az `e4da1d9` fut. **Kiesés: 0 mp.** Adatsor:
 Összevetve a kézi oldallal: ugyanez a hiba ott kijutott, és 50–57 mp kiesést
 okozott, amíg a V1–V6 helyre nem állította.
 
+## Az A1–A3 eredménye (2026-09-23)
+
+Mindhárom futtatás érvényes: a hibás verzió kiment, a verify play az „Echo a
+valid payload" feladaton bukott (500), a `helm rollback` lefutott, a
+visszaállított verzióra futó verify mind a 10 feladaton átment, és a
+version-assert az `e4da1d9`-et igazolta. Kiesés 28 / 26 / 25 mp (medián 26),
+helyreállítás 25 / 24 / 23 mp, észlelés 3 / 2 / 2 mp, 2 beavatkozás. Kiértékelés
+és összevetés: `auto-hiba-nyers-jegyzet.md`.
+
 ## Egy futtatás menete
 
 Előkészítés (nem mért): a jelölősor átírása és a commit — ezt Claude végzi a

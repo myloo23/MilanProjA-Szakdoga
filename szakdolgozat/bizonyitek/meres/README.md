@@ -235,11 +235,40 @@ Protokoll: [`../04-kezi-telepitesi-folyamat.md`](../04-kezi-telepitesi-folyamat.
 4. pont (ágválasztás) · Adatsor: [`auto-sorozat.csv`](auto-sorozat.csv) ·
 Joblogok: [`workflowlogok/`](workflowlogok/)
 
-## Hol tartunk (2026-09-22) — **a telepítési sorozat kész**
+## Hol tartunk (2026-09-23) — **a telepítési és a helyreállítási sorozat kész**
 
 Tíz érvényes futtatás a `release/meres` ágon, mindegyik zöld, az elfogadási
-ellenőrzés 10/10 sikeres. A helyreállítási sorozat (három hibainjektálásos
-futtatás) **még hátravan**.
+ellenőrzés 10/10 sikeres. A helyreállítási sorozat (A0 + három
+hibainjektálásos futtatás a `release/meres-hiba` ágon) is kész, lent.
+
+## A helyreállítási sorozat (2026-09-23)
+
+Lépéssor és a módszertani döntés: [`auto-hiba-lepessor.md`](auto-hiba-lepessor.md) ·
+Adatsor: [`auto-hiba-sorozat.csv`](auto-hiba-sorozat.csv),
+[`auto-hiba-a0.csv`](auto-hiba-a0.csv) · Kiértékelés:
+[`auto-hiba-nyers-jegyzet.md`](auto-hiba-nyers-jegyzet.md)
+
+**A0 — ugyanaz a hiba, változtatás nélkül: a pipeline nem engedi ki.** A kézi
+sorozat injektálása bájtra azonosan a pytestnél akadt el (3 bukott teszt,
+előre megnevezve), a `deploy` job nem indult, a fürtön az `e4da1d9` maradt.
+Push → megállás 24 mp, **kiesés 0 mp** — a kézi oldalon ugyanez a hiba 50–57 mp
+kiesést okozott.
+
+**A1–A3 — a hiba a unit tesztek elől rejtve (`and not app.testing`).** A
+visszaállító lépést csak olyan hiba méri, amely átjut a build kapuin. A fürtön
+a viselkedés azonos a kézi sorozatéval (a verify pontosan az `Echo a valid
+payload` feladaton bukott mindháromszor).
+
+| | Kézi (H1–H3) | Automatizált (A1–A3) |
+|---|---:|---:|
+| észlelés, medián | 17 mp | 2 mp |
+| helyreállítás, medián | 37 mp | 24 mp |
+| **kiesés, medián (sáv)** | **56 mp (50–57)** | **26 mp (25–28)** |
+| gépi kivárás a helyreállításban | 18–19 mp | 19–21 mp |
+| emberi beavatkozás | 19 | 2 |
+
+A `hiba-lepesidok.md` előrejelzése teljesült: a gördülő csere kivárása nem lett
+rövidebb, a javulás a begépelt és elolvasott lépések helyéről jön.
 
 ## Mi változott a pipeline-ban a sorozat előtt
 
@@ -339,9 +368,7 @@ szkennelése 0 találat); a részletek a `docs/sbom/README.md` végén.
 
 ## Ami még hátravan
 
-1. Három automatizált helyreállítási futtatás, ugyanazzal a hibainjektálással,
-   mint a `meres/hiba-*` ágakon. Adatsor: [`auto-hiba-sorozat.csv`](auto-hiba-sorozat.csv)
-   (fejléc kész, sorok még nincsenek).
+1. ~~Három automatizált helyreállítási futtatás~~ — kész (2026-09-23), fent.
 2. A `auto-lepesidok.md` — a `lepesidok.md` párja, a szakaszbontással.
 3. Az `SBOM`-ok újragenerálása: a `projecta-flask-a6a4d33.cdx.json` más
    alapképről készült.
