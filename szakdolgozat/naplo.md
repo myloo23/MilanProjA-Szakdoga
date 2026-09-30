@@ -37,6 +37,25 @@ nem ment fel az `azure`-ra, tehát pipeline-on még soha nem futott át. A kapu
 azt tette, amire való: nem engedett ki lintelésen át nem ment kódot. Javítva
 (`entry`), a ruff helyben tiszta.
 
+**A második futás a Trivy-kapun bukott — másodszor ugyanazon a jelenségen.**
+A `a4be106` backend képében (Debian 13.7, `python:3.12-slim@sha256:2f17fc04…`)
+6 HIGH találat: CVE-2026-75804 és CVE-2026-84782 az OpenSSL-ben
+(`libssl3t64`, `openssl`, `openssl-provider-legacy`), telepítve
+`3.5.7-1~deb13u2`, javítva `3.5.7-1~deb13u3`-ban. Ugyanaz a digest 09-22-én
+0 találatot adott. Nyolc nap alatt másodszor „jár le" egy zöld szkennelés —
+az 5.5 állítása („a tiszta szkennelést újra és újra ki kell érdemelni") most
+két független eseten áll. Teendő: az alapkép digestjének léptetése, ha a
+Docker Hub képe már a `deb13u3`-at tartalmazza; addig a pipeline piros marad,
+a kapu nem kerül kikapcsolásra.
+
+**A megfigyelés ellenőrizve (ADR-0010).** `bizonyitek/05-megfigyeles-k3s-verify.txt`:
+minden lépés zöld, a gördülő csere után 27 mp-cel a célpontok pontosan az új
+podok. Az első futás (`…-verify-elso.txt`) a 7. lépésen bukott: a leálló pod
+fázisa még `Running`, a script ezt nem várta — a script javítva, a
+`prometheus.k3s.yml` téves kommentje is. Ábra: `05-grafana-golden-signals.png`
+(a naplópanel „No data"-ja helyes: a panel csak warning/error sorokat mutat, és
+ilyen nem volt).
+
 ---
 
 ## 3.0 — Javítások a 6. fejezet előtt, és a megfigyelés átkötése a k3s-re (2026-09-30)
