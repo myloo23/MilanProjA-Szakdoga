@@ -147,8 +147,10 @@ def components(stem):
         seen.add(key)
         eco = re.match(r"pkg:([^/]+)/", purl).group(1) if purl else None
         lic = ", ".join(
-            l.get("license", {}).get("id") or l.get("license", {}).get("name") or l.get("expression", "")
-            for l in c.get("licenses", [])
+            entry.get("license", {}).get("id")
+            or entry.get("license", {}).get("name")
+            or entry.get("expression", "")
+            for entry in c.get("licenses", [])
         ) or None
         rows.append((c.get("name"), c.get("version"), c.get("type"), eco, lic, purl))
     order = {"operating-system": 0, "application": 1}

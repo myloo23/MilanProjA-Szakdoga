@@ -30,6 +30,13 @@ VM `lifecycle { ignore_changes = [custom_data] }` blokkot kapott.
 **Tanulság a módszertanhoz.** Az `apply` előtti tervet el kell olvasni: egy
 NSG-módosításnak szánt futás egy `-/+ … must be replaced` sort is tartalmazott.
 
+**Az első pipeline-futás az újraépült gépen piros lett — jogosan.** A ruff
+E741-et talált a `scripts/sbom-inventory-xlsx.py`-ban (`l` változónév). A
+szkript a `368b13e`-ben, a mérés *után* került be, és a `release/meres` azóta
+nem ment fel az `azure`-ra, tehát pipeline-on még soha nem futott át. A kapu
+azt tette, amire való: nem engedett ki lintelésen át nem ment kódot. Javítva
+(`entry`), a ruff helyben tiszta.
+
 ---
 
 ## 3.0 — Javítások a 6. fejezet előtt, és a megfigyelés átkötése a k3s-re (2026-09-30)

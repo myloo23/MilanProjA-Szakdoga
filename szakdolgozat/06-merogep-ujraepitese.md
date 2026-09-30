@@ -105,15 +105,22 @@ ssh -L 3000:127.0.0.1:3000 -L 5001:127.0.0.1:5001 azureuser@4.165.139.1
 A másikban:
 
 ```bash
-git push azure main
+git push azure release/meres
 ```
 
 (Felhasználó: `milan`, a 2. lépés jelszava.)
 
+**A `release/meres`, nem a `main`.** A munka a `release/meres` ágon folyik; a
+`main` 2026-09-17-én megállt (`0c38253`), nincs benne a frontend, és a
+`ci.yml`-je még az Ansible–Docker telepítést tartalmazza. 2026-09-30-án először
+a `main` ment fel: a klónban nem volt `frontend/`, és a pushra egy várakozó
+pipeline-futás jött létre a régi kóddal. Ha a `main` mégis felkerül, a runner
+indítása előtt azt a futást a Gitea felületén meg kell szakítani.
+
 ### 4. Secret és a nulladik telepítés (G)
 
 ```bash
-git clone http://localhost:3000/milan/MilanProjA-Szakdoga.git ~/projecta
+git clone -b release/meres http://localhost:3000/milan/MilanProjA-Szakdoga.git ~/projecta
 read -rs -p 'Postgres jelszó: ' DBPW; echo
 kubectl create secret generic db-credentials \
   --from-literal=POSTGRES_USER=projecta \
@@ -143,7 +150,7 @@ docker compose -f compose.yaml -f compose.azure.yaml up -d act-runner
 docker logs --tail 20 projecta-act-runner
 ```
 
-A 3. lépés pusha várakozó futásként ott áll; a runner felveszi, és a `main`-t
+A 3. lépés pusha várakozó futásként ott áll; a runner felveszi, és a `release/meres`-t
 végigviszi a pipeline-on — ez egyben a pipeline próbája az újraépült gépen.
 A Gitea felületén (alagúton át, `http://localhost:3000`) nézd meg, zöld-e.
 
