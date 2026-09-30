@@ -8,6 +8,69 @@ Legfrissebb elöl.
 
 ---
 
+## 3.1 — A mérőgépet a Terraform újraépítette (2026-09-30)
+
+**Mi történt.** Az `allowed_cidr` átírása (új otthoni IP) utáni `apply` a gépet
+törölte és újra létrehozta, mert a `cloud-init.yaml` 09-21-i, soha nem
+alkalmazott módosítása függő gépcserét jelentett (a `custom_data` az azurerm-ben
+ForceNew). A Gitea, a registry, a release és a Postgres adatai elvesztek; a
+mérési bizonyítékanyag nem, mert a repóban van. Részletek és az újraépítés
+lépései: `06-merogep-ujraepitese.md`.
+
+**Mi lett volna nélküle.** Ha a bizonyítékok a gépen maradtak volna (joblogok a
+Giteában, CSV-k a home-ban), a mérés ma elveszett volna. Hogy nem veszett el,
+az annak a szabálynak köszönhető, hogy minden futtatás után minden bekerült a
+repóba.
+
+**Mit bizonyít.** A k3s-fürt kódból, kézi beavatkozás nélkül állt fel — ez a
+2.3 kész-feltétele élesben. A platform és az alkalmazás visszaállítása viszont
+kézi lépéssor: ez őszintén a 7. fejezet anyaga. A gépcsere megelőzésére a
+VM `lifecycle { ignore_changes = [custom_data] }` blokkot kapott.
+
+**Tanulság a módszertanhoz.** Az `apply` előtti tervet el kell olvasni: egy
+NSG-módosításnak szánt futás egy `-/+ … must be replaced` sort is tartalmazott.
+
+---
+
+## 3.0 — Javítások a 6. fejezet előtt, és a megfigyelés átkötése a k3s-re (2026-09-30)
+
+**Mit csináltam.** A 6. fejezet vázának (`05-vazlat-6-fejezet.md`) írása közben
+minden számot újraszámoltam a CSV-kből. A számok stimmeltek, de a módszertan egy
+állítása nem: a 04-es protokoll 4. pontja szerint a két sorozat között az ágnév az
+egyetlen különbség. Valójában kettő van még: a backend alapképének digestje
+(`0efc8a2`, a kézi sorozatok után léptetve) és az image-építő (kézzel legacy,
+a pipeline-ban BuildKit — a 7.b pont ezt előre megjósolta, és egyeztetést írt
+elő, ami elmaradt). Mindkettőt a protokoll 4.b és 4.c pontjába írtam, a hatásukat
+a már meglévő mérésből zártam ki: a gördülő csere 19–22 vs 19,5–22,0 mp, a build
+12–15 vs 11,9–13,4 mp, a telepítési szakasz buildet nem tartalmaz.
+Mellette: a `lepesidok.md` elavult („mind az öt futtatásban") bekezdése javítva,
+a kézi telepítési szakasz mind a tíz futtatásra kiszámolva (29–43 mp, medián
+32,5), a 129,5 / 130,0 mp eltérés megmagyarázva.
+
+**Mi lett volna nélküle.** A bíráló egy `git diff be36f74 d63eb00 -- Dockerfile`
+paranccsal megcáfolta volna a dolgozat egyik alapállítását, és onnantól minden
+számot gyanúsnak nézett volna. Így a dolgozat maga mondja ki, és méréssel
+mutatja, hogy nem számít.
+
+**Mit bizonyít.** Hogy a mérés érvényességét nem az állítja, hogy „csak az
+ágnév tér el", hanem hogy a többi eltérés hatása a mért tételeken belül ki van
+zárva.
+
+**A megfigyelés (ADR-0010).** A Prometheus/Loki/Grafana a mérőgépen profil
+mögött volt és nem futott — a mérésnek ez jó volt (E9: pontosan három konténer),
+az 5.6-nak nem. Most a stack a compose-ban marad, de a Prometheus a k3s API-tól
+kérdezi le a backend podokat egy csak-olvasó ServiceAccounttal, az Alloy pedig a
+`/var/log/pods` alól olvassa a naplókat. A dashboardok változatlanok.
+Konfiguráció ellenőrizve (promtool, alloy, compose config, shellcheck; az Alloy
+CRI-láncát hamis podnaplóval próbáltam ki), **a gépen még nem futott**:
+`observability-k3s-up.sh`, majd `ROLLOUT=1 ./verify-observability-k3s.sh`.
+
+**A képaláírás (cosign) nem készül el**, a 7. fejezetbe kerül. Indok: a mérés
+lezárult, az aláírás a mért láncot megváltoztatná, és az 5.5 enélkül is áll
+(függőségrögzítés, SBOM, sérülékenységvizsgálat — mind mérve/bizonyítva).
+
+---
+
 ## 2.5 — A kézi telepítési folyamat rögzítése (2026-09-21)
 
 **Mit csináltam.** A chart a `localhost:5001/` registry-előtagra állt át, a
