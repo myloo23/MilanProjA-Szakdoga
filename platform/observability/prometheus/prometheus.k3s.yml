@@ -72,9 +72,13 @@ scrape_configs:
       - source_labels: [__meta_kubernetes_pod_container_port_number]
         regex: "8000"
         action: keep
-      # Csak a futó podok. Gördülő csere közben a régi pod egy ideig még
-      # Terminating/Succeeded állapotban listázódik; azt lekérdezni csak hibás
-      # célpontot hozna.
+      # Csak a futó podok: a befejezett (Succeeded), elbukott (Failed) és még
+      # induló (Pending) podok kiesnek. Egy LEÁLLÁS ALATT álló (Terminating) pod
+      # viszont itt bent marad, mert a fázisa ilyenkor még Running — ezt a
+      # verify-observability-k3s.sh 7. lépésének első futtatása mutatta meg
+      # (2026-09-30). Ez nem hiba: a pod a türelmi idő alatt még fut és
+      # válaszol, a számlálói valósak; amint a konténer leáll és a pod törlődik,
+      # a watch kiveszi a célpontok közül.
       - source_labels: [__meta_kubernetes_pod_phase]
         regex: Running
         action: keep

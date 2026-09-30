@@ -1,0 +1,51 @@
+Időpont (UTC): 2026-09-30T10:14:17Z
+Gép: szakdoga2-vm   k3s: k3s version v1.36.4+k3s1 (4dedb15b)
+
+[1m▸ 1. A szolgáltatások[0m
+  [32m✓[0m projecta-prometheus: running/healthy
+  [32m✓[0m projecta-loki: running/healthy
+  [32m✓[0m projecta-alloy: running
+  [32m✓[0m projecta-grafana: running/healthy
+  [32m✓[0m projecta-cadvisor: running/healthy
+  [32m✓[0m projecta-node-exporter: running
+  [32m✓[0m Grafana /api/health
+
+[1m▸ 2. Az API-tanúsítvány a Prometheus által ellenőrzött nevet tartalmazza[0m
+  [2m    DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc, DNS:kubernetes.default.svc.cluster.local, DNS:localhost, DNS:szakdoga2-vm, IP Address:10.42.1.4, IP Address:10.43.0.1, IP Address:127.0.0.1, IP Address:4.165.139.1, IP Address:0:0:0:0:0:0:0:1[0m
+  [32m✓[0m SAN: kubernetes.default.svc (prometheus.k3s.yml tls_config.server_name)
+
+[1m▸ 3. A pod IP-címe elérhető a Docker-hálózatról[0m
+  [2mbackend pod: 10.42.0.16[0m
+  [32m✓[0m a projecta-prometheus konténerből a http://10.42.0.16:8000/metrics válaszol
+
+[1m▸ 4. A Prometheus annyi célpontot lát, ahány backend pod fut[0m
+  [2mfutó backend podok: backend-54c78b9465-57f5g backend-54c78b9465-8tdgp[0m
+  [32m✓[0m a célpontok pontosan a futó podok (2 db): backend-54c78b9465-57f5g backend-54c78b9465-8tdgp
+
+[1m▸ 5. A kérések metrikaként megérkeznek, podonként[0m
+  [2m40 kérés a http://127.0.0.1/api/version címre; várakozás két lekérdezési ciklusra (30 mp)[0m
+  [2mhttp_requests_total{endpoint="/version"} összesen: 0 → 40[0m
+  [32m✓[0m a növekmény legalább 40
+  [32m✓[0m a kérések 2 podon oszlanak meg, a sorozatok podonként külön
+
+[1m▸ 6. A podok naplója a Lokiban[0m
+  [2mLogQL: {container="projecta-flask", level=~".+"} | json | endpoint="/version"[0m
+  [32m✓[0m 80 sor az utolsó 5 percből, level címkével
+  [2mminta: {"timestamp": "2026-09-30T10:14:18.098+00:00", "level": "INFO", "logger": "app.app", "message": "request", "event": "http_request", "method": "GET", "path": "/version", "endpoint": "/version", "status": 200, "duration_ms": 0.05, "remote_addr": "10.42.0.11", "request_id": "4fb38d711669ea1615232122cb962a10"}[0m
+  [32m✓[0m a sorban van request_id (a derived field erre épül)
+  [2mLoki címkék: container,level,namespace,platform,service,service_name,stream[0m
+  [32m✓[0m nincs filename/pod címke (ADR-0007)
+
+[1m▸ 7. Gördülő csere után az új podok maguktól célponttá válnak[0m
+  [2melőtte: backend-54c78b9465-57f5g backend-54c78b9465-8tdgp[0m
+Waiting for deployment "backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "backend" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "backend" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "backend" rollout to finish: 1 old replicas are pending termination...
+deployment "backend" successfully rolled out
+  [2mutána:  backend-696575bff5-jnlrn backend-696575bff5-xqq8r[0m
+  [32m✓[0m a célpontok pontosan az új podok, 27 mp-cel a csere indítása után: backend-696575bff5-jnlrn backend-696575bff5-xqq8r
+
+[32m✓ Minden ellenőrzés sikeres.[0m

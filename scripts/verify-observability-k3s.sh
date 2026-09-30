@@ -42,20 +42,36 @@ except Exception: r=[]
 print(r[0]["value"][1] if r else "")'
 }
 
-backend_pods() {
+backend_pods() {  # a futó, NEM leállás alatt álló backend podok, névsorba rendezve
+  # Egy leállás alatt álló (Terminating) pod fázisa még Running — ezt a
+  # 2026-09-30-i első futtatás 7. lépése mutatta meg. A törlési időbélyeg
+  # (metadata.deletionTimestamp) az, ami jelzi, hogy a pod már távozóban van.
   kubectl -n default get pods -l app=backend \
-    --field-selector=status.phase=Running -o jsonpath='{.items[*].metadata.name}'
+    --field-selector=status.phase=Running -o json \
+    | python3 -c '
+import json,sys
+items=json.load(sys.stdin)["items"]
+print(" ".join(sorted(i["metadata"]["name"] for i in items if not i["metadata"].get("deletionTimestamp"))))'
 }
 
-wait_targets() {  # vár, amíg a Prometheus annyi egészséges célpontot lát, ahány pod fut
+target_pods() {  # a Prometheus egészséges projecta-flask célpontjainak pod-nevei, névsorban
+  curl -s "$PROM/api/v1/targets?state=active" | python3 -c '
+import json,sys
+try: ts=json.load(sys.stdin)["data"]["activeTargets"]
+except Exception: ts=[]
+print(" ".join(sorted(t["labels"].get("pod","") for t in ts
+      if t["labels"].get("job")=="projecta-flask" and t["health"]=="up")))'
+}
+
+wait_targets() {  # vár, amíg a Prometheus egészséges célpontjai pontosan a futó podok
   local want got
-  for _ in $(seq 1 30); do
-    want=$(backend_pods | wc -w)
-    got=$(promq 'count(up{job="projecta-flask"} == 1)')
-    [[ -n "$got" && "$got" == "$want" ]] && { echo "$got"; return 0; }
+  for _ in $(seq 1 45); do
+    want=$(backend_pods)
+    got=$(target_pods)
+    [[ -n "$want" && "$got" == "$want" ]] && { echo "$got"; return 0; }
     sleep 2
   done
-  echo "${got:-0}"; return 1
+  echo "$got"; return 1
 }
 
 echo "Időpont (UTC): $(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -113,9 +129,9 @@ step "4. A Prometheus annyi célpontot lát, ahány backend pod fut"
 pods=$(backend_pods)
 info "futó backend podok: $pods"
 if got=$(wait_targets); then
-  pass "up{job=\"projecta-flask\"} == 1: $got célpont, $(wc -w <<<"$pods") pod"
+  pass "a célpontok pontosan a futó podok ($(wc -w <<<"$got") db): $got"
 else
-  fail "célpont: $got, pod: $(wc -w <<<"$pods")"
+  fail "célpontok: ${got:-nincs}; podok: $pods"
   curl -s "$PROM/api/v1/targets?state=active" | python3 -c '
 import json,sys
 for t in json.load(sys.stdin)["data"]["activeTargets"]:
@@ -160,20 +176,22 @@ grep -qw 'filename' <<<"$labels" && fail "a filename címke bent maradt (ADR-000
 if [[ "${ROLLOUT:-0}" == "1" ]]; then
   step "7. Gördülő csere után az új podok maguktól célponttá válnak"
   old=$(backend_pods)
+  info "előtte: $old"
+  t0=$(date +%s)
   kubectl -n default rollout restart deployment/backend >/dev/null
   kubectl -n default rollout status deployment/backend --timeout=120s
+  # A rollout status már akkor kész, amikor az új podok Ready-k; a régiek ekkor
+  # még leállnak (graceful shutdown). Megvárjuk, amíg tényleg eltűnnek, mert
+  # addig a Prometheus jogosan kérdezi le őket: még futnak és válaszolnak.
+  for p in $old; do
+    kubectl -n default wait --for=delete "pod/$p" --timeout=90s >/dev/null 2>&1
+  done
   new=$(backend_pods)
-  info "előtte: $old"; info "utána:  $new"
+  info "utána:  $new"
   if got=$(wait_targets); then
-    targets=$(curl -s "$PROM/api/v1/targets?state=active" | python3 -c '
-import json,sys
-print(" ".join(sorted(t["labels"]["pod"] for t in json.load(sys.stdin)["data"]["activeTargets"]
-      if t["labels"].get("job")=="projecta-flask" and t["health"]=="up")))')
-    [[ "$targets" == "$(tr ' ' '\n' <<<"$new" | sort | xargs)" ]] \
-      && pass "a célpontok pontosan az új podok: $targets" \
-      || fail "a célpontok ($targets) nem egyeznek az új podokkal"
+    pass "a célpontok pontosan az új podok, $(( $(date +%s) - t0 )) mp-cel a csere indítása után: $got"
   else
-    fail "a gördülő csere után a célpontok száma nem állt be"
+    fail "a célpontok ($got) nem egyeznek az új podokkal ($new)"
   fi
 fi
 
