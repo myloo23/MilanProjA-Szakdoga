@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>10. Megfigyelés a fürtön</title>
+<link rel="stylesheet" href="assets/tananyag.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="top"><a href="09-meres-es-vedes.html">← 9. Mérés és védés</a><a href="index.html">Tananyagtérkép →</a></nav>
+
+<p class="eyebrow">10. tananyag · ADR-0010 · a dolgozat 5.6 alfejezete</p>
+<h1>Megfigyelés a fürtön</h1>
+<p class="lead">A Prometheus, a Loki és a Grafana a laptopon egy Docker-konténert figyelt. A mérőgépen az alkalmazás két pod a k3s-fürtben, változó IP-címmel. Ez a tananyag arról szól, hogyan találja meg őket a fürtön <em>kívül</em> futó megfigyelő réteg — és miért pont így.</p>
+
+<div class="goals">
+  <h2>A végére ezt fogod tudni</h2>
+  <ul>
+    <li>Miért nem lehet a két backend podot egyetlen címen (Service, ingress) lekérdezni.</li>
+    <li>Mi a <em>service discovery</em>, és hogyan kérdezi a Prometheus a k3s API-tól a podokat.</li>
+    <li>Mi a ServiceAccount, a Role és a RoleBinding, és miért nem az admin-kubeconfigot használjuk.</li>
+    <li>Mit csinál a <code>tls_config.server_name</code>, és miért nem kapcsoljuk ki a tanúsítvány-ellenőrzést.</li>
+    <li>Hogyan kerül egy pod naplósora a Lokiba (CRI-formátum, Alloy).</li>
+    <li>Mit nem tud ez a megoldás, és miért ez a 7. fejezet anyaga.</li>
+  </ul>
+</div>
+
+<nav class="toc"><strong>Tartalom</strong>
+<a href="#problema">1. A probléma</a> · <a href="#sd">2. Service discovery</a> · <a href="#rbac">3. Jogosultság</a> · <a href="#tls">4. TLS</a> · <a href="#naplo">5. Naplók</a> · <a href="#miert">6. Miért kívülről</a> · <a href="#hiany">7. Ami hiányzik</a> · <a href="#futtatas">8. Futtatás</a> · <a href="#kviz">Kvíz</a></nav>
+
+<h2 id="problema">1. A probléma: egy név helyett két változó IP-cím</h2>
+<p>A laptopon a Prometheus így kérdezte le az alkalmazást: <code>projecta-flask:8000/metrics</code>. A Docker-hálózat a konténer nevét IP-címre fordította, és egy konténer volt. A fürtben ez három okból nem működik.</p>
+
+<div class="toggle-figure">
+<div class="toggle" role="group" aria-label="Környezet">
+  <button data-state="laptop" data-caption="<strong>Laptop:</strong> egy konténer, fix névvel. A Prometheus 15 másodpercenként ugyanazt a címet kérdezi, és mindig ugyanaz a folyamat válaszol. A számláló (<code>http_requests_total</code>) monoton nő, a <code>rate()</code> helyes.">Laptop (Docker)</button>
+  <button data-state="service" data-caption="<strong>Fürt, rossz megoldás — a Service címén át:</strong> a Service minden kérést másik podra küldhet. Egyszer az A pod számlálóját látod (pl. 120), egyszer a B-ét (pl. 80). A Prometheus ezt <em>visszaesésnek</em> érzékeli, számláló-újraindulásnak veszi, és a <code>rate()</code> hamis csúcsokat mutat. A hiba csendes: a célpont végig „up”.">Fürt, Service-en át</button>
+  <button data-state="sd" data-caption="<strong>Fürt, jó megoldás — podonként:</strong> a Prometheus a k3s API-tól kérdezi meg, melyik backend pod él és mi az IP-címe, és mindegyiket <em>külön célpontként</em> kérdezi le. Minden podnak saját, monoton számlálója van, a <code>pod</code> címke szétválasztja őket, a dashboard <code>sum()</code>-ja összeadja.">Fürt, podonként (SD)</button>
+</div>
+<figure>
+<svg viewBox="0 0 640 230" role="img" aria-label="A Prometheus célpontjai a három esetben">
+  <defs><marker id="a10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+  <marker id="a10b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-bad"/></marker>
+  <marker id="a10o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-ok"/></marker></defs>
+  <rect x="20" y="85" width="140" height="60" rx="10" class="n-violet"/>
+  <text x="90" y="112" text-anchor="middle" class="t-bold">Prometheus</text>
+  <text x="90" y="130" text-anchor="middle" class="t-small">15 mp-enként</text>
+
+  <g data-when="laptop">
+    <rect x="420" y="85" width="190" height="60" rx="10" class="n-accent"/>
+    <text x="515" y="112" text-anchor="middle" class="t-bold t-mono">projecta-flask</text>
+    <text x="515" y="130" text-anchor="middle" class="t-small">egy konténer, fix név</text>
+    <path d="M160,115 L416,115" class="line" marker-end="url(#a10)"/>
+  </g>
+
+  <g data-when="service">
+    <rect x="260" y="85" width="120" height="60" rx="10" class="n-warn"/>
+    <text x="320" y="112" text-anchor="middle" class="t-bold">Service</text>
+    <text x="320" y="130" text-anchor="middle" class="t-small">véletlen pod</text>
+    <rect x="460" y="30" width="150" height="56" rx="10" class="n-accent"/>
+    <text x="535" y="55" text-anchor="middle" class="t-bold">pod A</text>
+    <text x="535" y="73" text-anchor="middle" class="t-small t-mono">számláló: 120</text>
+    <rect x="460" y="145" width="150" height="56" rx="10" class="n-accent"/>
+    <text x="535" y="170" text-anchor="middle" class="t-bold">pod B</text>
+    <text x="535" y="188" text-anchor="middle" class="t-small t-mono">számláló: 80</text>
+    <path d="M160,115 L256,115" class="line" marker-end="url(#a10)"/>
+    <path d="M380,105 C420,90 420,60 456,58" class="line-bad dash" marker-end="url(#a10b)"/>
+    <path d="M380,125 C420,140 420,170 456,172" class="line-bad dash" marker-end="url(#a10b)"/>
+    <text x="320" y="215" text-anchor="middle" class="t-small t-bad">120 → 80 → 121 → 81: a Prometheus újraindulásnak látja</text>
+  </g>
+
+  <g data-when="sd">
+    <rect x="240" y="10" width="170" height="50" rx="10" class="n-2"/>
+    <text x="325" y="31" text-anchor="middle" class="t-bold">k3s API</text>
+    <text x="325" y="48" text-anchor="middle" class="t-small">„melyik pod él?”</text>
+    <path d="M110,85 C120,40 180,35 236,35" class="line dash" marker-end="url(#a10)"/>
+    <rect x="460" y="70" width="150" height="56" rx="10" class="n-ok"/>
+    <text x="535" y="95" text-anchor="middle" class="t-bold">pod A</text>
+    <text x="535" y="113" text-anchor="middle" class="t-small t-mono">10.42.0.17:8000</text>
+    <rect x="460" y="150" width="150" height="56" rx="10" class="n-ok"/>
+    <text x="535" y="175" text-anchor="middle" class="t-bold">pod B</text>
+    <text x="535" y="193" text-anchor="middle" class="t-small t-mono">10.42.0.18:8000</text>
+    <path d="M160,108 C300,100 380,98 456,98" class="line-ok" marker-end="url(#a10o)"/>
+    <path d="M160,125 C300,140 380,178 456,178" class="line-ok" marker-end="url(#a10o)"/>
+  </g>
+</svg>
+</figure>
+<div class="caption"></div>
+</div>
+
+<p>A harmadik ok a gördülő csere: minden telepítés után két <em>új</em> pod jön, új névvel és új IP-címmel. Egy fix címlista tehát telepítésenként elavulna.</p>
+
+<h2 id="sd">2. Service discovery: a Prometheus megkérdezi a fürtöt</h2>
+<p>A <strong>service discovery</strong> (szolgáltatásfelderítés, röviden SD) azt jelenti, hogy a célpontok listáját nem te írod be, hanem a Prometheus egy külső forrásból kérdezi le folyamatosan. Itt a forrás a k3s API, a beállítás a <code>platform/observability/prometheus/prometheus.k3s.yml</code> <code>kubernetes_sd_configs</code> blokkja.</p>
+
+<div class="stepper" data-captions="<strong>1. Bejelentkezés az API-hoz.</strong> A Prometheus a <code>https://host.docker.internal:6443</code> címre csatlakozik — ez a gazdagép, ahol a k3s API fut. Egy tokennel azonosítja magát (<code>authorization.credentials_file</code>), és a fürt CA-jával ellenőrzi a szerver tanúsítványát.|<strong>2. Listázás, majd figyelés.</strong> Lekéri a <code>default</code> névtér összes podját (<code>list</code>), utána nyitva tart egy kapcsolatot (<code>watch</code>), amin az API minden változást azonnal jelez. Ezért kellett a Role-ba a <code>watch</code> ige is.|<strong>3. Szűrés (relabel).</strong> A lista minden pod minden portja. A <code>relabel_configs</code> csak azt tartja meg, amelyiknek <code>app=backend</code> címkéje van, a portja 8000, és <code>Running</code> állapotú. A frontend, a Postgres és a migrate init container kiesik.|<strong>4. Címkézés.</strong> A megmaradt célpontok kapnak egy <code>pod</code> címkét (a pod neve) és egy <code>service=&quot;projecta-flask&quot;</code> címkét. A job neve is <code>projecta-flask</code> — ugyanaz, mint a laptopon, ezért a dashboardok változatlanul működnek.|<strong>5. Lekérdezés közvetlenül a podtól.</strong> A Prometheus a pod IP-címére megy (<code>10.42.0.x:8000/metrics</code>), nem a Service-re. Ez azért működik egy Docker-konténerből, mert a k3s a podhálózatot a gazdagép útválasztó táblájába teszi, és a Docker a hídról kifelé menő forgalmat továbbítja.|<strong>6. Gördülő csere.</strong> Új pod indul → a watch jelzi → új célpont. A régi pod <code>Terminating</code> lesz → a <code>Running</code>-szűrő kidobja. Nincs újratöltés, nincs kézi lépés. Ezt a <code>verify-observability-k3s.sh</code> 7. lépése méri is.">
+<figure>
+<svg viewBox="0 0 640 240" role="img" aria-label="A service discovery lépései">
+  <defs><marker id="s10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+  <rect x="10" y="10" width="300" height="200" rx="12" class="zone"/>
+  <text x="24" y="30" class="t-bold">Docker-híd (projecta-platform)</text>
+  <rect x="330" y="10" width="300" height="200" rx="12" class="zone"/>
+  <text x="344" y="30" class="t-bold">gazdagép + k3s</text>
+  <g data-step="0"><rect x="30" y="50" width="130" height="50" rx="8" class="n-violet"/><text x="95" y="72" text-anchor="middle" class="t-bold">Prometheus</text><text x="95" y="89" text-anchor="middle" class="t-small">token + CA</text></g>
+  <g data-step="0"><rect x="470" y="45" width="140" height="50" rx="8" class="n-2"/><text x="540" y="67" text-anchor="middle" class="t-bold">k3s API :6443</text><text x="540" y="84" text-anchor="middle" class="t-small">list + watch pods</text>
+  <path d="M160,72 L466,70" class="line" marker-end="url(#s10)"/></g>
+  <g data-step="2"><path d="M95,100 L95,116" class="line" marker-end="url(#s10)"/><rect x="30" y="120" width="260" height="36" rx="8" class="n-warn"/><text x="160" y="143" text-anchor="middle" class="t-small t-mono">keep app=backend, :8000, Running</text></g>
+  <g data-step="4"><rect x="470" y="120" width="140" height="36" rx="8" class="n-ok"/><text x="540" y="143" text-anchor="middle" class="t-small t-mono">pod A :8000</text>
+  <rect x="470" y="164" width="140" height="36" rx="8" class="n-ok"/><text x="540" y="187" text-anchor="middle" class="t-small t-mono">pod B :8000</text>
+  <path d="M290,138 L466,138" class="line-ok" marker-end="url(#s10)"/>
+  <path d="M290,138 C390,138 400,182 466,182" class="line-ok" marker-end="url(#s10)"/></g>
+  <g data-step="5"><text x="320" y="232" text-anchor="middle" class="t-small t-accent">új pod → új célpont, újratöltés nélkül</text></g>
+</svg>
+</figure>
+<div class="controls">
+  <button data-prev>← Vissza</button>
+  <button data-next class="primary">Tovább →</button>
+  <button data-reset>Elölről</button>
+  <span class="counter"></span>
+</div>
+<div class="caption"></div>
+</div>
+
+<div class="box whatif"><strong>Mi lett volna, ha…</strong>
+…a <code>Running</code>-szűrő hiányzik? Gördülő csere közben a régi pod még pár másodpercig listázódik, de már nem válaszol. A Prometheus „down” célpontot látna, és a riasztási szabály minden telepítésnél hamis riasztást adhatna.<br>
+…a <code>pod</code> címke hiányzik? A két pod sorozatait csak az <code>instance</code> (IP-cím) választaná szét. Működne, de egy olvasó nem tudná összekötni a <code>kubectl get pods</code> kimenetével.</div>
+
+<h2 id="rbac">3. Jogosultság: a lehető legkevesebb</h2>
+<p>Az API-nak meg kell mondani, ki kérdez. A gépen ott van a k3s admin-kubeconfigja (<code>/etc/rancher/k3s/k3s.yaml</code>), olvasható is — de az <strong>cluster-admin</strong>: bárki, aki a Prometheus konténerébe bejut, a teljes fürtöt átvehetné. Egy megfigyelőnek olvasnia kell, és csak azt, amit megfigyel. Ezt négy Kubernetes-objektum adja (<code>platform/observability/k8s/prometheus-sd-rbac.yaml</code>):</p>
+
+<div class="table-wrap"><table>
+<thead><tr><th>Objektum</th><th>Mi ez</th><th>Itt mit tartalmaz</th></tr></thead>
+<tbody>
+<tr><td><strong>ServiceAccount</strong></td><td>Egy „gépi felhasználó” a fürtben.</td><td><code>prometheus-sd</code>, a <code>default</code> névtérben</td></tr>
+<tr><td><strong>Role</strong></td><td>Jogok listája <em>egy névtéren belül</em>. (A ClusterRole az egész fürtre szólna.)</td><td><code>pods</code>: <code>get</code>, <code>list</code>, <code>watch</code> — írás nincs, <code>secrets</code> nincs</td></tr>
+<tr><td><strong>RoleBinding</strong></td><td>Összeköti a kettőt: „ez a fiók ezeket a jogokat kapja”.</td><td>prometheus-sd ↔ prometheus-sd</td></tr>
+<tr><td><strong>Secret</strong> (service-account-token)</td><td>A fiók tokenje, amivel a Prometheus azonosítja magát.</td><td>lejárat nélküli — ez tudatos kompromisszum, lásd lent</td></tr>
+</tbody></table></div>
+
+<div class="box key"><strong>Miért hosszú élettartamú a token?</strong>
+A fürtön <em>belül</em> futó podok rövid életű tokent kapnak, amit a kubelet magától cserél. A Prometheus a fürtön <em>kívül</em> fut, oda senki nem cserél semmit. Ezért kell a kifejezetten kért, lejárat nélküli token. Kockázata korlátos: csak podlistát olvas egy névtérben, a fájl <code>0400</code>-as joggal a Prometheus felhasználójáé, és visszavonni egy paranccsal lehet: <code>kubectl delete secret prometheus-sd-token</code>. A dolgozatban ezt ki kell mondani, és a 7. fejezetben megírni, hogy fürtön belüli Prometheusszal eltűnne.</div>
+
+<h2 id="tls">4. TLS: ellenőrizni kell, de melyik névre?</h2>
+<p>A Prometheus konténerből a gazdagépet a Docker-híd átjáróján éri el (<code>172.x.0.1</code>). A k3s API tanúsítványán ez a cím nincs rajta — ugyanaz a probléma, amibe a <code>scripts/helm-on-host.sh</code> is belefutott. Két rossz és egy jó megoldás van:</p>
+
+<div class="table-wrap"><table>
+<thead><tr><th>Megoldás</th><th>Mi történik</th><th></th></tr></thead>
+<tbody>
+<tr><td><code>insecure_skip_verify: true</code></td><td>Kikapcsolja az ellenőrzést. Bárki, aki a forgalom közé áll, kiadhatja magát API-nak, és a Prometheus a tokent is odaadná neki.</td><td class="t-bad">✗</td></tr>
+<tr><td>A tanúsítvány újragenerálása a 172.x-es címmel</td><td>Működne, de a k3s telepítését kellene módosítani egy megfigyelő komponens kedvéért, és a híd címe nem garantáltan állandó.</td><td class="t-warn">~</td></tr>
+<tr><td><code>server_name: kubernetes.default.svc</code></td><td>A kapcsolat a 172.x-es címre megy, de a tanúsítványt a Prometheus egy olyan <em>névre</em> ellenőrzi, ami rajta van. Az ellenőrzés teljes marad.</td><td class="t-ok">✓</td></tr>
+</tbody></table></div>
+<p>Hogy a név tényleg rajta van-e a tanúsítványon, azt nem feltételezzük: a <code>verify-observability-k3s.sh</code> 2. lépése <code>openssl</code>-lel kiolvassa.</p>
+
+<h2 id="naplo">5. Naplók: fájlból, nem a Docker socketből</h2>
+<p>A laptopon az Alloy a Docker socketen át olvasta a konténerek kimenetét. A k3s podjai viszont nem a Docker-motorban futnak, hanem a k3s saját <strong>containerd</strong>-jében — a Docker socket nem is tud róluk. A containerd minden pod kimenetét fájlba írja:</p>
+<p class="t-mono"><code>/var/log/pods/default_backend-7c9f8-abcde_&lt;uid&gt;/backend/0.log</code></p>
+<p>Egy sor ebben a fájlban így néz ki — ez a <strong>CRI-formátum</strong> (Container Runtime Interface, a Kubernetes és a konténer-futtató közötti szabvány):</p>
+
+<figure>
+<svg viewBox="0 0 640 120" role="img" aria-label="Egy CRI-naplósor részei">
+  <rect x="10" y="20" width="200" height="40" rx="6" class="n-2"/><text x="110" y="45" text-anchor="middle" class="t-small t-mono">2026-09-30T08:12:01.12Z</text>
+  <rect x="216" y="20" width="64" height="40" rx="6" class="n-warn"/><text x="248" y="45" text-anchor="middle" class="t-small t-mono">stdout</text>
+  <rect x="286" y="20" width="30" height="40" rx="6" class="n-warn"/><text x="301" y="45" text-anchor="middle" class="t-small t-mono">F</text>
+  <rect x="322" y="20" width="308" height="40" rx="6" class="n-accent"/><text x="476" y="45" text-anchor="middle" class="t-small t-mono">{"level":"info","request_id":"abc…",…}</text>
+  <text x="110" y="82" text-anchor="middle" class="t-small">a containerd időbélyege</text>
+  <text x="248" y="82" text-anchor="middle" class="t-small">adatfolyam</text>
+  <text x="301" y="100" text-anchor="middle" class="t-small">teljes sor</text>
+  <text x="476" y="82" text-anchor="middle" class="t-small">az app JSON-ja — ugyanaz, mint a laptopon</text>
+</svg>
+</figure>
+
+<p>Az Alloy lánca (<code>platform/observability/alloy/config.k3s.alloy</code>):</p>
+<div class="stepper" data-captions="<strong>local.file_match</strong> — 10 másodpercenként újra kikeresi a mintára illő fájlokat. Gördülő csere után az új pod könyvtára magától bekerül. A backend soraira a <code>container=&quot;projecta-flask&quot;</code> címke kerül — a laptopos név, hogy a dashboard naplópanelje és a request_id-link változatlanul működjön.|<strong>loki.source.file</strong> — olvassa a fájlokat, és megjegyzi, hol tart (pozíciófájl). Ha az Alloy újraindul, onnan folytatja, nem küld duplán.|<strong>stage.cri</strong> — levágja a sor elejét (időbélyeg, stdout/stderr, F), és a tiszta JSON-t adja tovább. Nélküle a JSON-feldolgozás minden soron elbukna, és a <code>level</code> címke sehol nem jelenne meg. Mellékhatás: egy <code>stream</code> címke (stdout/stderr), ami el is választja a gunicorn saját sorait az alkalmazás JSON-jától.|<strong>stage.label_drop filename</strong> — a fájl útvonala benne van a pod nevében és uid-jában. Címkeként minden telepítés új Loki-adatfolyamot nyitna: ugyanaz a hiba, amit az ADR-0007 a request_id-nál elkerül. Ezért eldobjuk.|<strong>app_json → Loki</strong> — innen ugyanaz a feldolgozás, mint a laptopon: JSON-mezők, az alkalmazás saját időbélyege, egyetlen címke a <code>level</code>. A request_id a sor szövegében marad.">
+<figure>
+<svg viewBox="0 0 640 110" role="img" aria-label="Az Alloy feldolgozó lánca">
+  <defs><marker id="l10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+  <g data-step="0"><rect x="5" y="30" width="110" height="50" rx="8" class="n-2"/><text x="60" y="52" text-anchor="middle" class="t-small t-bold">file_match</text><text x="60" y="68" text-anchor="middle" class="t-small">/var/log/pods</text></g>
+  <g data-step="1"><rect x="130" y="30" width="110" height="50" rx="8" class="n-2"/><text x="185" y="52" text-anchor="middle" class="t-small t-bold">source.file</text><text x="185" y="68" text-anchor="middle" class="t-small">olvas, pozíció</text></g>
+  <g data-step="2"><rect x="255" y="30" width="110" height="50" rx="8" class="n-warn"/><text x="310" y="52" text-anchor="middle" class="t-small t-bold">stage.cri</text><text x="310" y="68" text-anchor="middle" class="t-small">előtag le</text></g>
+  <g data-step="3"><rect x="380" y="30" width="110" height="50" rx="8" class="n-warn"/><text x="435" y="52" text-anchor="middle" class="t-small t-bold">label_drop</text><text x="435" y="68" text-anchor="middle" class="t-small">filename</text></g>
+  <g data-step="4"><rect x="505" y="30" width="130" height="50" rx="8" class="n-violet"/><text x="570" y="52" text-anchor="middle" class="t-small t-bold">app_json → Loki</text><text x="570" y="68" text-anchor="middle" class="t-small">közös a laptoppal</text></g>
+  <path d="M115,55 L126,55" class="line" marker-end="url(#l10)"/><path d="M240,55 L251,55" class="line" marker-end="url(#l10)"/><path d="M365,55 L376,55" class="line" marker-end="url(#l10)"/><path d="M490,55 L501,55" class="line" marker-end="url(#l10)"/>
+</svg>
+</figure>
+<div class="controls">
+  <button data-prev>← Vissza</button>
+  <button data-next class="primary">Tovább →</button>
+  <button data-reset>Elölről</button>
+  <span class="counter"></span>
+</div>
+<div class="caption"></div>
+</div>
+
+<div class="box story"><strong>Ki van próbálva, nem csak leírva</strong>
+A lánc egy hamis podnaplón (egy JSON-sor stdout-on, egy gunicorn-sor stderr-en, plusz egy Postgres-sor) le lett futtatva az Alloy v1.7.1-gyel, a Loki helyére egy kiíró komponenssel. Eredmény: a JSON-sor <code>container="projecta-flask", level="info", stream="stdout"</code> címkékkel jött ki, a <code>filename</code> eltűnt, a Postgres-sor nem került be. A valódi gépen a <code>verify-observability-k3s.sh</code> 6. lépése méri ugyanezt.</div>
+
+<h2 id="miert">6. Miért kívülről, és nem a fürtben?</h2>
+<p>A szokásos megoldás a fürtön belüli megfigyelés (például a kube-prometheus-stack Helm-chart). Az ADR-0010 három lehetőséget mérlegel:</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Lehetőség</th><th>Előny</th><th>Hátrány itt</th></tr></thead>
+<tbody>
+<tr><td>1. Minden a fürtben</td><td>Szokásos; nincs token a gazdagépen; pod-szintű CPU/memória is lenne</td><td>Operator, kube-state-metrics, Alertmanager — sok új komponens egy 8 GB-os gépen, és a már működő provisioning cseréje</td></tr>
+<tr><td>2. Csak a Prometheus a fürtben</td><td>Nincs token a gazdagépen</td><td>A Grafanának kell út a fürtbe (NodePort) — ugyanaz a határátlépés, csak fordítva; a konfiguráció két helyen</td></tr>
+<tr><td><strong>3. Minden marad, szűk kapu a fürtbe</strong></td><td>A dashboardok, a riasztás, a provisioning változatlan; a fürtben négy kis objektum</td><td>Hosszú élettartamú token; nincs pod-szintű erőforrás-metrika</td></tr>
+</tbody></table></div>
+
+<h2 id="hiany">7. Amit ez a megoldás nem tud</h2>
+<div class="box thesis"><strong>A 7. fejezetbe (továbbfejlesztés)</strong>
+<strong>Pod-szintű CPU és memória.</strong> A compose-ban futó cAdvisor a Docker-konténereket látja, a k3s podjait nem. A kubelet saját cAdvisor-végpontja tudná, de azt az API-n át a <code>nodes/proxy</code> joggal lehetne elérni, ami sokkal tágabb a mostani Role-nál. Tudatosan kihagyva.<br>
+<strong>Több csomópont.</strong> A naplógyűjtés azért működik, mert egy csomópont van, és az Alloy azon fut. Egy második gépen oda is Alloy kellene — ez már az 1. lehetőség.<br>
+<strong>A token.</strong> Fürtön belüli Prometheusszal eltűnne.</div>
+
+<div class="box key"><strong>A mérést ez nem érinti</strong>
+A tíz-tíz futtatás alatt a megfigyelő réteg <em>nem futott</em>. Ez nem feltételezés: minden futtatás előfeltétele (E9) volt, hogy a <code>docker ps</code> pontosan három konténert mutasson — Gitea, registry, runner. A mért időkbe tehát a Prometheus nem szólhatott bele. A 6.5-ben ez érv a mérés mellett.</div>
+
+<h2 id="futtatas">8. Futtatás a mérőgépen</h2>
+<p>A laptopon:</p>
+<pre><code>az vm start -g szakdoga2-rg -n szakdoga2-vm
+scripts/platform-sync.sh
+ssh azureuser@$(terraform -chdir=terraform output -raw public_ip)</code></pre>
+<p>A gépen:</p>
+<pre><code>./observability-k3s-up.sh
+ROLLOUT=1 ./verify-observability-k3s.sh 2>&amp;1 | tee ~/5.6-verify.txt</code></pre>
+<p>Vissza a laptopon (és utána <code>az vm deallocate</code>):</p>
+<pre><code>scp azureuser@&lt;ip&gt;:5.6-verify.txt szakdolgozat/bizonyitek/05-megfigyeles-k3s-verify.txt</code></pre>
+<p>A Grafanát egy SSH-alagúton nézed: <code>ssh -L 3001:127.0.0.1:3001 azureuser@&lt;ip&gt;</code>, majd <code>http://localhost:3001</code>. Az „App golden signals” dashboardról egy képernyőkép a dolgozat 5.6 ábrája.</p>
+
+<h2 id="kviz">Ellenőrizd magad</h2>
+<div class="quiz">
+<details><summary>Miért nem elég a Prometheusnak a backend Service címe?</summary>Mert a Service podról podra osztja a kéréseket, a számlálók viszont podonként számolnak. Váltakozó podokat egy címen látva a Prometheus visszaeséseket érzékel, és a <code>rate()</code> hamis lesz.</details>
+<details><summary>Mit csinál a <code>watch</code> ige a Role-ban?</summary>Megengedi, hogy a Prometheus nyitva tartson egy kapcsolatot, amin az API minden podváltozást azonnal jelez. Nélküle csak időnként listázhatna, és egy telepítés után késve venné észre az új podokat.</details>
+<details><summary>Miért Role és nem ClusterRole?</summary>A Role egy névtérre szól. Az alkalmazás a <code>default</code> névtérben fut, a <code>kube-system</code> podjaihoz a Prometheusnak semmi köze.</details>
+<details><summary>Mit ellenőriz a <code>server_name</code>, és miért jobb, mint az <code>insecure_skip_verify</code>?</summary>Megmondja, melyik névre kell érvényesnek lennie a tanúsítványnak. Az ellenőrzés így megmarad; az <code>insecure_skip_verify</code> kikapcsolná, és a token egy közbeékelődő támadóhoz kerülhetne.</details>
+<details><summary>Miért nem címke a pod neve a Lokiban, ha a Prometheusban az?</summary>A Loki minden címkeérték-kombinációból külön adatfolyamot nyit, és telepítésenként két új pod-név jönne. A Prometheusban a pod címke korlátos és szükséges, mert két replika sorozatait választja szét.</details>
+<details><summary>Hogyan bizonyítod, hogy a megfigyelő réteg nem torzította a mérést?</summary>Nem futott: a mérés E9 előfeltétele szerint a gépen pontosan három konténer volt minden futtatás előtt.</details>
+</div>
+
+<footer class="page"><span>Utoljára frissítve: 2026. szeptember 30.</span><span>Forrás: ADR-0010, prometheus.k3s.yml, config.k3s.alloy, prometheus-sd-rbac.yaml, compose.azure.yaml</span></footer>
+</div>
+<script src="assets/tananyag.js"></script>
+</body>
+</html>

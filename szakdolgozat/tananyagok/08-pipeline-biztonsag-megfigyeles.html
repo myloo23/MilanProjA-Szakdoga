@@ -57,7 +57,7 @@
 </div>
 
 <h3>Melyik ágon indul?</h3>
-<p>Csak a <code>main</code>, <code>release/**</code>, <code>feature/**</code> és <code>hotfix/**</code> ágakon. Minden más ágon — például a <code>meres/kezi-*</code> ágakon — <strong>nem indul futószalag</strong>. Ezen múlik a mérés: a kézi futtatásoknál a <code>meres/…</code> ágra pusholtál, így nem indult pipeline; az automatizáltaknál a <code>release/meres</code> ágra, így igen. Ugyanaz a gép, ugyanaz a fürt, csak az ágnév más.</p>
+<p>Csak a <code>main</code>, <code>release/**</code>, <code>feature/**</code> és <code>hotfix/**</code> ágakon. Minden más ágon — például a <code>meres/kezi-*</code> ágakon — <strong>nem indul futószalag</strong>. Ezen múlik a mérés: a kézi futtatásoknál a <code>meres/…</code> ágra pusholtál, így nem indult pipeline; az automatizáltaknál a <code>release/meres</code> ágra, így igen. Ugyanaz a gép, ugyanaz a fürt, ugyanaz a chart — a szándékos különbség az ágnév. (Két nem szándékos is van, az alapkép digestje és az image-építő; hogy miért nem számít, a <a href="09-meres-es-vedes.html">9. tananyag</a> védési kérdései között van.)</p>
 
 <div class="box key"><strong>Build egyszer, telepítés ugyanabból (ADR-0002)</strong>
 A pipeline egyszer építi meg a képet, és utána <em>pontosan azt</em> telepíti. Nem építi újra a szerveren. Így ami kimegy, az garantáltan az, amit teszteltél és szkenneltél. A név a commit SHA-ja, tehát bármelyik futó verzióról megmondod, melyik kódból jött.</div>
@@ -145,7 +145,7 @@ Az eredeti tervben benne volt, de tudatosan kimaradt, és a 7. fejezetbe (továb
 <strong>A <code>request_id</code> naplómező, nem metrika-címke (ADR-0007).</strong> A Prometheus minden címke-értékhez új idősort nyit. Ha minden kérésnek saját azonosítója lenne címkeként, millió idősor lenne, és a Prometheus megfulladna. Ezért a szám (hány hiba) a Prometheusban van, a konkrét kérés (melyik hiba) a Lokiban.</div>
 
 <div class="box thesis"><strong>Hol tart ez most</strong>
-A megfigyelési réteg kész és működött a gyakornokságban, a laptopon. Az Azure-os fürtre való átvezetése a terv 3.4 pontja, még hátravan. A mérést ez nem érinti: a mérés időt és lépésszámot mér, nem Grafana-panelt. Ha nem fér bele, a 7. fejezetbe kerül — a mérés a fontosabb.</div>
+A megfigyelési réteg a laptopon kész volt; a mérés alatt a mérőgépen <strong>szándékosan nem futott</strong> (E9: pontosan három konténer). Az Azure-os fürtre kötése 2026-09-30-án készült el a repóban (ADR-0010) — hogyan éri el a Docker-hálózaton futó Prometheus a fürt podjait, az a <a href="10-megfigyeles-a-furton.html">10. tananyagban</a> van.</div>
 
 <h2 id="kviz">Ellenőrizd magad</h2>
 <div class="quiz">

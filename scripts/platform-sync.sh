@@ -28,10 +28,17 @@ if [[ -z "$VM_HOST" ]]; then
 fi
 
 echo "▸ platform/ → ${VM_USER}@${VM_HOST}:~/platform/"
+# A k8s-credentials a gépen jön létre (scripts/observability-k3s-up.sh), a
+# laptopon nincs meg. Kizárás nélkül a --delete minden szinkronnál letörölné —
+# a fájlok ráadásul a Prometheus felhasználójáé, így a törlés hibával állna meg.
 rsync -az --delete --exclude '.env' \
+  --exclude 'observability/prometheus/k8s-credentials/' \
   "$REPO_ROOT/platform/" "${VM_USER}@${VM_HOST}:platform/"
 
-echo "▸ scripts/verify-azure-platform.sh → ${VM_USER}@${VM_HOST}:~/"
-rsync -az "$REPO_ROOT/scripts/verify-azure-platform.sh" "${VM_USER}@${VM_HOST}:"
+echo "▸ scripts/{verify-azure-platform,observability-k3s-up,verify-observability-k3s}.sh → ${VM_USER}@${VM_HOST}:~/"
+rsync -az "$REPO_ROOT/scripts/verify-azure-platform.sh" \
+  "$REPO_ROOT/scripts/observability-k3s-up.sh" \
+  "$REPO_ROOT/scripts/verify-observability-k3s.sh" \
+  "${VM_USER}@${VM_HOST}:"
 
 echo "✓ Kész. Belépés: ssh ${VM_USER}@${VM_HOST}"

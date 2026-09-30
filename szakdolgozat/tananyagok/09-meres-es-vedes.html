@@ -24,7 +24,7 @@
 <body>
 <div class="wrap">
 
-<nav class="top"><a href="08-pipeline-biztonsag-megfigyeles.html">← 8. Pipeline, biztonság, megfigyelés</a><a href="index.html">Tananyagtérkép →</a></nav>
+<nav class="top"><a href="08-pipeline-biztonsag-megfigyeles.html">← 8. Pipeline, biztonság, megfigyelés</a><a href="10-megfigyeles-a-furton.html">10. Megfigyelés a fürtön →</a></nav>
 
 <p class="eyebrow">9. tananyag · a dolgozat gerince</p>
 <h1>A mérés, és amit a védésen mondasz</h1>
@@ -48,7 +48,7 @@ Mennyit javít mérhetően az automatizálás a telepítésen? Ugyanazt a válto
 <div class="toggle-figure">
 <div class="toggle">
   <button data-state="kezi" data-caption="<strong>Kézi:</strong> a <code>meres/kezi-NN</code> ágra pusholsz — erre az ágra nem indul pipeline. Utána 13 parancsot adsz ki egyesével, és mindegyik kimenetét elolvasod.">Kézi oldal</button>
-  <button data-state="auto" data-caption="<strong>Automatizált:</strong> a <code>release/meres</code> ágra pusholsz — erre indul a pipeline. Utána csak megnézed, zöld lett-e. <strong>Minden más ugyanaz</strong>: gép, registry, fürt, chart, változtatás.">Automatizált oldal</button>
+  <button data-state="auto" data-caption="<strong>Automatizált:</strong> a <code>release/meres</code> ágra pusholsz — erre indul a pipeline. Utána csak megnézed, zöld lett-e. <strong>Ugyanaz</strong>: gép, registry, fürt, chart, változtatás. (Az alapkép digestje és az image-építő eltér — lásd a védési kérdéseket lent.)">Automatizált oldal</button>
 </div>
 <figure>
 <svg viewBox="0 0 640 200" role="img" aria-label="A két mérési oldal ugyanarra a fürtre telepít">
@@ -219,7 +219,7 @@ Még az automatizált mérés előtt leírtad (<code>lepesidok.md</code>), hogy 
 
 <div class="quiz">
 <details><summary>Ha az automatizálás lassabb, akkor mi értelme?</summary>Nem lassabb ugyanarra a munkára: a telepítési szakasz 31 → 24 mp. A teljes idő azért hosszabb, mert tesztel, lintel és szkennel is, amit kézzel nem csinálsz. És 13 helyett 2 emberi lépés — kevesebb hibalehetőség.</details>
-<details><summary>Honnan tudod, hogy a különbség tényleg az automatizálásból jön?</summary>Mindkét oldal ugyanarra a fürtre, ugyanabból a registryből, ugyanazzal a charttal telepít. Az egyetlen különbség az ágnév, ami eldönti, indul-e pipeline.</details>
+<details><summary>Honnan tudod, hogy a különbség tényleg az automatizálásból jön?</summary>Mindkét oldal ugyanarra a fürtre, ugyanabból a registryből, ugyanazzal a charttal telepít. A szándékos különbség az ágnév, ami eldönti, indul-e pipeline. <strong>Van még kettő, és ezt te mondd ki, mielőtt kérdezik:</strong> a backend alapképének digestje (a kézi sorozat után léptetve, mert a Trivy megfogta) és az image-építő (kézzel legacy, a pipeline-ban BuildKit). Hogy egyik sem számít, az mérve van: a gördülő csere 19–22 vs 19,5–22,0 mp, a build 12–15 vs 11,9–13,4 mp, és a telepítési szakaszban (31 → 24 mp) build egyáltalán nincs. Forrás: a protokoll 4.b és 4.c pontja.</details>
 <details><summary>Miért számít beavatkozásnak egy kimenet elolvasása?</summary>Mert ott az ember dönt (jó-e vagy nem). A definíciót előre rögzítettem, és mindkét oldalon ugyanúgy alkalmaztam — ezért 2 az automatánál, nem 1.</details>
 <details><summary>Miért csak 10 futtatás?</summary>A kézi futtatás drága és fárasztó; 10 elég a medián és a sáv megadásához. Épp ezért nem adok meg százalékokat, és nem állítok általános érvényt.</details>
 <details><summary>Miért k3s és nem felügyelt Kubernetes (AKS)?</summary>A k3s teljes értékű, tanúsított Kubernetes, ugyanazokkal a parancsokkal. Egy gépen elfér, belefér az Azure for Students keretbe, és a Terraform cloud-inittel telepíti. A dolgozat a telepítési láncról szól, nem a fürt üzemeltetéséről (ADR-0008).</details>
