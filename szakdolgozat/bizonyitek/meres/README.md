@@ -272,6 +272,12 @@ rövidebb, a javulás a begépelt és elolvasott lépések helyéről jön.
 
 ## Mi változott a pipeline-ban a sorozat előtt
 
+> **Kiegészítés, 2026-09-30.** A pipeline mellett a backend alapképének digestje
+> is változott a két sorozat között (`0efc8a2`), tehát az ágnév nem az egyetlen
+> eltérés. Hogy ez a mért időt miért nem torzítja, az a
+> [`04-kezi-telepitesi-folyamat.md`](../04-kezi-telepitesi-folyamat.md) 4.b
+> pontjában van.
+
 A `ci.yml` `deploy` jobja a sorozat előtt Ansible-lel egy Docker konténert
 telepített a gazdagépre — vagyis **nem arra a rendszerre, amit a kézi sorozat
 mér**. Ha így maradt volna, a 6.4 állítása („az egyetlen különbség az ágnév")

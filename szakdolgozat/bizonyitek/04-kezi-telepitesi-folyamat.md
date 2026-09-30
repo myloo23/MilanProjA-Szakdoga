@@ -110,6 +110,60 @@ Ugyanaz a gép, ugyanaz a registry, ugyanaz a fürt, ugyanaz a chart, ugyanaz az
 elfogadási kritérium. A 6.4-ben ezt ki kell mondani, mert ez az, ami a
 összehasonlítást érvényessé teszi.
 
+### 4.b Utólag feltárt második eltérés: az alapkép digestje (2026-09-30)
+
+Az előző bekezdés állítása **így nem teljes**, és ezt nem csendben javítjuk,
+hanem ide írjuk. A két sorozat között az ágnéven kívül a backend alapképe is
+eltér:
+
+| | Commit, amelyről épült | `python:3.12-slim` digest |
+|---|---|---|
+| kézi telepítés (K1–K10) és kézi helyreállítás (H1–H3) | `76a9ba1` … `be36f74`, `ae354e8` … `84c46ae` | `sha256:57cd7c3a…10de` |
+| automatizált telepítés (A1–A10) és helyreállítás (A0–A3) | `d63eb00` … `e4da1d9`, `544f895` … `a9129e6` | `sha256:2f17fc04…06a9` (Debian 13.7) |
+
+A léptetés a `0efc8a2` commitban történt (2026-09-22), a kézi sorozatok lezárása
+után és az automatizált sorozat előtt, mert a bemelegítő pipeline-futtatás a régi
+alapkép 43 Trivy-találatán elbukott (`meres/README.md`, „a zöld szkennelésnek
+szavatossági ideje van").
+
+**Ami nem tér el**, ellenőrizve: `git diff be36f74 d63eb00 -- app chart`
+kizárólag a jelölősort mutatja, a `frontend/Dockerfile` változatlan. Az
+alkalmazás kódja, a chart, a fürt, a registry és a helm verziója azonos.
+
+**Miért nem torzítja a mért időt.** Az alapkép a gördülő csere idejére hathatna
+(nagyobb kép, lassabb indulás). Ez a tétel mindkét oldalon külön mérve van, és
+azonos: kézzel a 10+11. lépés a beállt szakaszban 19–22 mp (`lepesidok.md`),
+a pipeline-ban a `helm upgrade --wait` 19,5–22,0 mp (`auto-lepesidok.md`, D3). A
+képépítés ideje az alapkép lehúzását nem tartalmazza egyik oldalon sem, mert
+mindkét oldalon gyorsítótárból jött. A 6.1-ben és a 6.5-ben ezt így kell közölni:
+**két eltérés van, egy szándékos (az ágnév) és egy kényszerű (a digest), és a
+második hatása a mért tételen belül ki van zárva.**
+
+A pipeline joblogja (`workflowlogok/ci-build-test-push-12.log`) azt is mutatja,
+hogy ott a digest feloldása 0,1 mp, és a rétegek `CACHED` állapotúak — az új
+alapkép tehát a mért futtatások előtt már a gépen volt.
+
+### 4.c Harmadik eltérés: az image-építő (2026-09-30)
+
+A 7.b pont végi megjegyzés azt jósolta, hogy a pipeline is a régi (legacy)
+építőt fogja használni, és kikötötte, hogy ha nem, „azt a 3.1-ben egyeztetni
+kell". **Ez az egyeztetés elmaradt, és a jóslat nem teljesült.** A kézi oldalon
+a gépen futó `docker build` a legacy építő (`kezi-12.txt`: „DEPRECATED: The
+legacy builder…", `Step 1/20`), a pipeline a runner képében BuildKittel épít
+(`ci-build-test-push-12.log`: `#5 [builder 1/4]`).
+
+Hatása mérve korlátos, és csak a teljes időt érinti, a telepítési szakaszt nem:
+
+- a **telepítési szakasz** (K 9–13. lépés, A `deploy-start → accepted`) egyik
+  oldalon sem tartalmaz buildet, tehát a 31 → 24 mp-es összevetést nem érinti;
+- a **teljes időben** a kézi backend+frontend build a beállt szakaszban 12–15 mp
+  (`lepesidok.md` 5+6. sor), a pipeline B6 szakasza — két build *és* egy
+  konténer-füstteszt — 11,9–13,4 mp (`auto-lepesidok.md`). Ugyanaz a nagyságrend;
+  a „kapuk nélküli" összevetés (64–79 vs 67–72 mp) ennél kisebb különbséget nem
+  tud felbontani, de nagyobbat sem rejt.
+
+A 6.5-ben a digest mellett ezt is közölni kell, ugyanebben a formában.
+
 ---
 
 ## 5. A kézi telepítés lépései

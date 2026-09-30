@@ -45,12 +45,17 @@ szépítjük.
 
 ## Három tétel, három viselkedés
 
-**A gördülő csere kivárása állandó.** A 10. lépés mind az öt futtatásban
-16–18 mp, és ez az egyetlen tétel, amely egyáltalán nem csökken: gépi idő,
+**A gördülő csere kivárása állandó.** A 10. lépés mind a tíz futtatásban
+16–19 mp, és ez az egyetlen tétel, amely egyáltalán nem csökken: gépi idő,
 amin sem gyakorlat, sem gyorsítótár nem segít. A 6.4 fő érve ez, mert ugyanez a
 tétel az automatizált oldalon is ott lesz — a két sorozat különbsége nem innen
-jön. A 11. lépéssel együtt 19–20 mp, ami az utolsó két futtatás teljes idejének
-kb. negyede-harmada.
+jön. A 11. lépéssel együtt a beállt szakaszban 19–22 mp (mind a tízben 19–23 mp),
+ami a beállt futtatások teljes idejének kb. negyede-harmada.
+
+*Javítva 2026-09-30:* ez a bekezdés eredetileg az első öt futtatás után készült
+(„mind az öt futtatásban 16–18 mp", „együtt 19–20 mp"), és a sorozat végén nem
+lett frissítve. A számok most a fenti tábla mind a tíz oszlopából vannak; a
+következtetés nem változik.
 
 **A backend buildje beállt.** 35 → 24 → 12 → 11 → 11 mp. A csökkenés a réteg-
 gyorsítótár bemelegedése volt, gépi ok; a 11 mp a padló, mert a `COPY app/`
@@ -97,6 +102,25 @@ A sávon belüli maradék szórás azonosítható tételekre bontható, nem „m
 kell futtatni**, ahogy a kézi sorozat beállt szakaszát. Ha a pipeline hideg
 gyorsítótárral indulna, a különbség egy részét a build adná — az pedig pont az
 az ellenvetés, amit a 6.4-ben ki akarunk zárni.
+
+## A telepítési szakasz (9–13. lépés) — mind a tíz futtatásra
+
+A 6.4 összevetésének másik mennyisége: a helm, a két gördülő csere, a verzió- és
+a füstteszt-ellenőrzés, vagyis az a munka, amit az automatizált oldalon a
+`MERES deploy-start → accepted` ablak fed. A fenti tábla 9–13. sorának összege:
+
+| Futtatás | 1. | 2. | 3. | 4. | 5. | 6. | 7. | 8. | 9. | 10. |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 9–13. lépés | 41 mp | 43 mp | 33 mp | 31 mp | 30 mp | 30 mp | 33 mp | 40 mp | 32 mp | 29 mp |
+
+| | Mind a tíz futtatás | Beállt szakasz (4–10.) |
+|---|---:|---:|
+| medián | 32,5 mp | 31 mp |
+| sáv | 29–43 mp | 29–40 mp |
+
+A 8. futtatás 40 mp-e ugyanannak a 11 mp-es emberi szünetnek a következménye,
+mint a teljes idő sávjában (³). A dolgozat mindkét oszlopot közli, ugyanúgy, mint
+a teljes időnél (2026-09-30-i kiegészítés, a 6. fejezet vázlatának 3. pontja).
 
 ## Mire kell számítani az automatizált oldalon
 

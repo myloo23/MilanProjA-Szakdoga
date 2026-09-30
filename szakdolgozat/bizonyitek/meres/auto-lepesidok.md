@@ -61,6 +61,13 @@ másodpercre kerekítve értelmes.
 | ebből minőségi kapu (B3+B4+B5+B7) | 50,7 | 72,5 | 52,0 | 65,1 | 54,0 | 48,1 | 55,8 | 67,8 | 64,1 | 66,6 | 60,0 | 48,1–72,5 |
 | ebből minden más | 69,8 | 71,8 | 70,3 | 67,2 | 68,7 | 67,1 | 71,8 | 69,3 | 68,3 | 69,2 | 69,2 | 67,1–71,8 |
 
+**Miért 130,0 és nem 129,5 a medián.** Az `auto-sorozat.csv` egész
+másodperces `MERES`-időbélyegekből számol, és ott a tíz futtatás mediánja
+129,5 mp; ez a tábla tizedes logidőkből, és itt 130,0 mp. A kettő ugyanannak a
+mennyiségnek két felbontása, a futtatásonkénti eltérés 0–1 mp. **A dolgozatban
+a 129,5 mp a közölt érték** (a CSV az elsődleges adatsor, és a kézi oldal is egész
+másodperces), ez a tábla a bontás forrása. (Kiegészítve 2026-09-30.)
+
 ## Három megállapítás
 
 **1. A teljes idő többlete pontosan a minőségi kapuk ára.** A kapuk (Trivy
