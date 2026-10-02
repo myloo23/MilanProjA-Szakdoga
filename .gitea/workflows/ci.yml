@@ -239,6 +239,23 @@ jobs:
             /bin/hadolint --failure-threshold info - < Dockerfile
           echo "hadolint v2.14.0: no findings at or above info"
 
+      - name: Lint the frontend Dockerfile
+        timeout-minutes: 3
+        # Same image, same threshold, same empty-input guard as the step above,
+        # and for the same reasons. A separate step rather than a loop over both
+        # files so that a red log names the Dockerfile that failed.
+        #
+        # Added after the measurement closed (naplo 3.2). Before that the
+        # frontend Dockerfile was deliberately ungated: a gate introduced
+        # mid-series could have gone red for reasons unrelated to the change
+        # under test and burned measurement runs. The measured pipeline is the
+        # one at e4da1d9; this step is not part of it.
+        run: |
+          test -s frontend/Dockerfile || { echo "frontend/Dockerfile is missing or empty"; exit 1; }
+          docker run --rm -i hadolint/hadolint:v2.14.0 \
+            /bin/hadolint --failure-threshold info - < frontend/Dockerfile
+          echo "hadolint v2.14.0: frontend/Dockerfile, no findings at or above info"
+
       - name: Run tests with coverage
         timeout-minutes: 5
         run: |
@@ -318,13 +335,12 @@ jobs:
         # the frontend Deployment at a tag that was never pushed, and the
         # rollout would sit in ImagePullBackOff until the wait timed out.
         #
-        # Neither linted nor scanned, unlike the backend image, and that is a
-        # deliberate omission rather than an oversight: hadolint and Trivy on a
-        # Dockerfile that has never been through either are new gates, and a
-        # new gate introduced days before a measurement series can go red on a
-        # base-image advisory that has nothing to do with the change under
-        # test. That burns measurement runs. Tracked for the hardening pass —
-        # the argument goes in the same commit as the gate, per ADR-0005.
+        # Linted and scanned like the backend image since the measurement
+        # closed: "Lint the frontend Dockerfile" above, "Scan the frontend
+        # image with Trivy" below. During the series both were deliberately
+        # absent — a new gate introduced days before a measurement series can
+        # go red on a base-image advisory that has nothing to do with the
+        # change under test, and that burns measurement runs (naplo 3.2).
         timeout-minutes: 10
         run: |
           docker build \
@@ -408,6 +424,31 @@ jobs:
             --severity HIGH,CRITICAL \
             --ignore-unfixed \
             localhost:5001/projecta-flask:${{ steps.ref_gate.outputs.sha_short }}
+
+      - name: Scan the frontend image with Trivy
+        # The same pinned scanner and the same flags as the backend scan, so
+        # "the release passed the vulnerability gate" is true of both images
+        # the chart deploys rather than one of them. Until this step existed,
+        # half of every release went to the cluster unscanned.
+        #
+        # What it sees: the nginx runtime stage — Alpine packages and nginx.
+        # The node build stage is not in the image, so npm's dependency tree
+        # is not scanned here; it is inventoried by the filesystem SBOM
+        # (frontend/package-lock.json, docs/sbom/), which is where a finding in
+        # it would show.
+        #
+        # Its own step, not a loop with the backend scan: a red log should name
+        # the image, and the first time this runs it is the likelier of the two
+        # to fail, because its base had never been through a gate before.
+        timeout-minutes: 10
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:0.72.0 image \
+            --exit-code 1 \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            localhost:5001/projecta-frontend:${{ steps.ref_gate.outputs.sha_short }}
 
       - name: Cleanup container
         timeout-minutes: 2

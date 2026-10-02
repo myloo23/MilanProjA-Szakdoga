@@ -106,6 +106,42 @@ A deploy job korábban Ansible-lel egy sima Docker konténert telepített — <e
 Egy olyan commit, ami se a Dockerfile-hoz, se a függőségekhez nem nyúlt, hirtelen piros lett: a Trivy 43 hibát talált az alapképben. Miért? Mert a Trivy frissítette az adatbázisát — közben új hibákat fedeztek fel a világban. A kód nem változott, a világ igen.
 <br><br><strong>A tanulság:</strong> a rögzítés garantálja, hogy <em>ugyanaz</em> épüljön újra. De azt, hogy ami ugyanaz, az <em>biztonságos is</em>, újra és újra ellenőrizni kell. Ezt csak egy pipeline csinálja minden commitnál. Kézi telepítésnél ez a kérdés fel sem merül.</div>
 
+<h3 id="alapkep-leptetes">Alapkép léptetése — ellenőrzés előbb, írás utána (napló 3.2)</h3>
+<p>2026-09-30-án ugyanez másodszor történt meg: a rögzített <code>python:3.12-slim</code> digestben az OpenSSL <code>3.5.7-1~deb13u2</code> volt, a javítás a <code>deb13u3</code>-ban jött. A megoldás nem a kapu kikapcsolása, hanem egy új digest — de csak akkor, ha az új kép <em>tényleg</em> tartalmazza a javítást. Ezt csinálja a <code>scripts/pin-base-images.sh</code>, ebben a sorrendben:</p>
+
+<figure>
+<svg viewBox="0 0 640 150" role="img" aria-label="Az alapkép-léptetés öt lépése">
+  <defs><marker id="nyil8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+  <rect x="5" y="30" width="112" height="80" rx="10" class="n-accent"/>
+  <text x="61" y="62" text-anchor="middle" class="t-bold">1. Feloldás</text>
+  <text x="61" y="84" text-anchor="middle" class="t-small">címke → digest</text>
+  <line x1="117" y1="70" x2="131" y2="70" class="line" marker-end="url(#nyil8)"/>
+  <rect x="133" y="30" width="112" height="80" rx="10" class="n-violet"/>
+  <text x="189" y="62" text-anchor="middle" class="t-bold">2. OpenSSL</text>
+  <text x="189" y="84" text-anchor="middle" class="t-small">dpkg-verzió</text>
+  <line x1="245" y1="70" x2="259" y2="70" class="line" marker-end="url(#nyil8)"/>
+  <rect x="261" y="30" width="112" height="80" rx="10" class="n-warn"/>
+  <text x="317" y="62" text-anchor="middle" class="t-bold">3. Trivy</text>
+  <text x="317" y="84" text-anchor="middle" class="t-small">a CI kapcsolóival</text>
+  <line x1="373" y1="70" x2="387" y2="70" class="line" marker-end="url(#nyil8)"/>
+  <rect x="389" y="30" width="112" height="80" rx="10" class="n-accent"/>
+  <text x="445" y="62" text-anchor="middle" class="t-bold">4. Írás</text>
+  <text x="445" y="84" text-anchor="middle" class="t-small">FROM sorok</text>
+  <line x1="501" y1="70" x2="515" y2="70" class="line" marker-end="url(#nyil8)"/>
+  <rect x="517" y="30" width="118" height="80" rx="10" class="n-bad"/>
+  <text x="576" y="62" text-anchor="middle" class="t-bold">5. Pipeline</text>
+  <text x="576" y="84" text-anchor="middle" class="t-small">a kész képeken</text>
+  <text x="317" y="138" text-anchor="middle" class="t-small t-muted">ha a 3. piros: semmi nem íródik át — a kiadó még nem építette újra a képet</text>
+</svg>
+<figcaption>A script csak előszűrő: az alapképet nézi. A pipeline a <em>kész</em> képet vizsgálja, amiben a Python-csomagok és a lefordított frontend is benne vannak — a végső kapu ez marad.</figcaption>
+</figure>
+
+<div class="box whatif"><strong>Mi lett volna, ha csak átírod a digestet?</strong>
+Ha a kiadó még nem építette újra a képet, az új digest ugyanazt az OpenSSL-t tartalmazza: a commit nem javít semmit, a pipeline ugyanúgy piros, és a történetben ott marad egy „javítás”, ami nem az. Az ellenőrzés előbb, írás utána sorrend ezt zárja ki.</div>
+
+<div class="box story"><strong>A frontend kép eddig átment a kapun — mert nem volt kapu</strong>
+A mérés alatt a frontend Dockerfile-ra szándékosan nem futott se hadolint, se Trivy: egy új kapu a sorozat közepén olyan okból is pirosra válthatott volna, aminek a mért változtatáshoz semmi köze. A mérés lezárult, így most mindkét kép ugyanazon a kapun megy át, és a frontend alapképei is digesttel rögzítettek. Az nginx közben a lejárt 1.27-es ágról a <code>stable-alpine</code> ágra lépett. <strong>A védésen:</strong> a mért pipeline az <code>e4da1d9</code>-es; az új lépések nincsenek benne a mért időkben, és ezt a 6.1-ben ki kell mondani.</div>
+
 <div class="box whatif"><strong>Mi a helyzet a képaláírással (cosign)?</strong>
 Az eredeti tervben benne volt, de tudatosan kimaradt, és a 7. fejezetbe (továbbfejlesztés) kerül. Ha rákérdeznek: „Azt garantálná, hogy a fürt csak olyan képet futtasson, amit a pipeline épített. A mérés szempontjából nem változtat semmin, ezért a határidő miatt leírtam, nem megépítettem.”</div>
 
@@ -151,6 +187,7 @@ A megfigyelési réteg a laptopon kész volt; a mérés alatt a mérőgépen <st
 <div class="quiz">
 <details><summary>Miért a commit SHA a kép neve, miért nem „latest”?</summary>Mert a „latest” mindig mást jelent. A SHA-ból pontosan tudod, melyik kód fut, és a rollback is egy konkrét, ismert képre áll vissza.</details>
 <details><summary>Miért nem ember dönt az automatizált átvételnél, és miért számít ez?</summary>A pipeline-ban minden ellenőrzés elbuktatja a futást, ha rossz. A kézi oldalon a <code>smoke.sh</code> mindig 0-val lép ki, tehát ott te olvasod és döntöd el, jó-e. Ugyanaz az ellenőrzés, de csak az egyik oldalon gépi a döntés — ember elnézheti, a gép nem.</details>
+<details><summary>Miért nem elég az új digestet beírni, ha a Trivy piros?</summary>Mert nem tudod, hogy az új kép tartalmazza-e a javítást. A <code>pin-base-images.sh</code> előbb megnézi az OpenSSL verzióját és lefuttatja ugyanazt a Trivy-kaput, és csak tiszta eredmény után írja át a FROM sorokat.</details>
 <details><summary>Mi a különbség a függőségrögzítés és a Trivy között?</summary>A rögzítés azt garantálja, hogy mindig ugyanaz épül. A Trivy azt nézi, hogy ami épül, arról tudnak-e ma hibát. Az első egyszeri, a második folyamatos.</details>
 <details><summary>Mit csinál a rollback lépés, ha a hiba már a telepítés előtt történt?</summary>Semmit: előbb ellenőrzi, hogy telepített-e egyáltalán valamit. Így nem görget vissza egy egészséges verziót.</details>
 <details><summary>Metrika vagy napló: „hány 500-as hiba volt az elmúlt 5 percben?”</summary>Metrika (Prometheus). A „melyik kérés volt, és mi volt benne?” már napló (Loki).</details>

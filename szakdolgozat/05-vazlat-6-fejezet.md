@@ -62,6 +62,8 @@ mi számít egy mért másodpercnek és egy beavatkozásnak.
 > **Táblázat 6.1** — a mérés felállása: K és A oszlop, soronként gép, fürt, chart,
 > elfogadási kritérium, alapkép digest és image-építő (itt látszik a két eltérés),
 > trigger, rögzítés módja, és hogy a megfigyelő réteg **nem futott** (ADR-0010).
+> Külön sor: a mért pipeline az `e4da1d9`-es; a frontend kép hadolint- és
+> Trivy-lépése a mérés után került be (naplo 3.2), a mért időkben nincs benne.
 
 ---
 
@@ -77,7 +79,7 @@ mi számít egy mért másodpercnek és egy beavatkozásnak.
 | elfogadás | 10/10 | 7/7 |
 
 Telepítési szakasz (9–13. lépés): beállt 29–40 mp, medián 31; mind a tíz 29–43 mp,
-medián 32,5 (a `lepesidok.md` táblájából számolva — **ezt a fájl még nem közli**).
+medián 32,5 (a `lepesidok.md` 2026-09-30-án kiegészített szakaszából).
 Forrás: `kezi-sorozat.csv`, `lepesidok.md`.
 
 > **Ábra 6.1** — futtatásonkénti teljes idő a sorszám függvényében (K), a beállt

@@ -8,6 +8,40 @@ Legfrissebb elöl.
 
 ---
 
+## 3.2 — Alapkép-léptetés ellenőrzéssel, és a frontend kép a kapuk mögé kerül (2026-10-02)
+
+**Mit csináltam.** Két nyitott tétel, ugyanabból a hiányból. (1) A backend
+pipeline a 3.1 óta piros az OpenSSL-találaton. Az új digest feloldásához és
+ellenőrzéséhez a `scripts/pin-base-images.sh` készült: feloldja a három alapkép
+(`python:3.12-slim`, `node:22-alpine`, `nginxinc/nginx-unprivileged:stable-alpine`)
+digestjét, kiolvassa az új backend-alapkép OpenSSL-verzióját, a CI kapcsolóival
+lefuttatja a Trivy-t a futó lépcsők alapképein, és **csak tiszta eredmény után**
+írja át a FROM sorokat; a kimenet a `bizonyitek/07-alapkep-leptetes.txt`. (2) A
+frontend kép eddig sem lintelve, sem szkennelve nem volt — a mérés idejére
+szándékosan, mert egy új kapu a sorozat közepén mérési futtatásokat égetett volna
+el. Most a `ci.yml`-ben külön hadolint- és Trivy-lépést kapott, ugyanazzal a
+rögzített eszközverzióval és küszöbbel, mint a backend, és a push csak mindkét
+szkennelés után jön. Az nginx a lejárt 1.27-es ágról a `stable-alpine` ágra lép.
+
+**Mi lett volna nélküle.** Az 5.5 azt állítja, hogy a kiadás átmegy a
+sérülékenységi kapun, miközben a chart két image-éből csak az egyik ment át
+rajta, és csak az egyik volt digesttel rögzítve. Egy bíráló ezt a `ci.yml` egyetlen
+kommentjéből kiolvasta volna. A script nélkül pedig a digestléptetés találgatás:
+ha a kiadó még nem építette újra a képet, az új digest ugyanazt az OpenSSL-t
+hozza, és a commit nem javít semmit.
+
+**Mit bizonyít.** Hogy a függőségrögzítés és a sérülékenységvizsgálat a teljes
+kiadásra igaz, nem a felére; és hogy a rögzítés léptetése maga is ellenőrzött
+lépés. **A mérést nem érinti:** a mért pipeline az `e4da1d9`-es, az új lépések nincsenek
+benne a mért időkben. Ezt a 6.1-ben ki kell mondani (a 6.1 táblájában külön sor).
+Az SBOM-ok szándékosan nem generálódnak újra: a mért release-t írják le.
+
+**Ami a gépemen fut még.** `scripts/pin-base-images.sh` (laptop, Docker kell),
+commit, majd a gép indítása után a `release/meres` pusholása az `azure`-ra és a
+pipeline zöldje. Ha a script piros, a kiadó még nem javított: később újra.
+
+---
+
 ## 3.1 — A mérőgépet a Terraform újraépítette (2026-09-30)
 
 **Mi történt.** Az `allowed_cidr` átírása (új otthoni IP) utáni `apply` a gépet
