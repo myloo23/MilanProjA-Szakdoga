@@ -1,75 +1,25 @@
-# React + TypeScript + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+One page over the backend's notes CRUD: Vite + React + TypeScript, built into
+static files and served by unprivileged nginx on port 8080. Every API call goes
+to the relative path `/api/…` (`src/api.ts`), so the browser talks to a single
+origin and no CORS configuration exists.
 
-Currently, two official plugins are available:
+| Where | Who forwards `/api` | To |
+|---|---|---|
+| Development (`npm run dev`) | Vite dev server (`vite.config.ts`) | `http://localhost:8000`, prefix stripped |
+| Cluster | nginx (`nginx.conf`) | the `backend` Service, prefix stripped |
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm ci
+npm run dev        # with the backend running on :8000
+npm run lint
+npm run build      # tsc -b && vite build → dist/
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+The image (`Dockerfile`) is two stages: `node:22-alpine` builds, the
+`nginx-unprivileged` runtime ships only `dist/` and `nginx.conf`. Both base
+images are digest-pinned; bump them only with `scripts/pin-base-images.sh`.
+In the pipeline the Dockerfile is linted by hadolint and the image is scanned
+by Trivy, like the backend's. Why Vite and not Next.js: decision D6 in
+`szakdolgozat/01-megvalositasi-terv.md`.

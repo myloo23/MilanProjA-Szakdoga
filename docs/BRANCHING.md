@@ -1,5 +1,14 @@
 # Branching
 
+> **Thesis era (since 2026-09-21).** The work branch is `release/meres`; the
+> Gitea that runs it is on the measurement VM, pushed to as remote **`azure`**
+> (`http://localhost:3000` through the SSH tunnel, see [`RUNBOOK.md`](RUNBOOK.md)),
+> not the laptop `gitea` remote below. Manual measurement runs used
+> `meres/kezi-NN` and `meres/hiba-NN`, which `ci.yml` does not trigger on, so no
+> runner competed with the measured deploy. `release/meres` goes to `main` by
+> pull request on GitHub, **merge commit** (rule 7). The rules below are the
+> internship-era sprint flow and still describe the review mechanics.
+
 ```
 main (protected)                 validated sprint work only
  └── release/sprint3 (protected) the sprint checkpoint — what gets demonstrated

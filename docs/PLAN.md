@@ -581,7 +581,7 @@ were built on 2026-08-11 under
 2026-08-11, five merges landed on `origin/release/sprint3` and **none reached
 `gitea`** — so CI ran on the feature branches, CD never ran at all, and the
 container on the host stayed at `ed19d73` for three days while every branch
-showed green. Non-negotiable #2 in [`CLAUDE.md`](../CLAUDE.md) says push to
+showed green. Non-negotiable #2 in `CLAUDE.md` (a local working-notes file, not in the repository) says push to
 `gitea` first and wait for green; it was skipped silently, and nothing in the
 process notices a forge that has simply stopped receiving pushes. Reconciled on
 2026-08-11: `release/sprint3` pushed to `gitea`, run #87 green, `deploy` verified
