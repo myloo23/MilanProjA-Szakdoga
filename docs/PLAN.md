@@ -1,5 +1,10 @@
 # Project A — Plan
 
+> **Historical — internship era (Docker host, Ansible deploy), until 2026-09-21.**
+> The current system is Terraform + k3s + Helm; see the [README](../README.md),
+> [`RUNBOOK.md`](RUNBOOK.md) and [`szakdolgozat/naplo.md`](../szakdolgozat/naplo.md).
+> Sections on the app, dependencies, tests and Git workflow still apply.
+
 **Owner:** Milán Takács · **Deploy target:** local Docker host
 
 Roadmap, sprints, open work and risks. Overview: [`../README.md`](../README.md).

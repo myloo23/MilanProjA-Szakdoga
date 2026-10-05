@@ -1,5 +1,10 @@
 # Development Guide
 
+> **Historical — internship era (Docker host, Ansible deploy), until 2026-09-21.**
+> The current system is Terraform + k3s + Helm; see the [README](../README.md),
+> [`RUNBOOK.md`](RUNBOOK.md) and [`szakdolgozat/naplo.md`](../szakdolgozat/naplo.md).
+> Sections on the app, dependencies, tests and Git workflow still apply.
+
 Local setup, day-to-day commands, the CI platform, and the Git workflow.
 
 ---

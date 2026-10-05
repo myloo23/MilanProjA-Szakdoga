@@ -15,7 +15,66 @@ deployed from.
 by git SHA and the running container carries a `version` label; that is the
 authority. This is the human-readable index over it.
 
-## [Unreleased] — `release/sprint3`
+## [szakdolgozat] — `release/meres`, 2026-09-17 … 2026-10-05
+
+The thesis rebuild: same pipeline and evidence discipline, new target. Detail
+and reasoning per step: [`szakdolgozat/naplo.md`](szakdolgozat/naplo.md).
+
+### Added
+
+- Terraform for the Azure VM (resource group, network, NSG, static IP, VM);
+  cloud-init installs k3s, so the cluster comes up with no manual step
+  ([`terraform/`](terraform/), ADR-0008)
+- Helm chart: backend ×2, frontend ×2, PostgreSQL with a PVC and schema,
+  Traefik ingress ([`chart/`](chart/))
+- Frontend: Vite + React + TypeScript, served by unprivileged nginx, `/api`
+  proxied to the backend
+- Backend: notes CRUD on PostgreSQL, `/version` (build SHA — the measurement's
+  acceptance criterion), readiness that checks the database, multiprocess-safe
+  metrics under Gunicorn
+- Platform on the VM: Gitea, act_runner, registry via `compose.azure.yaml`
+- Observability on k3s: Prometheus discovers the backend pods through the k3s
+  API with a read-only ServiceAccount, Alloy ships pod logs to Loki (ADR-0010)
+- Measurement: 10 manual and 10 automated deploys, 3 + 3 recoveries, with
+  transcripts, job logs and CSVs ([`szakdolgozat/bizonyitek/meres/`](szakdolgozat/bizonyitek/meres/));
+  figures generated from them by `scripts/abrak-6-fejezet.py`
+- Third SBOM generation, built on the VM from the measured release `e4da1d9`:
+  seven SBOMs, 771 components, frontend image included ([`docs/sbom/`](docs/sbom/))
+- Frontend image gates: hadolint and Trivy, same pins and threshold as the
+  backend (added after the measurement closed)
+- `scripts/pin-base-images.sh` — re-pins base-image digests only after they pass
+  the pipeline's Trivy gate
+
+### Changed
+
+- **Deploy: Helm on k3s replaces Ansible on the Docker host** (ADR-0009). The
+  deploy job records the running revision, runs `helm upgrade --wait`, verifies
+  with the existing `verify` play, and on failure runs `helm rollback --wait`
+  and verifies the previous SHA
+- Both images are built and pushed under one SHA tag
+- VM `lifecycle { ignore_changes = [custom_data] }` — a cloud-init edit no
+  longer replaces the machine
+
+### Fixed
+
+- `requirements-dev.txt` was not recompiled after `psycopg` entered
+  `requirements.in`; only the test environment broke, and only the pipeline
+  noticed
+- Pipeline images built without `GIT_SHA` reported `dev` on `/version`
+
+### Deployed
+
+- `e4da1d9` — the last run of the automated measurement series; the release the
+  SBOMs describe
+
+### Known issue
+
+- Backend base image carries a fixed-upstream HIGH (`libpcre2-8-0`,
+  CVE-2026-103111) not yet in a published `python:3.12-slim`; the pipeline stays
+  red until `scripts/pin-base-images.sh` finds a clean digest. The gate is not
+  relaxed
+
+## [sprint-3, not tagged] — `release/sprint3`
 
 ### Added
 
