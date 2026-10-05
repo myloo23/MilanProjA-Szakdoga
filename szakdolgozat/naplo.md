@@ -36,6 +36,15 @@ lépés. **A mérést nem érinti:** a mért pipeline az `e4da1d9`-es, az új l�
 benne a mért időkben. Ezt a 6.1-ben ki kell mondani (a 6.1 táblájában külön sor).
 Az SBOM-ok szándékosan nem generálódnak újra: a mért release-t írják le.
 
+**Az első futás (2026-10-05) nem írt át semmit — jogosan.** Az új
+`python:3.12-slim` digestben az OpenSSL már `3.5.7-1~deb13u3`, tehát a 09-30-i hiba
+upstream javítva van. Közben viszont új HIGH jött: CVE-2026-103111 a
+`libpcre2-8-0`-ban (telepítve `10.46-1~deb13u2`, javítva `deb13u3`). Az nginx
+`stable-alpine` (Alpine 3.24.2) tiszta. A script azt tette, amire készült: a
+Dockerfile-okhoz nem nyúlt. Kimenet: `bizonyitek/07-alapkep-leptetes-elso.txt`.
+Ez a harmadik eset tizennégy nap alatt, hogy egy rögzített alapkép „lejár" —
+az 5.5 és a 6.5/9 állítása most három független eseten áll.
+
 **Ami a gépemen fut még.** `scripts/pin-base-images.sh` (laptop, Docker kell),
 commit, majd a gép indítása után a `release/meres` pusholása az `azure`-ra és a
 pipeline zöldje. Ha a script piros, a kiadó még nem javított: később újra.
