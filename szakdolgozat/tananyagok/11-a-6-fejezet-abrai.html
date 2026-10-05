@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>11. A 6. fejezet ábrái</title>
+<link rel="stylesheet" href="assets/tananyag.css">
+<style>.fig img{width:100%;height:auto;border:1px solid rgba(11,11,11,.1);border-radius:8px;background:#fff}</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="top"><a href="10-megfigyeles-a-furton.html">← 10. Megfigyelés a fürtön</a><a href="index.html">Tananyagtérkép →</a></nav>
+
+<p class="eyebrow">11. tananyag · scripts/abrak-6-fejezet.py · a dolgozat 6.2–6.4 alfejezete</p>
+<h1>A 6. fejezet ábrái</h1>
+<p class="lead">Négy ábra, mind egy scriptből, közvetlenül a <code>bizonyitek/meres/</code> fájljaiból. Itt az áll, mit mutat mindegyik, mit <em>nem</em> állít, és mit kérdezhet róla a bíráló.</p>
+
+<div class="goals">
+  <h2>A végére ezt fogod tudni</h2>
+  <ul>
+    <li>Miért scriptből készül az ábra, és nem kézzel.</li>
+    <li>Mi a „medián futtatás” módszere, és miért nem a szakaszmediánok összege.</li>
+    <li>Mit mond a négy ábra külön-külön, egy-egy mondatban.</li>
+  </ul>
+</div>
+
+<h2 id="miert-script">1. Miért script</h2>
+<p>A dolgozat minden száma a CSV-kből és a lépésidő-táblákból jön. Ha az ábra kézzel készülne, két forrás lenne ugyanarra a számra, és előbb-utóbb eltérnének — a 2026-09-30-i javításoknál pont ez történt a szövegben. A script ráadásul ellenőriz: ha a lépések összege nem egyezik a CSV teljes idejével, megáll, és nem rajzol hibás ábrát. Újragenerálás: <code>python3 scripts/abrak-6-fejezet.py</code>.</p>
+
+<h2 id="median-futtatas">2. A medián futtatás — a 6.4 ábra kulcsa</h2>
+<p>Ha minden szakasznak külön veszed a mediánját és összeadod, nem a teljes idő mediánját kapod. A kézi kiesésnél például a szakaszmediánok összege 53 mp, a kiesés mediánja viszont 56. Egy olyan oszlop, amelynek a hossza nem egyezik a ráírt számmal, az első kérdés lenne a védésen. Ezért a bontás annak a futtatásnak a valódi szakaszait mutatja, amelynek a teljes ideje a medián.</p>
+
+<figure>
+<svg viewBox="0 0 640 170" role="img" aria-label="Szakaszmediánok összege kontra medián futtatás">
+  <text x="10" y="22" class="t-bold">Szakaszmediánok összege</text>
+  <rect x="10" y="34" width="170" height="30" rx="4" class="n-violet"/>
+  <rect x="182" y="34" width="60" height="30" rx="4" class="n-warn"/>
+  <rect x="244" y="34" width="190" height="30" rx="4" class="n-accent"/>
+  <rect x="436" y="34" width="110" height="30" rx="4" class="n-bad"/>
+  <text x="556" y="54" class="t-bold">53 ≠ 56</text>
+  <text x="10" y="102" class="t-bold">Medián futtatás (H2) valódi szakaszai</text>
+  <rect x="10" y="114" width="170" height="30" rx="4" class="n-violet"/>
+  <rect x="182" y="114" width="110" height="30" rx="4" class="n-warn"/>
+  <rect x="294" y="114" width="190" height="30" rx="4" class="n-accent"/>
+  <rect x="486" y="114" width="90" height="30" rx="4" class="n-bad"/>
+  <text x="586" y="134" class="t-bold">56 ✓</text>
+</svg>
+<figcaption>A felső oszlop szakaszai külön-külön tipikusak, együtt viszont egyetlen valódi futtatást sem írnak le. Az alsó egy ténylegesen lezajlott futtatás.</figcaption>
+</figure>
+
+<h2 id="abrak">3. A négy ábra</h2>
+
+<div class="fig"><img src="../abrak/abra-6-1-kezi-tanulasi-gorbe.png" alt="6.1 ábra"></div>
+<p><strong>6.1 — a kézi sorozat tanulási görbéje.</strong> Az első három futtatás lassú (121, 144, 86 mp), utána a sor 64–79 mp között áll be. <em>Amit nem állít:</em> hogy ez csak tanulás. A backend build 35 → 11 mp-re esése a réteg-gyorsítótár bemelegedése, gépi ok — a szövegben ezt külön ki kell mondani.</p>
+
+<div class="fig"><img src="../abrak/abra-6-2-kezi-lepesbontas.png" alt="6.2 ábra"></div>
+<p><strong>6.2 — a 13 lépés.</strong> Két hosszú tétel van, és mindkettő gépi: a gördülő csere kivárása (18 mp) és a backend build (11 mp). A begépelt és elolvasott lépések egyenként 3–4 mp-esek, de hatan vannak. A vázlatban halmozott oszlop szerepelt; lépésenkénti vízszintes sáv lett belőle, mert 14 szelet egy oszlopban olvashatatlan. <em>Megjegyzés:</em> a lépésmediánok összege itt sem pontosan 71 mp — ez az ábra lépéseket hasonlít össze egymással, nem a teljes időt bontja.</p>
+
+<div class="fig"><img src="../abrak/abra-6-3-auto-szakaszok.png" alt="6.3 ábra"></div>
+<p><strong>6.3 — a pipeline szakaszai.</strong> Minden szakasz futtatásról futtatásra szinte azonos, egy kivételével: a narancs ansible-lint (B5) 15,9 és 43,6 mp között mozog. A teljes idő szórását tehát egyetlen gyorsítótárazatlan függőségtelepítés adja, nem a módszer — ez a 7. fejezet egyik pontja.</p>
+
+<div class="fig"><img src="../abrak/abra-6-4-osszevetes.png" alt="6.4 ábra"></div>
+<p><strong>6.4 — a fő ábra.</strong> A szürke (gépi kivárás) mind a négy oszlopban 19–20 mp: ezen az automatizálás nem gyorsít. Ami eltűnik, az a narancs (kézi parancs) és a lila (észlelés, 17 → 2 mp), és a kék ellenőrzés is rövidebb. <em>Amit nem állít:</em> hogy az automatizált út összességében gyorsabb — a teljes idő a kapuk miatt hosszabb (6.3). Az automatizált telepítési oszlop szakaszai tizedes logidőkből 23,5 mp-et adnak, a ráírt 24 mp a CSV egész másodperces értéke.</p>
+
+<div class="box story"><strong>A védésen egy mondatban</strong>
+„A gépi kivárás mindkét oldalon ugyanannyi; az automatizálás azt a részt veszi el, amit ember gépel és olvas — és ezt a mérés előtt leírt előrejelzésben is így vártam.”</div>
+
+<h2 id="kviz">Ellenőrizd magad</h2>
+<div class="quiz">
+<details><summary>Miért nem a szakaszmediánokat adod össze a 6.4-ben?</summary>Mert az összegük nem a teljes idő mediánja (a kézi kiesésnél 53 az 56 helyett). A medián futtatás valódi szakaszai pontosan kiadják a ráírt értéket.</details>
+<details><summary>Mi okozza a 6.3 oszlopainak eltérő magasságát?</summary>Szinte csak a B5 (ansible-lint és a függőségei), mert a lint-függőségek nincsenek gyorsítótárazva. A többi szakasz futtatásonként másodpercen belül azonos.</details>
+<details><summary>Mit válaszolsz, ha azt kérdezik: „az első három kézi futtatást miért hagytad ki?”</summary>Nem hagytam ki: a 6.1 mutatja őket, és a táblázat mindkét nézetet közli. A beállt szakasz azért a viszonyítási alap, mert a lassúság két oka (gyorsítótár és gyakorlat) azonosítható, és mindkettő kifutott a 4. futtatásra.</details>
+<details><summary>Mi történik, ha egy CSV-ben javítasz egy számot?</summary>Újrafuttatod a scriptet, és mind a négy ábra frissül. Ha a javítás után a lépések összege nem egyezik a teljes idővel, a script megáll.</details>
+</div>
+
+<footer class="page"><span>Utoljára frissítve: 2026. október 5.</span><span>Forrás: scripts/abrak-6-fejezet.py, bizonyitek/meres/*.csv, lepesidok.md, auto-lepesidok.md, hiba-lepesidok.md</span></footer>
+</div>
+<script src="assets/tananyag.js"></script>
+</body>
+</html>

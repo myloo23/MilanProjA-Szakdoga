@@ -84,6 +84,7 @@ Forrás: `kezi-sorozat.csv`, `lepesidok.md`.
 
 > **Ábra 6.1** — futtatásonkénti teljes idő a sorszám függvényében (K), a beállt
 > szakasz jelölésével. Ez mutatja a „tanulási hatást", amit a 00-terv kér.
+> **Kész:** `abrak/abra-6-1-kezi-tanulasi-gorbe.png` (`scripts/abrak-6-fejezet.py`).
 
 **Mire figyelj:** a korai futtatások lassúsága **nem csak tanulás**. A backend build
 az 1–2. futtatásban 35 és 24 mp, utána 10–12 mp: ez a réteg-gyorsítótár
@@ -94,8 +95,10 @@ bemelegedése, gépi ok. A 6.2-ben szétválasztva írd le (`lepesidok.md` 5. so
   szakaszban), gépelés-és-olvasás (12–13.), build (5–8.). Forrás: `lepesidok.md`
   „Három tétel, három viselkedés".
 
-> **Ábra 6.2** — halmozott oszlop a 13 lépésre, a beállt szakasz mediánjaival,
-> gépi / emberi színezéssel.
+> **Ábra 6.2** — a 13 lépés a beállt szakasz mediánjaival, gépi / emberi színezéssel.
+> **Kész:** `abrak/abra-6-2-kezi-lepesbontas.png`. Halmozott oszlop helyett lépésenkénti
+> vízszintes sáv, mert 14 szelet egy oszlopban olvashatatlan. Az aláírásba: a
+> lépésmediánok összege nem a teljes idő mediánja, az ábra a lépéseket veti össze.
 
 ### 6.2.3 Helyreállítás (H1–H3)
 - A beinjektált hiba: `/echo` érvényes JSON-ra 500; `/health`, `/ready` ép, tehát a
@@ -125,6 +128,7 @@ bemelegedése, gépi ok. A 6.2-ben szétválasztva írd le (`lepesidok.md` 5. so
 
 > **Ábra 6.3** — halmozott oszlop futtatásonként: F+B1+J+D1 (futtató költsége),
 > kapuk, build+push, D3 kivárás, D4 ellenőrzés. Egy ábrán látszik, hogy a sáv a B5-ből jön.
+> **Kész:** `abrak/abra-6-3-auto-szakaszok.png` (a B5 külön színnel és felirattal).
 
 ### 6.3.3 Helyreállítás (A0 és A1–A3)
 - **A0:** ugyanaz a hiba, változtatás nélkül → a pytest 3 teszten bukik, a deploy
@@ -177,6 +181,12 @@ bemelegedése, gépi ok. A 6.2-ben szétválasztva írd le (`lepesidok.md` 5. so
 
 > **Ábra 6.4** — két oszloppár (telepítési szakasz, kiesés) gépi / emberi
 > részre bontva. Ez a fejezet fő ábrája.
+> **Kész:** `abrak/abra-6-4-osszevetes.png`. Módszer, ezt a 6.1-ben vagy az
+> aláírásban ki kell mondani: a bontás a **medián futtatás** valódi szakaszait mutatja
+> (kézi telepítés: 4. futtatás, automatizált: 3., kézi kiesés: H2, automatizált: A2),
+> nem a szakaszmediánok összegét — az utóbbi a kézi kiesésnél 53 mp-et adna az 56
+> helyett. Az automatizált telepítési oszlop szakaszai tizedes logidőkből 23,5 mp,
+> a ráírt 24 mp a CSV egész másodperces értéke.
 
 **Ne írd le:** „X-szer gyorsabb", „Y %-os javulás" a teljes időre. A 24/31 és a
 26/56 arány közölhető, de mindig a sávval és a 6.5 korlátaival együtt.
