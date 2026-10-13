@@ -285,3 +285,78 @@ footer.page { margin-top: 4rem; font-size: .85rem; color: var(--muted); display:
 .card h3 a { color: inherit; text-decoration: none; }
 .card h3 a::after { content: " →"; color: var(--accent); }
 .card h3 a:hover { color: var(--accent); }
+
+/* ---- 2026-10-05: rövidített tananyagok ---- */
+nav.top { flex-wrap: wrap; }
+nav.top .navpair { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+footer.page + nav.top { margin-top: 1.5rem; margin-bottom: 0; }
+
+/* „Röviden” doboz a lap tetején */
+.tldr {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 10px;
+  padding: .8rem 1.1rem;
+  margin: 1.25rem 0;
+}
+.tldr > strong:first-child { display: block; color: var(--accent); margin-bottom: .2rem; }
+.tldr ul { margin: .2rem 0 0; padding-left: 1.2rem; }
+
+/* Döntés-doboz: Döntés / Miért / Nélküle / Hol */
+.dontes {
+  background: var(--violet-soft);
+  border-radius: 10px;
+  padding: .8rem 1.1rem;
+  margin: 1.25rem 0;
+}
+.dontes .d-cim { font-weight: 700; color: var(--violet); margin: 0 0 .3rem; }
+.dontes .d-cim::before { content: "Döntés · "; font-weight: 600; opacity: .8; }
+.dontes p { margin: .3rem 0; }
+.dontes b { color: var(--text); }
+.dontes .d-hol { font-size: .82rem; color: var(--muted); margin-top: .4rem; }
+
+/* Tanulás közbeni kérdés */
+details.q {
+  border: 1px dashed var(--accent);
+  border-radius: 8px;
+  padding: .55rem .9rem;
+  margin: .8rem 0;
+  background: var(--surface);
+}
+details.q summary { cursor: pointer; font-weight: 600; }
+details.q summary::before {
+  content: "Kérdés";
+  display: inline-block;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 4px;
+  padding: .05rem .4rem;
+  margin-right: .5rem;
+  vertical-align: .1em;
+}
+details.q.vedes summary::before { content: "Védésen"; color: var(--warn); background: var(--warn-soft); }
+details.q[open] summary { margin-bottom: .35rem; }
+details.q p { margin: .35rem 0; }
+
+/* Állapotjelzők */
+.badge { display: inline-block; font-size: .75rem; font-weight: 700; border-radius: 4px; padding: .05rem .45rem; }
+.badge.ok { color: var(--ok); background: var(--ok-soft); }
+.badge.wait { color: var(--warn); background: var(--warn-soft); }
+.badge.out { color: var(--muted); background: var(--surface-2); }
+
+/* Szám-csempék */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: .7rem; margin: 1rem 0; }
+.stats div { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: .7rem .9rem; }
+.stats .v { display: block; font-size: 1.35rem; font-weight: 700; }
+.stats .l { font-size: .82rem; color: var(--muted); }
+
+/* Képek (a 6. fejezet ábrái) */
+figure img { display: block; width: 100%; height: auto; border-radius: 6px; background: #fff; }
+
+/* Napi terv az index oldalon */
+.nap { font-size: .8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin: 2rem 0 -.6rem; }

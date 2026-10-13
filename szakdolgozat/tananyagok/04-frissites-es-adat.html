@@ -3,38 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>4. Frissítés és adat</title>
+<title>4. Frissítés, visszaállás, adat</title>
 <link rel="stylesheet" href="assets/tananyag.css">
 </head>
 <body>
 <div class="wrap">
+<nav class="top"><a href="index.html">☰ Térkép</a><span class="navpair"><a href="03-helm.html">← 3. Helm</a><a href="05-halozat-es-frontend.html">5. Hálózat és frontend →</a></span></nav>
+<p class="eyebrow">4. tananyag · ~13 perc · a dolgozat 4.3, 5.3 és 5.4 alfejezete</p>
+<h1>Frissítés, visszaállás, adat</h1>
+<p class="lead">Hogyan cserél verziót a Kubernetes leállás nélkül, hogyan áll vissza a pipeline, és hol van ténylegesen az adatbázis.</p>
 
-<nav class="top"><a href="03-helm.html">← 3. Helm</a><a href="05-halozat-es-frontend.html">Következő: Hálózat és frontend →</a></nav>
-
-<p class="eyebrow">4. tananyag · 4. és 6. nap</p>
-<h1>Frissítés kiesés nélkül, és adat, ami megmarad</h1>
-<p class="lead">Miért nem állt le semmi a rossz image tagnél, miért frissül másképp a Postgres, és hol van fizikailag az adatbázis.</p>
-
-<div class="goals">
-  <h2>A végére ezt fogod érteni</h2>
-  <ul>
-    <li>Lépésről lépésre, hogyan cseréli a RollingUpdate a podokat, és mi tartja a forgalmat közben.</li>
-    <li>Miért ragadt be a rossz verzió leállás nélkül, és miért nem állt vissza magától.</li>
-    <li>Miért <code>Recreate</code> a Postgres stratégiája.</li>
-    <li>Mi a PVC, hol vannak ténylegesen az adatok, és mi mit él túl.</li>
-  </ul>
-</div>
+<div class="tldr"><strong>Röviden</strong>
+<ul>
+<li>A RollingUpdate csak akkor állít le régi podot, ha van helyette kész új. Ennek a kivárása kb. 20 mp, kézzel és a pipeline-ban is.</li>
+<li>A pipeline telepítés előtt feljegyzi, mi fut, és hiba esetén pontosan oda áll vissza, majd ezt ellenőrzi is.</li>
+<li>A Postgres <code>Recreate</code>-tel frissül, az adata egy PVC-n van, amit a Helm sosem töröl.</li>
+</ul></div>
 
 <h2 id="rolling">1. RollingUpdate: csere működés közben</h2>
-
-<p>A Deployment alapértelmezett frissítési stratégiája a <strong>RollingUpdate</strong>. Két beállítás szabályozza:</p>
-<div class="table-wrap"><table>
-<tr><th>Beállítás</th><th>Jelentés</th><th>Alapérték</th><th>2 replikánál</th></tr>
-<tr><td><code>maxSurge</code></td><td>hány pod lehet a kívánton <em>felül</em> csere közben</td><td>25%</td><td>0,5 → felfelé kerekítve <strong>1</strong></td></tr>
-<tr><td><code>maxUnavailable</code></td><td>hány pod hiányozhat a kívántból csere közben</td><td>25%</td><td>0,5 → lefelé kerekítve <strong>0</strong></td></tr>
-</table></div>
-<p>Két replikánál tehát egyszerre legfeljebb 3 pod létezik, és <strong>soha nem lehet 2-nél kevesebb ready pod</strong>. Régi podot csak akkor állít le, ha egy új már ready lett.</p>
-
+<p>Két replikánál: <code>maxSurge</code> = 1 (egy pod lehet a kívánton felül), <code>maxUnavailable</code> = 0 (soha nem lehet kevesebb kész pod). Régi pod csak akkor áll le, ha egy új már ready.</p>
 <div class="stepper" data-captions="Kiindulás: a régi verzió (v1) két podja fut, mindkettő kap kérést.|<code>helm upgrade</code>: új ReplicaSet (v2) jön létre. A maxSurge = 1 miatt egy új pod indul. Még nem ready, ezért nem kap kérést. A forgalom továbbra is a két régire megy.|Az új pod readiness probe-ja sikeres: bekerül a Service mögé. Most 3 pod szolgál ki.|Mivel van egy ready új pod, egy régi leállhat (maxUnavailable = 0 mellett is marad 2 ready). A Service azonnal kiveszi a régi podot a forgalomból.|Indul a második új pod. Közben 1 régi + 1 új szolgál ki.|A második új is ready, az utolsó régi leáll. Kész: 2 új pod, a v1 ReplicaSet 0-ra csökkent, de megmaradt a rollbackhez.">
 <figure>
 <svg viewBox="0 0 640 230" role="img" aria-label="RollingUpdate lépései">
@@ -85,10 +72,13 @@
 <div class="caption"></div>
 </div>
 
-<h2 id="rossz">2. Mi történt a rossz image tagnél</h2>
+<div class="box thesis"><strong>A mérésben ez a „gépi kivárás”</strong>
+A két Deployment cseréjének kivárása kézzel (10–11. lépés, <code>kubectl rollout status</code>) 19–22 mp, a pipeline-ban (<code>helm upgrade --wait</code>) 19,5–22,0 mp. Ugyanaz a tétel, mert ugyanaz a Kubernetes csinálja. Ezt a mérés előtt megjósoltad, és így lett.</div>
 
-<p>A <code>--set image.tag=abc1234</code> után a folyamat a fenti 2. lépésnél elakadt. Az új pod soha nem lett ready, mert a képet sem tudta letölteni. A RollingUpdate szabálya viszont az, hogy régi podot csak akkor állít le, ha van helyette ready új. Így a két régi pod érintetlenül futott tovább.</p>
+<details class="q"><summary>Két replikánál legfeljebb hány pod van egyszerre csere közben?</summary>
+<p>Három. A <code>maxSurge</code> 25%-a a 2-nek 0,5, ezt felfelé kerekíti 1-re. A <code>maxUnavailable</code> 25%-a lefelé kerekítve 0.</p></details>
 
+<h2 id="beragad">2. A rossz verzió beragad, de nem áll vissza magától</h2>
 <figure>
 <svg viewBox="0 0 640 170" role="img" aria-label="Beragadt frissítés">
   <defs><marker id="d2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-ok"/></marker></defs>
@@ -103,17 +93,33 @@
 </svg>
 <figcaption>Pontosan ezt mutatta a <code>kubectl get pods</code>: két régi pod <code>1/1</code>, egy új <code>ImagePullBackOff</code>. A felhasználók semmit nem vettek észre.</figcaption>
 </figure>
+<p>Nem létező image tagnél az új pod sosem lesz ready, a két régi kiszolgál tovább, a felhasználó nem vesz észre semmit. A Deployment viszont ebben az állapotban marad: visszaállni nem fog magától.</p>
 
-<div class="box key"><strong>Nem áll vissza magától</strong>
-A Deployment ebben az állapotban ragad. 10 perc után (<code>progressDeadlineSeconds: 600</code>) „elakadtnak” jelöli magát, de visszaállni akkor sem fog. A visszaállás a te döntésed volt: <code>helm rollback projecta 2</code>. A pipeline-ban erre való a Helm várakozó és hiba esetén automatikusan visszaállító kapcsolója (a <code>--wait</code> mellett Helm 3-ban <code>--atomic</code>, Helm 4-ben <code>--rollback-on-failure</code>, ezt a pipeline építésekor ellenőrizzük a te verziódon).</div>
+<div class="dontes"><p class="d-cim"><code>helm upgrade --wait</code>, de nem <code>--atomic</code></p>
+<p><b>Miért:</b> a <code>--wait</code> megvárja, hogy minden pod kész legyen (ez váltja ki a kézi 10–11. lépést). Az <code>--atomic</code> a Helm saját ítéletére automatikusan visszaállna, de pont azt a hibát nem látja, ami a dolgozatot érdekli: a podok egészségesek, az alkalmazás mégis rossz.</p>
+<p><b>Így:</b> a visszaállítás egy külön, kimondott és külön mért lépés a füstteszt után.</p>
+<p class="d-hol">Hol: <code>ci.yml</code>, „Deploy the artifact this pipeline built” lépés kommentje</p></div>
 
-<div class="box thesis"><strong>A dolgozat szempontjából: mit mérsz a helyreállításnál?</strong>
-A „hibás telepítés utáni helyreállítás ideje” a hiba észlelésétől addig tart, amíg a jó verzió ismét teljesen kiszolgál (minden pod <code>1/1</code>, a <code>/version</code> a jó SHA-t adja). A <code>helm history</code> időbélyege csak azt mutatja, mikor futtattad a parancsot, ezért ehhez nem elég. És mivel a rossz verzió itt leállást sem okozott, érdemes külön mérni azt az esetet is, amikor a hibás verzió <em>elindul</em>, de rosszul működik. Ott a readiness nem fogja meg a hibát.</div>
+<h2 id="rollback">3. A pipeline visszaállítása, lépésenként</h2>
+<ol>
+<li><strong>Feljegyzi, mi fut most:</strong> <code>helm get values</code> → <code>PREV_TAG</code>. Ha üres, megáll: nincs ismert cél, ahová vissza lehetne állni.</li>
+<li><strong>Telepít:</strong> egy jelölőfájlt ír (<code>/tmp/deploy-attempted</code>), majd <code>helm upgrade --install … --wait</code>.</li>
+<li><strong>Ellenőriz:</strong> <code>/version</code> az új SHA-t adja? A füstteszt minden ellenőrzése a várt választ adja? Bármelyik bukik → piros.</li>
+<li><strong>Csak hiba esetén:</strong> ha van jelölőfájl, <code>helm rollback --wait</code>, utána <em>ugyanaz</em> az ellenőrzés a <code>PREV_TAG</code>-re.</li>
+</ol>
 
-<h2 id="recreate">3. Recreate: amikor két példány egyszerre tilos</h2>
+<div class="dontes"><p class="d-cim">Ismert célra áll vissza, és bizonyítja</p>
+<p><b>Miért:</b> a cél egy azonosító, amit a job a telepítés előtt rögzített, nem nyomás alatt kitalált érték. A „visszaállt” azt jelenti, hogy a régi verzió válaszol az ingressen, nem azt, hogy a Helm kiírt egy sikersort.</p>
+<p><b>Az eredmény:</b> az A1–A3 futtatásban a rollback mindháromszor az <code>e4da1d9</code>-re lépett vissza, és ezt a pipeline maga igazolta.</p>
+<p class="d-hol">Hol: ADR-0003 (az elv), ADR-0009, <code>ci.yml</code></p></div>
 
-<p>A backend <strong>állapotmentes</strong>: minden adatot az adatbázisban tart, ezért két verziója nyugodtan futhat egymás mellett. A Postgres nem ilyen. Két Postgres-folyamat nem írhatja egyszerre ugyanazt az adatkönyvtárat, mert az adat megsérülne. (A Postgres ezt egy zárolófájllal próbálja megakadályozni, de erre nem akarsz építeni.) Ezért a Postgresnél a stratégia <strong>Recreate</strong>: előbb leáll a régi, és csak utána indul az új.</p>
+<details class="q"><summary>Mit csinál a rollback lépés, ha a hiba már a telepítés előtt történt (pl. elszállt egy pip-telepítés)?</summary>
+<p>Semmit. Nincs jelölőfájl, tehát nem telepített semmit, így nem görget vissza egy egészséges kiadást. Különben a pipeline okozná azt a kiesést, amit meg kellene előznie.</p></details>
 
+<details class="q vedes"><summary>„Sikeres rollback után miért piros a futás?”</summary>
+<p>Mert a változtatás nem ment ki. Egy sikeres visszaállás nem sikeres telepítés; ha zöld lenne, elfedné, hogy a commit nincs élesben.</p></details>
+
+<h2 id="recreate">4. A Postgres: előbb a régi áll le</h2>
 <figure>
 <svg viewBox="0 0 640 220" role="img" aria-label="RollingUpdate és Recreate idővonala">
   <text x="20" y="30" class="t-bold">RollingUpdate (backend)</text>
@@ -132,13 +138,12 @@ A „hibás telepítés utáni helyreállítás ideje” a hiba észlelésétől
 <figcaption>A Recreate ára egy rövid kiesés. Nálad ilyenkor a backend podok <code>0/1</code>-re váltanak (a readiness nem éri el a DB-t), majd maguktól visszaállnak.</figcaption>
 </figure>
 
-<div class="box whatif"><strong>Mi lett volna, ha…</strong>
-…a Postgres is RollingUpdate-tel frissülne? Az új pod el akarna indulni, miközben a régi még fut. Mivel a kötet <code>ReadWriteOnce</code>, jó esetben az új pod nem is tudja csatolni, és a frissítés beragad. Rossz esetben (ha ugyanazon a node-on vannak) mindkettő hozzáfér, és ez az adatkönyvtár sérüléséhez vezethet.</div>
+<div class="dontes"><p class="d-cim">A Postgres stratégiája <code>Recreate</code></p>
+<p><b>Miért:</b> két Postgres-folyamat nem írhatja egyszerre ugyanazt az adatkönyvtárat. A rövid, tervezett kiesés kisebb kockázat, mint egy sérült adatbázis.</p>
+<p><b>A backend miért nem:</b> állapotmentes, minden adatot a DB-ben tart, két verziója nyugodtan futhat egymás mellett.</p>
+<p class="d-hol">Hol: <code>chart/templates/postgres.yaml</code></p></div>
 
-<h2 id="pvc">4. Hol van ténylegesen az adatbázis?</h2>
-
-<p>A pod eldobható, és a konténer fájlrendszere vele együtt eltűnik. Az adatnak ezért egy <strong>kötetre</strong> (volume) van szüksége, ami túléli a podot. Ennek három szereplője van:</p>
-
+<h2 id="pvc">5. Hol van az adat</h2>
 <figure>
 <svg viewBox="0 0 640 260" role="img" aria-label="PVC, PV és a tényleges tárhely">
   <defs><marker id="d3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
@@ -161,8 +166,8 @@ A „hibás telepítés utáni helyreállítás ideje” a hiba észlelésétől
   <path d="M410,70 L456,70" class="line" marker-end="url(#d3)"/>
 
   <rect x="300" y="150" width="320" height="90" rx="10" class="n-2"/>
-  <text x="460" y="176" text-anchor="middle" class="t-bold">node-konténer lemeze</text>
-  <text x="460" y="198" text-anchor="middle" class="t-mono t-small">k3d-szakdoga-agent-0 (vagy server-0)</text>
+  <text x="460" y="176" text-anchor="middle" class="t-bold">a gép lemeze</text>
+  <text x="460" y="198" text-anchor="middle" class="t-mono t-small">szakdoga2-vm (egyetlen node)</text>
   <text x="460" y="220" text-anchor="middle" class="t-mono t-small t-muted">/var/lib/rancher/k3s/storage/…</text>
   <path d="M540,110 L540,146" class="line" marker-end="url(#d3)"/>
 
@@ -173,47 +178,18 @@ A „hibás telepítés utáni helyreállítás ideje” a hiba észlelésétől
 </svg>
 <figcaption>A PVC (PersistentVolumeClaim) egy igény („kell 2 GiB tárhely”), a PV (PersistentVolume) a kiszolgált tárhely. A pod csak a PVC nevét ismeri, azt nem, hogy a tárhely fizikailag hol van.</figcaption>
 </figure>
-
-<h3>Mi mit él túl?</h3>
 <div class="table-wrap"><table>
-<tr><th>Esemény</th><th>A jegyzetek megmaradnak?</th><th>Miért</th></tr>
-<tr><td><code>kubectl delete pod postgres-…</code></td><td>✅ igen</td><td>a PVC és a PV független a podtól, az új pod ugyanazt csatolja</td></tr>
-<tr><td><code>helm upgrade</code> (Postgres újraindul)</td><td>✅ igen</td><td>ugyanaz, mint fent</td></tr>
-<tr><td><code>helm uninstall projecta</code></td><td>✅ igen</td><td>a <code>helm.sh/resource-policy: keep</code> miatt a Helm nem törli a PVC-t</td></tr>
-<tr><td><code>k3d cluster stop</code> / <code>start</code></td><td>✅ igen</td><td>a node-konténerek lemeze megmarad</td></tr>
-<tr><td><code>kubectl delete pvc postgres-data</code></td><td>❌ nem</td><td>a local-path PV törlődik a PVC-vel</td></tr>
-<tr><td><code>k3d cluster delete szakdoga</code></td><td>❌ nem</td><td>a node-konténerek a lemezükkel együtt törlődnek</td></tr>
+<tr><th>Esemény</th><th>Megmaradnak a jegyzetek?</th></tr>
+<tr><td>pod törlése, <code>helm upgrade</code></td><td>✅ a PVC független a podtól</td></tr>
+<tr><td><code>helm uninstall projecta</code></td><td>✅ a <code>helm.sh/resource-policy: keep</code> miatt a PVC marad</td></tr>
+<tr><td><code>az vm deallocate</code> / <code>start</code></td><td>✅ a gép lemeze megmarad</td></tr>
+<tr><td>a gép cseréje (Terraform)</td><td>❌ a local-path kötet a gép lemezén van; 09-30-án pont ez történt</td></tr>
 </table></div>
 
-<div class="box whatif"><strong>Mi lett volna, ha…</strong>
-…nincs <code>helm.sh/resource-policy: keep</code> a PVC-n? Egy <code>helm uninstall projecta</code> mindent törölne, amit a chart létrehozott, a PVC-t is, és vele minden jegyzetet. A <code>keep</code> miatt a Helm ezt az egy erőforrást kihagyja a törlésből. Ha tényleg törölni akarod, azt külön, tudatosan kell megtenned.</div>
-
-<div class="box key"><strong>Tudatos egyszerűsítés</strong>
-Az adatbázis egyetlen node lemezén van, mentés nélkül. Ez egy fejlesztői fürtön rendben van. Éles környezetben menedzselt adatbázis vagy hálózati tárhely és rendszeres mentés kellene. Ez a továbbfejlesztési fejezetbe tartozik, a mérést nem érinti.</div>
-
-<h2 id="kviz">Ellenőrizd magad</h2>
-<div class="quiz">
-<details><summary>2 replikánál legfeljebb hány pod létezik egyszerre egy frissítés alatt, és miért?</summary><p>3. A maxSurge 25%-a a 2-nek 0,5, amit a Kubernetes felfelé kerekít 1-re: a kívánt 2 fölött egy pod lehet.</p></details>
-<details><summary>Miért nem okozott leállást a rossz image tag?</summary><p>Mert a maxUnavailable 0 volt (a 25% lefelé kerekítve). Régi pod csak akkor áll le, ha egy új ready lett, és az új soha nem lett ready.</p></details>
-<details><summary>Visszaáll magától a Deployment egy beragadt frissítés után?</summary><p>Nem. 10 perc után elakadtnak jelöli magát, de a visszaállást neked (vagy a pipeline-nak) kell elindítani.</p></details>
-<details><summary>Miért elfogadható a Recreate kiesése a Postgresnél?</summary><p>Mert az alternatíva, hogy két példány egyszerre írja ugyanazt az adatkönyvtárat, adatsérülést okozhat. Egy pár másodperces, tervezett kiesés kisebb kockázat, mint egy sérült adatbázis.</p></details>
-<details><summary><code>helm uninstall</code> után újratelepíted a chartot. Megvannak a jegyzetek?</summary><p>Igen. A PVC a <code>keep</code> miatt megmaradt, és az új telepítés ugyanazzal a névvel (<code>postgres-data</code>) keresi, így ugyanazt a kötetet kapja meg.</p></details>
-</div>
-
-<h2 id="szotar">Szótár</h2>
-<div class="table-wrap"><table>
-<tr><th>Fogalom</th><th>Egy mondatban</th></tr>
-<tr><td>RollingUpdate</td><td>fokozatos csere: az új podok addig jönnek, amíg a régiek kiszolgálnak</td></tr>
-<tr><td>Recreate</td><td>előbb minden régi leáll, utána indulnak az újak</td></tr>
-<tr><td>maxSurge / maxUnavailable</td><td>mennyivel lehet több / kevesebb pod a kívántnál csere közben</td></tr>
-<tr><td>állapotmentes</td><td>nem tárol adatot magában; bármikor eldobható és többszörözhető</td></tr>
-<tr><td>PVC</td><td>tárhelyigény („kell 2 GiB”)</td></tr>
-<tr><td>PV</td><td>a kiszolgált tárhely; nálad egy mappa a node lemezén</td></tr>
-<tr><td>ReadWriteOnce</td><td>a kötetet egyszerre csak egy node csatolhatja írásra</td></tr>
-<tr><td>resource-policy: keep</td><td>a Helm törléskor ezt az erőforrást meghagyja</td></tr>
-</table></div>
-
-<footer class="page"><a href="03-helm.html">← 3. Helm</a><a href="05-halozat-es-frontend.html">Következő: Hálózat és frontend →</a></footer>
+<details class="q vedes"><summary>„Mi van, ha elvész az adatbázis?”</summary>
+<p>Ebben a rendszerben nincs mentés: az adat egyetlen gép lemezén van. Ez tudatos egyszerűsítés, a mérést nem érinti (a mért adat a repóban van, nem a DB-ben). Élesben menedzselt adatbázis vagy hálózati tárhely és rendszeres mentés kellene → 7. fejezet.</p></details>
+<footer class="page"><span>Frissítve: 2026. október 5. · a repó <code>release/meres</code> ágának állapota szerint</span><span>Forrás: chart/templates/, .gitea/workflows/ci.yml (deploy job), ADR-0003, ADR-0009, docs/RUNBOOK.md, 06-merogep-ujraepitese.md</span></footer>
+<nav class="top"><a href="index.html">☰ Térkép</a><span class="navpair"><a href="03-helm.html">← 3. Helm</a><a href="05-halozat-es-frontend.html">5. Hálózat és frontend →</a></span></nav>
 </div>
 <script src="assets/tananyag.js"></script>
 </body>

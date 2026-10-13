@@ -5,175 +5,123 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>12. A döntések térképe</title>
 <link rel="stylesheet" href="assets/tananyag.css">
-<style>
-td:first-child{font-weight:600;min-width:11rem}
-td{vertical-align:top}
-</style>
 </head>
 <body>
 <div class="wrap">
-
-<nav class="top"><a href="11-a-6-fejezet-abrai.html">← 11. A 6. fejezet ábrái</a><a href="index.html">Tananyagtérkép →</a></nav>
-
-<p class="eyebrow">12. tananyag · ADR-0001 … ADR-0010, 01-megvalositasi-terv.md D1–D9, napló · a dolgozat 3.6 és 3.8 alfejezete</p>
+<nav class="top"><a href="index.html">☰ Térkép</a><span class="navpair"><a href="11-a-6-fejezet-abrai.html">← 11. A 6. fejezet ábrái</a><a href="13-probavedes.html">13. Próbavédés →</a></span></nav>
+<p class="eyebrow">12. tananyag · ~15 perc · ismétlés · a dolgozat 3.6 és 3.8 alfejezete</p>
 <h1>A döntések térképe</h1>
-<p class="lead">A projekt minden fontos döntése egy helyen: mit döntöttél, miért, mi lett volna nélküle, és hol van leírva. A többi tananyag az eszközöket tanítja; ez azt, amit a védésen <em>meg kell védened</em>.</p>
+<p class="lead">Minden fontos döntés egy helyen, egy-egy sorban: mit, miért, mi lenne nélküle, és melyik tananyagban van részletesen. Ismétlésnek való, miután végigmentél a többin.</p>
 
-<div class="goals">
-  <h2>A végére ezt fogod tudni</h2>
-  <ul>
-    <li>Minden döntésre egy mondatban: miért így, és mi az elvetett alternatíva.</li>
-    <li>Melyik döntés melyik fejezetbe megy, és melyik fájl bizonyítja.</li>
-    <li>Milyen sorrendben érdemes végigmenni az egész projekten.</li>
-  </ul>
-</div>
+<div class="tldr"><strong>Hogyan használd</strong>
+<ul>
+<li>Takard le a „Miért” oszlopot, és mondd el magadtól. Ha nem megy, nyisd meg a jelölt tananyagot.</li>
+<li>Egy döntést az véd meg, ha meg tudod mondani, mi romlana el nélküle.</li>
+<li>A közös mérce: a mérés két oldala csak az automatizálásban különbözzön.</li>
+</ul></div>
 
-<nav class="toc"><strong>Tartalom</strong>
-<ol>
-  <li><a href="#utvonal">Tanulási útvonal</a></li>
-  <li><a href="#terkep">A döntések hat csoportja</a></li>
-  <li><a href="#infra">Infrastruktúra és fürt</a></li>
-  <li><a href="#app">Alkalmazás</a></li>
-  <li><a href="#pipeline">Pipeline és telepítés</a></li>
-  <li><a href="#lanc">Ellátási lánc</a></li>
-  <li><a href="#megfigyeles">Megfigyelhetőség</a></li>
-  <li><a href="#meres">Mérés</a></li>
-  <li><a href="#kimaradt">Ami tudatosan kimaradt</a></li>
-</ol>
-</nav>
-
-<h2 id="utvonal">1. Tanulási útvonal</h2>
-<p>Ebben a sorrendben építkezik egymásra. Minden lépés után nyisd meg a hozzá tartozó fájlt a repóban, és keresd meg benne, amit a tananyag mond — a védésen a kódról kérdeznek, nem a tananyagról.</p>
-
-<figure>
-<svg viewBox="0 0 640 230" role="img" aria-label="A tananyagok javasolt sorrendje négy szakaszban">
-  <defs><marker id="u12" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
-  <rect x="5" y="20" width="145" height="190" rx="10" class="n-accent"/>
-  <text x="77" y="46" text-anchor="middle" class="t-bold">1. Kép</text>
-  <text x="77" y="72" text-anchor="middle" class="t-small">00 a projekt</text>
-  <text x="77" y="90" text-anchor="middle" class="t-small">egyszerűen</text>
-  <text x="77" y="120" text-anchor="middle" class="t-small">README</text>
-  <text x="77" y="190" text-anchor="middle" class="t-small t-muted">fél nap</text>
-  <line x1="150" y1="115" x2="163" y2="115" class="line" marker-end="url(#u12)"/>
-  <rect x="165" y="20" width="145" height="190" rx="10" class="n-violet"/>
-  <text x="237" y="46" text-anchor="middle" class="t-bold">2. A fürt</text>
-  <text x="237" y="72" text-anchor="middle" class="t-small">01 Kubernetes</text>
-  <text x="237" y="90" text-anchor="middle" class="t-small">02 probe-ok</text>
-  <text x="237" y="108" text-anchor="middle" class="t-small">03 Helm</text>
-  <text x="237" y="126" text-anchor="middle" class="t-small">04 frissítés, adat</text>
-  <text x="237" y="144" text-anchor="middle" class="t-small">05 hálózat</text>
-  <text x="237" y="162" text-anchor="middle" class="t-small">07 Terraform</text>
-  <text x="237" y="190" text-anchor="middle" class="t-small t-muted">2–3 nap</text>
-  <line x1="310" y1="115" x2="323" y2="115" class="line" marker-end="url(#u12)"/>
-  <rect x="325" y="20" width="145" height="190" rx="10" class="n-warn"/>
-  <text x="397" y="46" text-anchor="middle" class="t-bold">3. A lánc</text>
-  <text x="397" y="72" text-anchor="middle" class="t-small">08 pipeline,</text>
-  <text x="397" y="90" text-anchor="middle" class="t-small">biztonság</text>
-  <text x="397" y="108" text-anchor="middle" class="t-small">10 megfigyelés</text>
-  <text x="397" y="126" text-anchor="middle" class="t-small">06 hibaelhárítás</text>
-  <text x="397" y="190" text-anchor="middle" class="t-small t-muted">1–2 nap</text>
-  <line x1="470" y1="115" x2="483" y2="115" class="line" marker-end="url(#u12)"/>
-  <rect x="485" y="20" width="150" height="190" rx="10" class="n-bad"/>
-  <text x="560" y="46" text-anchor="middle" class="t-bold">4. A bizonyítás</text>
-  <text x="560" y="72" text-anchor="middle" class="t-small">09 mérés, védés</text>
-  <text x="560" y="90" text-anchor="middle" class="t-small">11 ábrák</text>
-  <text x="560" y="108" text-anchor="middle" class="t-small">12 döntések</text>
-  <text x="560" y="126" text-anchor="middle" class="t-small">(ez az oldal)</text>
-  <text x="560" y="190" text-anchor="middle" class="t-small t-muted">1–2 nap</text>
-</svg>
-<figcaption>A 3. és a 4. szakasz közben olvasd a <code>szakdolgozat/naplo.md</code>-t is: ott a saját szavaiddal van leírva minden lépés, és a dolgozat szövegének is ez lesz a nyersanyaga.</figcaption>
-</figure>
-
-<h2 id="terkep">2. A döntések hat csoportja</h2>
-<p>Minden táblázatban a negyedik oszlop a forrás: ha a bíráló rákérdez, oda nyúlsz. A harmadik oszlop a legfontosabb a védésre — egy döntést az véd meg, ha meg tudod mondani, mi romlana el nélküle.</p>
-
-<h2 id="infra">3. Infrastruktúra és fürt</h2>
+<h2 id="infra">1. Infrastruktúra és fürt</h2>
 <div class="table-wrap"><table>
-<tr><th>Döntés</th><th>Miért</th><th>Mi lenne nélküle / az alternatívával</th><th>Hol</th></tr>
-<tr><td>k3s, egyetlen csomóponton</td><td>A dolgozat tárgya a telepítési lánc, nem a fürt üzemeltetése. A k3s tanúsított Kubernetes, ugyanaz az API és a <code>kubectl</code>.</td><td>Menedzselt Kubernetes (AKS): fizetős, és a vezérlősík nem lenne a saját kezedben. Több csomópont a mért időt nem változtatja, csak a gépigényt.</td><td>ADR-0008, D1</td></tr>
-<tr><td>Azure VM, Terraformmal</td><td>A Terraform-fejezet csak valódi erőforrással ér valamit; az Azure for Students 0 Ft.</td><td>Helyi VM-mel a Terraform csak a fürt belsejét írná le — gyengébb fejezet (ez volt a B terv).</td><td>D2, <code>terraform/</code></td></tr>
-<tr><td>A Terraform csak az infrastruktúrát kezeli</td><td>A gépek és a hálózat a Terraformé, a fürtben futó objektumok a Helmé.</td><td>Ha a Terraform az appot is telepítené, összemosódna azzal a telepítési lánccal, amit mérsz.</td><td>D4</td></tr>
-<tr><td>k3s a cloud-initből</td><td>A fürt a <code>terraform apply</code> eredménye, kézi lépés nélkül.</td><td>Kézi telepítéssel a gép újraépítése után a fürt nem lenne reprodukálható. 2026-09-30-án élesben bizonyított.</td><td>ADR-0008, napló 3.1</td></tr>
-<tr><td>Minden egy gépen (Gitea, runner, registry, fürt)</td><td>A fürtnek el kell érnie a registryt; a laptopos <code>localhost:5001</code>-et egy felhős gép nem látja.</td><td>Két gép dupla költség és hálózati réteg. Az ár: a CI terheli a mért gépet — ez a 6.5 korlátja, a kézi oldalnak kedvez, tehát a javulás alsó becslés.</td><td>D5, ADR-0008</td></tr>
-<tr><td><code>ignore_changes = [custom_data]</code></td><td>Az azurerm-ben a cloud-init változása gépcserét jelent.</td><td>Egy tűzfalszabály-módosítás törölte és újraépítette a gépet (2026-09-30). Gépcsere ezentúl csak kimondott <code>-replace</code>-szel.</td><td><code>terraform/main.tf</code>, 06-merogep-ujraepitese.md</td></tr>
+<tr><th>Döntés</th><th>Miért / mi lenne nélküle</th><th>Hol</th></tr>
+<tr><td>k3s, egy csomópont</td><td>A téma a telepítési lánc, nem a fürt. AKS: fizetős, a vezérlősík nem a tiéd; több node a mért időt nem változtatja.</td><td>ADR-0008, D1 · <a href="01-kubernetes-alapok.html">1.</a></td></tr>
+<tr><td>k3d a laptopon, mérés az Azure-on</td><td>Gyors, ingyenes kísérletezés; a mérés valódi, kódból létrehozott környezetben.</td><td>D3 · <a href="01-kubernetes-alapok.html">1.</a></td></tr>
+<tr><td>Azure VM Terraformmal</td><td>A Terraform-fejezet csak valódi erőforrással ér valamit; Azure for Students, 0 Ft.</td><td>D2 · <a href="07-terraform.html">7.</a></td></tr>
+<tr><td>Terraform csak infrastruktúra</td><td>Ha az appot is telepítené, összemosódna a mért lánccal.</td><td>D4 · <a href="07-terraform.html">7.</a></td></tr>
+<tr><td>k3s cloud-initből</td><td>A fürt kézi lépés nélkül áll fel; a gépcserénél élesben bizonyult.</td><td>ADR-0008 · <a href="07-terraform.html">7.</a></td></tr>
+<tr><td>Statikus IP</td><td>Beépül a k3s tanúsítványába és a kubeconfigba.</td><td><a href="07-terraform.html">7.</a></td></tr>
+<tr><td>NSG csak a saját IP-ről</td><td>Az appban nincs hitelesítés; idegen írás meghamisíthatná a mérést.</td><td><a href="05-halozat-es-frontend.html">5.</a></td></tr>
+<tr><td><code>ignore_changes = [custom_data]</code></td><td>Egy tűzfal-<code>apply</code> törölte a gépet; gépcsere csak kimondott <code>-replace</code>-szel.</td><td>napló 3.1 · <a href="07-terraform.html">7.</a></td></tr>
+<tr><td>Minden egy gépen</td><td>A fürtnek el kell érnie a registryt. Ár: a CI a mért gépet terheli → korlát, a mérés alatt nincs push a <code>main</code>-re.</td><td>D5 · <a href="00-a-projekt-egyszeruen.html">0.</a></td></tr>
+<tr><td>Registry <code>localhost:</code>, TLS nélkül</td><td>A containerd a loopback-registryt kivételként kezeli; cáfolási próbával bizonyítva.</td><td>napló 2.4 · <a href="01-kubernetes-alapok.html">1.</a></td></tr>
 </table></div>
 
-<h2 id="app">4. Alkalmazás</h2>
+<details class="q"><summary>Melyik döntésnek van a legnagyobb ára, és hogyan kezeled?</summary>
+<p>A „minden egy gépen”: a pipeline ugyanazt a gépet terheli, amit mérsz. Kezelés: a mérés alatt nem ment push a <code>main</code>-re, minden futtatás előtt pontosan 3 platformkonténer futott (E9), és a dolgozat korlátként kimondja. A kézi oldalnak kedvez, tehát a javulás alsó becslés.</p></details>
+
+<h2 id="app">2. Alkalmazás</h2>
 <div class="table-wrap"><table>
-<tr><th>Döntés</th><th>Miért</th><th>Mi lenne nélküle / az alternatívával</th><th>Hol</th></tr>
-<tr><td>Vite + React, nem Next.js</td><td>Statikus fájlok egy nginx mögött: triviális, gyorsan induló konténer.</td><td>A Next.js SSR futó Node-folyamatot, saját health-végpontot és környezetkezelést jelentene — bonyolítás egy olyan részért, ami eszköz, nem cél.</td><td>D6</td></tr>
-<tr><td>Egy entitás CRUD-ja</td><td>Indokolja az adatbázist és az állapotkezelést, de nem szabadul el.</td><td>Nagyobb alkalmazással a dolgozat súlya a 3–6. fejezetről az appra csúszna.</td><td>D8</td></tr>
-<tr><td><code>/version</code> a build SHA-jával</td><td>Ez a mérés elfogadási kritériuma: a telepítés akkor kész, ha az új SHA válaszol.</td><td>Nélküle „működik” csak benyomás lenne, és a két oldal nem ugyanazt az elfogadást mérné.</td><td>D8, <code>app/app.py</code></td></tr>
-<tr><td>PostgreSQL saját manifestben, PVC-n</td><td>Húsz sor saját YAML, amit érted.</td><td>Külső (Bitnami) chart: idegen verzióváltások, és olyan objektumok, amiket nem tudnál megmagyarázni.</td><td>D7, <code>chart/templates/postgres.yaml</code></td></tr>
-<tr><td>A readiness nézi az adatbázist, a liveness nem</td><td>A readiness bukása csak kiveszi a podot a forgalomból; a liveness bukása újraindítja.</td><td>Ha a liveness is az adatbázist nézné, egy adatbázis-kiesés újraindítási hurokba küldené az összes replikát.</td><td><code>app/app.py</code>, 02. tananyag</td></tr>
-<tr><td>nginx proxyzza az <code>/api</code>-t</td><td>A böngésző egy címről kér mindent.</td><td>Külön backend-cím: CORS-beállítás, és a böngészőnek tudnia kellene, hol fut a backend.</td><td><code>frontend/nginx.conf</code></td></tr>
+<tr><th>Döntés</th><th>Miért / mi lenne nélküle</th><th>Hol</th></tr>
+<tr><td>Vite + React, nem Next.js</td><td>Statikus fájlok nginx mögött. SSR: futó Node, plusz health és környezetkezelés.</td><td>D6 · <a href="05-halozat-es-frontend.html">5.</a></td></tr>
+<tr><td>Egy entitás CRUD-ja</td><td>Indokolja az adatbázist, de nem szabadul el; a súly a 3–6. fejezeten marad.</td><td>D8</td></tr>
+<tr><td><code>/version</code> a build SHA-jával</td><td>Ez az elfogadási feltétel. Nélküle a „működik” benyomás.</td><td>D8 · <a href="09-meres-es-vedes.html">9.</a></td></tr>
+<tr><td>Saját Postgres-manifest PVC-n</td><td>Húsz sor, amit értesz; egy külső chart idegen objektumokat hozna.</td><td>D7 · <a href="04-frissites-es-adat.html">4.</a></td></tr>
+<tr><td>Readiness nézi a DB-t, liveness nem</td><td>Különben DB-kiesésnél minden replika újraindítási hurokba kerül.</td><td><a href="02-konfiguracio-es-probe.html">2.</a></td></tr>
+<tr><td>Séma init containerben</td><td>Két replika egyszerre ne migráljon; a sémahiba az indulás előtt derüljön ki.</td><td><a href="02-konfiguracio-es-probe.html">2.</a></td></tr>
+<tr><td>Jelszó Secretben, nem a chartban</td><td>A chart gitbe kerül, a git története örökre megőrizné.</td><td><a href="02-konfiguracio-es-probe.html">2.</a></td></tr>
+<tr><td>Postgres <code>Recreate</code>, PVC <code>keep</code></td><td>Két példány nem írhatja egyszerre az adatkönyvtárat; uninstall ne vigye az adatot.</td><td><a href="04-frissites-es-adat.html">4.</a></td></tr>
+<tr><td>nginx proxyzza az <code>/api</code>-t</td><td>Nincs CORS, nincs beégetett backend-cím; egy kép minden környezetben.</td><td><a href="05-halozat-es-frontend.html">5.</a></td></tr>
+<tr><td>Nem-root konténerek</td><td>Projekt-szabály; a chart <code>runAsNonRoot</code>-tal ki is kényszeríti.</td><td><a href="05-halozat-es-frontend.html">5.</a></td></tr>
 </table></div>
 
-<h2 id="pipeline">5. Pipeline és telepítés</h2>
+<h2 id="pipeline">3. Pipeline és telepítés</h2>
 <div class="table-wrap"><table>
-<tr><th>Döntés</th><th>Miért</th><th>Mi lenne nélküle / az alternatívával</th><th>Hol</th></tr>
-<tr><td>Saját Gitea + act_runner</td><td>A cím „saját üzemeltetésű” CI/CD-t ígér; GitHub Actions-kompatibilis YAML.</td><td>GitHub Actions: nem saját üzemeltetés, és a runner nem érné el a gépen futó registryt.</td><td>ADR-0001</td></tr>
-<tr><td>Egyszer építünk, SHA-címkével</td><td>A telepítés pontosan azt a képet húzza le, amit a pipeline épített és átvizsgált.</td><td><code>latest</code>-tel nem tudnád, mi fut, és a rollbacknek nem lenne ismert célja.</td><td>ADR-0002</td></tr>
-<tr><td>GitHub a review-ra, Gitea a futtatásra</td><td>Egyik sem tudja mindkettőt: a Gitea nem érhető el a bírálóknak, a GitHubon nincs runner.</td><td>Egy fórummal vagy a review, vagy a futtatás hiányozna.</td><td>ADR-0004</td></tr>
-<tr><td>A vezérlési szerkezet az act_runner tudásához igazodik</td><td>Előbb kipróbáltuk (spike), mit tud ténylegesen.</td><td>Feltételezett funkciókra épített pipeline (pl. <code>fromJSON()</code> fan-out) csendben rosszul futna.</td><td>ADR-0005</td></tr>
-<tr><td>Helm váltja az Ansible-t a telepítésben</td><td>A mért kézi oldal is Helmmel telepít; egy release, egy kapcsoló mozgatja az egész appot.</td><td>Ha a pipeline Ansible–Docker maradt volna, a két oldal más célt mérne — a mérés értelmét vesztené.</td><td>ADR-0009 (felülírja az ADR-0003 telepítési részét)</td></tr>
-<tr><td>Az ellenőrzés kapu, és ismert célra áll vissza</td><td>A deploy előtt rögzítjük a futó verziót (<code>PREV_TAG</code>); bukott ellenőrzésnél <code>helm rollback</code>, majd ugyanaz az ellenőrzés a régi SHA-ra.</td><td>Ellenőrzés nélkül a hibás verzió élesben maradna; cél nélkül a rollback nem bizonyítaná, hova állt vissza.</td><td>ADR-0003, ADR-0009, <code>ci.yml</code></td></tr>
-<tr><td>Helm a hoszt hálózatán (<code>helm-on-host.sh</code>)</td><td>A k3s API tanúsítványa a 127.0.0.1-et nevezi meg, nem a Docker-híd címét.</td><td>A runner konténeréből a híd felé a TLS-ellenőrzés bukna; a kikapcsolása biztonsági hiba lenne.</td><td><code>scripts/helm-on-host.sh</code></td></tr>
-<tr><td>Sikeres rollback után is piros a futás</td><td>A változtatás nem ment ki, ez bukott telepítés.</td><td>Zölddel elfedné, hogy a commit nincs élesben.</td><td>RUNBOOK</td></tr>
-<tr><td>Feature ág épít és szkennel, de nem pushol</td><td>A registryben csak telepíthető, átnézett artifakt van.</td><td>Átnézetlen képek a registryben, amiket véletlenül telepíteni lehetne.</td><td><code>ci.yml</code>, <code>ref_gate</code></td></tr>
+<tr><th>Döntés</th><th>Miért / mi lenne nélküle</th><th>Hol</th></tr>
+<tr><td>Saját Gitea + act_runner</td><td>Saját üzemeltetés; a runner eléri a gépen futó registryt és fürtöt.</td><td>ADR-0001 · <a href="08-pipeline-biztonsag-megfigyeles.html">8.</a></td></tr>
+<tr><td>GitHub review, Gitea futtatás</td><td>Egyik sem tudja mindkettőt.</td><td>ADR-0004</td></tr>
+<tr><td>Vezérlés az act_runner valós tudásához</td><td>Előbb spike; feltételezett funkcióra épített pipeline csendben rosszul futna.</td><td>ADR-0005</td></tr>
+<tr><td>Egyszer építünk, SHA-taggel</td><td>Az megy ki, ami átment a kapukon; a rollbacknek ismert célja van.</td><td>ADR-0002</td></tr>
+<tr><td>Feature ág nem pushol</td><td>A registryben csak átnézett, telepíthető kép.</td><td><code>ref_gate</code></td></tr>
+<tr><td>Helm váltja az Ansible-t</td><td>Különben a pipeline más célpontra telepített volna, mint a kézi oldal.</td><td>ADR-0009 · <a href="03-helm.html">3.</a></td></tr>
+<tr><td>Helm 3.22.0 mindkét oldalon</td><td>Más verzió egy második változó lenne az ágnév mellett.</td><td><code>helm-on-host.sh</code> · <a href="03-helm.html">3.</a></td></tr>
+<tr><td>Helm a gép hálózatán</td><td>A k3s tanúsítványa a <code>127.0.0.1</code>-et nevezi meg; a TLS kikapcsolása hiba lenne.</td><td><a href="03-helm.html">3.</a></td></tr>
+<tr><td><code>--wait</code>, de nem <code>--atomic</code></td><td>Az <code>--atomic</code> a Helm ítéletére állna vissza, de a vizsgált hibát (egészséges pod, rossz app) nem látja; a rollback külön mért lépés.</td><td><a href="04-frissites-es-adat.html">4.</a></td></tr>
+<tr><td>Ellenőrzés kapu, ismert célra áll vissza</td><td><code>PREV_TAG</code> a telepítés előtt; rollback után ugyanaz az ellenőrzés a régi SHA-ra.</td><td>ADR-0003, -0009 · <a href="04-frissites-es-adat.html">4.</a></td></tr>
+<tr><td>Sikeres rollback után is piros</td><td>A változtatás nem ment ki; a zöld elfedné.</td><td>RUNBOOK · <a href="04-frissites-es-adat.html">4.</a></td></tr>
+<tr><td>Átvétel az ingressen át</td><td>A Traefik és az nginx is ellenőrzött, mint a kézi oldalon.</td><td><a href="05-halozat-es-frontend.html">5.</a></td></tr>
 </table></div>
 
-<h2 id="lanc">6. Ellátási lánc</h2>
+<details class="q"><summary>Mit csinál a deploy job, ha az ellenőrzés bukik?</summary>
+<p><code>helm rollback --wait</code> a telepítés előtt rögzített revízióra, utána ugyanaz az ellenőrzés a régi SHA-ra. A futás piros marad.</p></details>
+
+<h2 id="lanc">4. Ellátási lánc</h2>
 <div class="table-wrap"><table>
-<tr><th>Döntés</th><th>Miért</th><th>Mi lenne nélküle / az alternatívával</th><th>Hol</th></tr>
-<tr><td>Hash-sel rögzített függőségek, digesttel rögzített alapképek</td><td>Ugyanabból a commitból mindig ugyanaz épül.</td><td>Két különböző napon két különböző image — a reprodukálhatóság állítása nem állna meg.</td><td><code>requirements*.txt</code>, Dockerfile-ok</td></tr>
-<tr><td>Rögzített eszközverziók (Trivy 0.72.0, hadolint v2.14.0)</td><td>Egy piros futás a változtatásnak tulajdonítható legyen, ne annak, hogy a szkenner frissült.</td><td>Olyan piros pipeline, amit senki nem okozott — ez szoktat rá a kapu figyelmen kívül hagyására.</td><td><code>ci.yml</code> kommentjei</td></tr>
-<tr><td>A kapu nem lazul</td><td>Ha a Trivy változatlan kódra pirosra vált, az alapképet léptetjük, nem kivételt adunk.</td><td>Egy kikapcsolt kapu után a „mindkét kép átment” állítás hamis lenne. Három eset 14 nap alatt (napló 2.7, 3.1, 3.2).</td><td>napló 3.1–3.2</td></tr>
-<tr><td>Léptetés csak ellenőrzés után (<code>pin-base-images.sh</code>)</td><td>Előbb szkennel, csak tiszta eredmény után írja át a FROM sorokat.</td><td>Egy vakon beírt új digest nem javít semmit, ha a kiadó még nem építette újra a képet.</td><td>08. tananyag, napló 3.2</td></tr>
-<tr><td>A frontend kapui a mérés után kerültek be</td><td>A mérés alatt egy új kapu mérési futtatásokat égetett volna el.</td><td>A mért pipeline (<code>e4da1d9</code>) így változatlan maradt; a 6.1-ben ki kell mondani.</td><td>napló 3.2</td></tr>
-<tr><td>Az SBOM a mérőgépen készül, a futó képből</td><td>Az SBOM annyit ér, amennyire bizonyított, hogy a futó artifaktról szól.</td><td>A laptopon épített SBOM arm64 képet írt le, nem a fürtön futó amd64-et — ez a második generációnál ki is derült.</td><td><code>docs/sbom/README.md</code>, napló 2.9</td></tr>
+<tr><th>Döntés</th><th>Miért / mi lenne nélküle</th><th>Hol</th></tr>
+<tr><td>Hash- és digest-rögzítés</td><td>Ugyanabból a commitból mindig ugyanaz épül.</td><td><a href="08-pipeline-biztonsag-megfigyeles.html">8.</a></td></tr>
+<tr><td>Rögzített eszközverziók</td><td>A piros a változtatásé legyen, ne a szkenner frissülésé.</td><td><a href="08-pipeline-biztonsag-megfigyeles.html">8.</a></td></tr>
+<tr><td>Küszöb: javított HIGH/CRITICAL</td><td>Olyanon bukjon, amit egy léptetés megszüntet.</td><td><a href="08-pipeline-biztonsag-megfigyeles.html">8.</a></td></tr>
+<tr><td>A kapu nem lazul</td><td>Kivétel után a „mindkét kép átment” állítás hamis lenne. Három eset 14 nap alatt.</td><td>napló 3.1–3.2</td></tr>
+<tr><td>Léptetés csak ellenőrzés után</td><td>Vakon beírt digest nem javít, ha a kiadó még nem építette újra.</td><td><code>pin-base-images.sh</code></td></tr>
+<tr><td>Frontend kapuk a mérés után</td><td>Közben mérési futtatásokat égetett volna el; a mért pipeline az <code>e4da1d9</code>.</td><td>napló 3.2</td></tr>
+<tr><td>SBOM a mérőgépen, a futó képből</td><td>A laptopos SBOM <code>arm64</code>-et írt le, nem a futó <code>amd64</code>-et.</td><td>napló 2.9</td></tr>
+<tr><td>Nincs cosign</td><td>A mért láncot változtatta volna; az 5.5 enélkül is áll.</td><td>napló 3.0</td></tr>
 </table></div>
 
-<h2 id="megfigyeles">7. Megfigyelhetőség</h2>
+<h2 id="megfigyeles">5. Megfigyelés</h2>
 <div class="table-wrap"><table>
-<tr><th>Döntés</th><th>Miért</th><th>Mi lenne nélküle / az alternatívával</th><th>Hol</th></tr>
-<tr><td>Loki, nem ELK</td><td>Csak címkéket indexel; kis gépen elfut.</td><td>Az Elasticsearch egy működő csomópontja ~2 GB heap — a 8 GB-os gép nagy része egy nem használt képességre.</td><td>ADR-0006</td></tr>
-<tr><td>A <code>request_id</code> naplómező, nem címke</td><td>A címkék szorzódnak: minden új érték új idősor.</td><td>Kérésenként egy új idősor — a Prometheus és a Loki is szétesne a kardinalitástól.</td><td>ADR-0007</td></tr>
-<tr><td>A megfigyelő réteg a fürtön kívül, a k3s API-n át</td><td>A meglévő dashboardok és riasztás változatlanok; a Prometheus csak-olvasó ServiceAccounttal találja meg a podokat.</td><td>A fürtbe költöztetés új telepítési réteg lett volna a mérés lezárása előtt.</td><td>ADR-0010</td></tr>
-<tr><td>A mérés alatt nem futott</td><td>A mért gépen pontosan három konténer volt minden futtatás előtt.</td><td>Ha futott volna, terhelné a gépet, és torzíthatná az időket.</td><td>ADR-0010, compose.azure.yaml</td></tr>
+<tr><th>Döntés</th><th>Miért / mi lenne nélküle</th><th>Hol</th></tr>
+<tr><td>Loki, nem ELK</td><td>Kis gépen elfut; ELK ~2 GB memória.</td><td>ADR-0006</td></tr>
+<tr><td><code>request_id</code> mező, nem címke</td><td>Különben kérésenként új idősor.</td><td>ADR-0007</td></tr>
+<tr><td>Kívülről, k3s API-n át, csak-olvasó fiókkal</td><td>A meglévő dashboardok maradnak; nem kell a mérés előtt új telepítési réteg.</td><td>ADR-0010 · <a href="10-megfigyeles-a-furton.html">10.</a></td></tr>
+<tr><td>A mérés alatt nem futott</td><td>Nem terhelhette a mért gépet (E9).</td><td><a href="10-megfigyeles-a-furton.html">10.</a></td></tr>
 </table></div>
 
-<h2 id="meres">8. Mérés</h2>
+<h2 id="meres">6. Mérés</h2>
 <div class="table-wrap"><table>
-<tr><th>Döntés</th><th>Miért</th><th>Mi lenne nélküle / az alternatívával</th><th>Hol</th></tr>
-<tr><td>Mindkét oldal ugyanarra a fürtre</td><td>A különbség csak az automatizálásból jöhet.</td><td>Compose kontra Kubernetes esetén a platform különbségét is mérnéd — ezt szedné szét elsőként a bíráló.</td><td>00-terv 5. pont</td></tr>
-<tr><td>Rögzített 13 lépéses kézi protokoll</td><td>A beavatkozások száma így szám, nem benyomás.</td><td>„Kézzel telepítettem” nem mérhető.</td><td>bizonyitek/04-kezi-telepitesi-folyamat.md</td></tr>
-<tr><td>Az elolvasás és döntés is beavatkozás — mindkét oldalon</td><td>A protokoll előre így definiálta; utólag nem írjuk át.</td><td>Ha csak az egyik oldalon számítana, az a mérés legtámadhatóbb pontja lenne. Ezért 13 a 2 ellen, és 19 a 2 ellen.</td><td>napló, „A két nyitott kérdés”</td></tr>
-<tr><td>Két időt közlünk: teljest és telepítési szakaszt</td><td>A teljes időben az automatizálás lassabb, a telepítési szakaszban gyorsabb; a kettő együtt igaz.</td><td>Csak az egyikkel vagy azt állítanád, hogy 1,8-szor lassabb, vagy elhallgatnád.</td><td>napló, 6. vázlat</td></tr>
-<tr><td>A beállt szakasz (4–10.) a kézi viszonyítási alap</td><td>Az első három futtatás lassúságának két oka (gyorsítótár, gyakorlat) azonosítható, és kifutott.</td><td>Mindkét nézetet közöljük, így nem lehet válogatással vádolni.</td><td>lepesidok.md</td></tr>
-<tr><td>Rejtett hiba az A1–A3-ban, az A0 a kontroll</td><td>A visszaállító lépést kellett mérni, nem a tesztkaput.</td><td>Rejtés nélkül a hiba ki sem megy (A0), és nincs mit visszaállítani. Ha nem mondod ki, „kicsalt rollback” lesz a kérdés.</td><td>auto-hiba-nyers-jegyzet.md</td></tr>
-<tr><td>A bontás a medián futtatásé</td><td>Az oszlop hossza egyezzen a ráírt számmal.</td><td>A szakaszmediánok összege 53 mp lenne az 56 helyett.</td><td>11. tananyag</td></tr>
-<tr><td>Minden bizonyíték azonnal a repóba</td><td>A mérés ne a gépen múljon.</td><td>A 2026-09-30-i gépcsere a mérést is elvitte volna.</td><td>napló 3.1</td></tr>
+<tr><th>Döntés</th><th>Miért / mi lenne nélküle</th><th>Hol</th></tr>
+<tr><td>Ugyanaz a fürt mindkét oldalon</td><td>Különben a platform különbségét is mérnéd.</td><td><a href="09-meres-es-vedes.html">9.</a></td></tr>
+<tr><td>Rögzített 13 lépéses kézi protokoll</td><td>A beavatkozások száma így szám, nem benyomás.</td><td><code>04-kezi-…md</code></td></tr>
+<tr><td>A SHA változóba olvasva (4. lépés)</td><td>A kézi oldalnak kedvez → a javulás alsó becslés.</td><td><code>04-kezi-…md</code></td></tr>
+<tr><td>Build a mérőgépen, nem a laptopon</td><td>Különben a két gép teljesítményét is mérnéd.</td><td><code>04-kezi-…md</code></td></tr>
+<tr><td>Olvasás = beavatkozás, mindkét oldalon</td><td>Előre így definiálva; 13 vs 2, 19 vs 2.</td><td><a href="09-meres-es-vedes.html">9.</a></td></tr>
+<tr><td>Két idő: teljes és telepítési szakasz</td><td>A kettő együtt igaz.</td><td><a href="09-meres-es-vedes.html">9.</a></td></tr>
+<tr><td>Beállt szakasz + mind a tíz közölve</td><td>Az ok azonosított; nem lehet válogatással vádolni.</td><td><a href="09-meres-es-vedes.html">9.</a></td></tr>
+<tr><td>Rejtett hiba (A1–A3) + A0 kontroll</td><td>A rollbacket kellett mérni; az A0 mutatja a tesztkapu értékét.</td><td><a href="09-meres-es-vedes.html">9.</a></td></tr>
+<tr><td>Medián és sáv, nem átlag és százalék</td><td>10 és 3 elemű minta.</td><td><a href="09-meres-es-vedes.html">9.</a></td></tr>
+<tr><td>Medián futtatás az ábrán</td><td>Az oszlop hossza egyezzen a ráírt számmal.</td><td><a href="11-a-6-fejezet-abrai.html">11.</a></td></tr>
+<tr><td>Bizonyíték azonnal a repóba</td><td>A gépcsere különben a mérést is elvitte volna.</td><td>napló 3.1</td></tr>
+<tr><td>Ami a mérés után jött, nem kerül a mért számokba</td><td>B5-gyorsítótár, frontend kapuk, cosign: mind a 7. fejezetbe, mert a mért láncot változtatnák.</td><td>napló 2.7, 3.0, 3.2</td></tr>
 </table></div>
 
-<h2 id="kimaradt">9. Ami tudatosan kimaradt — a 7. fejezet</h2>
-<div class="box whatif"><strong>Mindegyikre ugyanaz a válasz szerkezete</strong>
-Mit adna → miért nem most → mi a helye. Képaláírás (cosign): garantálná, hogy csak a pipeline által épített kép fut; a mért láncot változtatta volna meg. GitOps (Argo CD/Flux), többcsomópontos fürt, automatikus skálázás, távoli Terraform-state, a platform (Gitea, runner) automatikus visszaépítése, a lint-függőségek gyorsítótárazása a B5-szórás ellen. Egy jól megírt 7. fejezet, amely pontosan megmondja, mi hiányzik és miért, többet ér egy félkész megoldásnál.</div>
+<h2 id="kimaradt">7. Ami tudatosan kimaradt (7. fejezet)</h2>
+<p>Mindegyikre ugyanaz a válaszszerkezet: <strong>mit adna → miért nem most → hol a helye.</strong> Képaláírás (cosign); GitOps (Argo CD/Flux); többcsomópontos fürt; automatikus skálázás; távoli Terraform-state; a platform (Gitea, runner) automatikus visszaépítése; a lint-függőségek gyorsítótárazása; migrációs eszköz (Alembic); adatbázis-mentés; fürtön belüli megfigyelés pod-szintű CPU/memóriával.</p>
 
-<div class="box story"><strong>A védésen egy mondatban</strong>
-„Minden döntésnél az volt a mérce, hogy a mérés két oldala csak az automatizálásban különbözzön — ahol ez nem sikerült teljesen, azt a dolgozat maga mondja ki, és méréssel mutatja, hogy nem torzít.”</div>
+<details class="q vedes"><summary>„Mi az a döntés, amit ma másképp csinálna?”</summary>
+<p>Az <code>apply</code> előtti terv elolvasását kezdettől szabállyá tenném, és az <code>ignore_changes</code> blokkot már az első géphez beírnám: a gépcsere elkerülhető lett volna. A frontend kapuit is a mérés <em>előtt</em> építeném be, nem utána, hogy a mért pipeline-ban már benne legyenek.</p></details>
 
-<h2 id="kviz">Ellenőrizd magad</h2>
-<div class="quiz">
-<details><summary>Miért nem menedzselt Kubernetes (AKS)?</summary>Fizetős, a vezérlősík nem a sajátod, és a dolgozat tárgya a telepítési lánc, nem a fürt. A k3s ugyanazt az API-t adja egy gépen.</details>
-<details><summary>Miért van minden egy gépen, és mi ennek az ára?</summary>A fürtnek el kell érnie a registryt. Az ár: a pipeline terheli a mért gépet; ez a kézi oldalnak kedvez, tehát a javulás alsó becslés.</details>
-<details><summary>Mit csinál a deploy job, ha az ellenőrzés bukik?</summary><code>helm rollback --wait</code> a deploy előtt rögzített revízióra, majd ugyanaz az ellenőrzés a régi SHA-ra. A futás piros marad.</details>
-<details><summary>Miért nem adtál kivételt a pcre2-találatra?</summary>Mert akkor a „mindkét kép átment a sérülékenységi kapun” állítás nem lenne igaz. Az alapkép léptetése a helyes út, és a script csak tiszta eredmény után léptet.</details>
-<details><summary>Miért beavatkozás a kimenet elolvasása?</summary>A protokoll előre így definiálta, és mindkét oldalon ugyanúgy számoljuk. Utólag átírni a legkönnyebben támadható pont lenne.</details>
-<details><summary>Miért nem Next.js a frontend?</summary>A Vite statikus fájlokat ad egy nginx mögé; az SSR futó Node-folyamatot és plusz konténert jelentene egy olyan részért, ami eszköz, nem cél.</details>
-</div>
-
-<footer class="page"><span>Utoljára frissítve: 2026. október 5.</span><span>Forrás: docs/adr/, szakdolgozat/01-megvalositasi-terv.md, naplo.md, ci.yml, terraform/main.tf</span></footer>
+<div class="box key"><strong>A védésen egy mondatban</strong>
+Minden döntésnél az volt a mérce, hogy a mérés két oldala csak az automatizálásban különbözzön. Ahol ez nem sikerült teljesen, azt a dolgozat maga mondja ki, és méréssel mutatja, hogy nem torzít.</div>
+<footer class="page"><span>Frissítve: 2026. október 5. · a repó <code>release/meres</code> ágának állapota szerint</span><span>Forrás: docs/adr/ (0001–0010), 01-megvalositasi-terv.md D1–D9, naplo.md, ci.yml, terraform/main.tf</span></footer>
+<nav class="top"><a href="index.html">☰ Térkép</a><span class="navpair"><a href="11-a-6-fejezet-abrai.html">← 11. A 6. fejezet ábrái</a><a href="13-probavedes.html">13. Próbavédés →</a></span></nav>
 </div>
 <script src="assets/tananyag.js"></script>
 </body>

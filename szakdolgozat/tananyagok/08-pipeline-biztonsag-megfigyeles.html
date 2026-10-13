@@ -3,31 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>8. Pipeline, biztonság, megfigyelés</title>
+<title>8. Pipeline és ellátási lánc</title>
 <link rel="stylesheet" href="assets/tananyag.css">
 </head>
 <body>
 <div class="wrap">
+<nav class="top"><a href="index.html">☰ Térkép</a><span class="navpair"><a href="07-terraform.html">← 7. Terraform</a><a href="09-meres-es-vedes.html">9. A mérés →</a></span></nav>
+<p class="eyebrow">8. tananyag · ~15 perc · a dolgozat 5.1–5.5 alfejezete</p>
+<h1>Pipeline és ellátási lánc</h1>
+<p class="lead">Mi fut a futószalagon, miért pont így, és hogyan védi a szoftvert azoktól a hibáktól, amiket nem te írtál.</p>
 
-<nav class="top"><a href="07-terraform.html">← 7. Terraform</a><a href="09-meres-es-vedes.html">9. Mérés és védés →</a></nav>
+<div class="tldr"><strong>Röviden</strong>
+<ul>
+<li>Két job: <code>build-test-push</code> (minőség, csomagolás, szkennelés) és <code>deploy</code> (Helm, ellenőrzés, rollback).</li>
+<li>A kép egyszer épül, a neve a commit SHA-ja, és pontosan az megy ki, amit teszteltél.</li>
+<li>A rögzítés azt garantálja, hogy ugyanaz épül újra; a Trivy azt, hogy amit építesz, arról ma nem tudunk súlyos, javítható hibát. Az első egyszeri, a második folyamatos.</li>
+</ul></div>
 
-<p class="eyebrow">8. tananyag · a futószalag belülről</p>
-<h1>Pipeline, biztonság, megfigyelés</h1>
-<p class="lead">A három rész, amit a gyakornokságban építettél, és ami most a szakdolgozat 5. fejezete lesz. Röviden: mi fut a futószalagon, hogyan védi a szoftvert, és hogyan látod, mi történik éles üzemben.</p>
-
-<div class="goals">
-  <h2>A végére ezt fogod tudni</h2>
-  <ul>
-    <li>A pipeline két jobja és mit csinál mindegyik.</li>
-    <li>Miért épül a kép <em>egyszer</em>, és miért a commit SHA a neve.</li>
-    <li>Mi a függőségrögzítés, az SBOM és a Trivy — és miért „jár le” a zöld szkennelés.</li>
-    <li>Mi a különbség metrika és napló között, és mire jó a Prometheus, a Loki és a Grafana.</li>
-  </ul>
-</div>
-
-<h2 id="ket-job">1. A pipeline két részből áll</h2>
-<p>A pipeline a <code>.gitea/workflows/ci.yml</code> fájlban van. Két „job”-ra (munkára) oszlik. A második csak akkor indul, ha az első zöld.</p>
-
+<h2 id="jobok">1. A két job</h2>
 <div class="stepper" data-captions="<strong>1. job: build-test-push — minőség.</strong> Stílusellenőrzés (<code>ruff</code>), jelszókeresés a kódban (Trivy secret scan), a Dockerfile ellenőrzése (<code>hadolint</code>), tesztek legalább 80%-os lefedettséggel (<code>pytest</code>), az Ansible-fájlok ellenőrzése (<code>ansible-lint</code>). Ha bármelyik bukik, itt megáll minden.|<strong>Csomagolás.</strong> Megépül a backend és a frontend képe. A kép címkéje (tag) a commit rövid SHA-ja, és a <code>GIT_SHA</code> bekerül a képbe is — ezért tudja a <code>/version</code> megmondani, melyik kódból épült.|<strong>Próbaindítás.</strong> Mielőtt a kép a raktárba menne, a pipeline egyszer elindítja, megvárja, hogy „egészséges” legyen, és ránéz hálózaton. Egy kép, ami el sem indul, nem kerülhet a registrybe.|<strong>Trivy képszkennelés, majd push.</strong> Ha a képben súlyos ismert sérülékenység van, a futás piros. Ha tiszta, a kép a registrybe kerül.|<strong>2. job: deploy — telepítés.</strong> Először feljegyzi, melyik verzió fut most (ez kell a rollbackhez). Aztán <code>helm upgrade --install --wait</code>: telepít, és megvárja, amíg minden pod kész.|<strong>Átvétel.</strong> A <code>/version</code> az új SHA-t adja? A füstteszt minden ellenőrzése a várt választ adja? Itt nem ember dönt: egyetlen rossz válasz is pirosra állítja a futást.|<strong>Rollback, ha kell.</strong> Csak hiba esetén fut (<code>if: failure()</code>). Előbb megnézi, <em>telepített-e egyáltalán valamit</em> — ha a hiba korábban történt, nem görget vissza egy egészséges verziót. Ha igen: <code>helm rollback</code>, és az előző verzió áll vissza.">
 <figure>
 <svg viewBox="0 0 640 250" role="img" aria-label="A pipeline két jobja lépésenként">
@@ -55,19 +48,35 @@
 </div>
 <div class="caption"></div>
 </div>
+<p>Az első job sorrendje: ruff → Trivy titokkeresés → hadolint (backend <em>és</em> frontend Dockerfile) → pytest 80%-os lefedettségi kapuval → ansible-lint → két image build → próbaindítás (health gate) → Trivy mindkét képen → push. A második job a 4. tananyagban leírt telepítés–ellenőrzés–visszaállítás.</p>
 
-<h3>Melyik ágon indul?</h3>
-<p>Csak a <code>main</code>, <code>release/**</code>, <code>feature/**</code> és <code>hotfix/**</code> ágakon. Minden más ágon — például a <code>meres/kezi-*</code> ágakon — <strong>nem indul futószalag</strong>. Ezen múlik a mérés: a kézi futtatásoknál a <code>meres/…</code> ágra pusholtál, így nem indult pipeline; az automatizáltaknál a <code>release/meres</code> ágra, így igen. Ugyanaz a gép, ugyanaz a fürt, ugyanaz a chart — a szándékos különbség az ágnév. (Két nem szándékos is van, az alapkép digestje és az image-építő; hogy miért nem számít, a <a href="09-meres-es-vedes.html">9. tananyag</a> védési kérdései között van.)</p>
+<div class="dontes"><p class="d-cim">Egy workflow, két job, <code>needs:</code> kapcsolattal</p>
+<p><b>Miért:</b> a runnernek egyszerre egy munkahelye van (<code>capacity: 1</code>). Két külön workflow bármilyen sorrendben indulhatna, és a telepítés egy még fel sem töltött képre várna. A <code>needs:</code> a sorrendet ténnyé teszi.</p>
+<p class="d-hol">Hol: <code>ci.yml</code> fejléce</p></div>
 
-<div class="box key"><strong>Build egyszer, telepítés ugyanabból (ADR-0002)</strong>
-A pipeline egyszer építi meg a képet, és utána <em>pontosan azt</em> telepíti. Nem építi újra a szerveren. Így ami kimegy, az garantáltan az, amit teszteltél és szkenneltél. A név a commit SHA-ja, tehát bármelyik futó verzióról megmondod, melyik kódból jött.</div>
+<div class="dontes"><p class="d-cim">Egyszer építünk, a tag a commit SHA</p>
+<p><b>Miért:</b> a telepítés pontosan azt a képet húzza le, amit a pipeline épített, tesztelt és szkennelt. A SHA-ból bármikor tudod, melyik kód fut, és a rollbacknek ismert célja van. A <code>GIT_SHA</code> a képbe is bekerül, ezt mondja vissza a <code>/version</code>.</p>
+<p><b>Az alternatívával:</b> <code>latest</code>-tel nem tudnád, mi fut; ha a szerveren újraépítenéd, nem az menne ki, ami átment a kapukon.</p>
+<p class="d-hol">Hol: ADR-0002</p></div>
 
-<div class="box story"><strong>Ami a mérés előtt derült ki (napló 2.7)</strong>
-A deploy job korábban Ansible-lel egy sima Docker konténert telepített — <em>nem</em> a Kubernetes-fürtre. Ha így méred, a kézi és az automatizált oldal más-más helyre telepít, és az összehasonlítás hamis. Ezért állt át a job Helmre (ADR-0009). Közben kiderült, hogy a frontend képe nem is épült, és a <code>/version</code> <code>dev</code>-et adott volna. Mindhármat a mérés <em>előtt</em> javítottad.</div>
+<details class="q"><summary>Miért kellett a <code>GIT_SHA</code> build-argumentumot külön javítani a mérés előtt?</summary>
+<p>A pipeline nélküle épített, és a <code>/version</code> <code>dev</code>-et adott volna. Az automatizált oldal így nem tudta volna teljesíteni azt az elfogadási feltételt, amit a kézi igen.</p></details>
 
-<h2 id="biztonsag">2. Az ellátási lánc biztonsága — négy réteg</h2>
-<p>A szoftvered nagy része nem a te kódod: könyvtárak (Flask, psycopg…) és egy alapkép (<code>python:3.12-slim</code>). Ez az <strong>ellátási lánc</strong>. Ha abban van hiba, a te appodban is van. Négy dolgot csinálsz ellene:</p>
+<h3>A többi pipeline-döntés egy táblában</h3>
+<div class="table-wrap"><table>
+<tr><th>Döntés</th><th>Miért</th><th>Hol</th></tr>
+<tr><td>Saját Gitea + act_runner</td><td>A cím saját üzemeltetésű CI/CD-t ígér; a runnernek el kell érnie a gépen futó registryt és fürtöt.</td><td>ADR-0001</td></tr>
+<tr><td>GitHub a review-ra, Gitea a futtatásra</td><td>A Gitea a bírálóknak nem érhető el, a GitHubon nincs runner. Egyikkel a review, másikkal a futtatás hiányozna.</td><td>ADR-0004</td></tr>
+<tr><td>Csak <code>push</code> trigger, ágnév-lista</td><td>Pull request a Giteán nem nyílik, egy <code>pull_request</code> trigger sosem futna. Lista: <code>main</code>, <code>release/**</code>, <code>feature/**</code>, <code>hotfix/**</code>.</td><td><code>ci.yml</code></td></tr>
+<tr><td>Feature ág épít és szkennel, de nem pushol</td><td>A registryben csak átnézett, telepíthető kép legyen. Csak <code>main</code> és <code>release/*</code> telepít.</td><td><code>ref_gate</code> lépés</td></tr>
+<tr><td>Próbaindítás a push előtt</td><td>Egy kép, ami el sem indul, nem kerülhet a registrybe.</td><td>„health gate”</td></tr>
+<tr><td>Lépésenkénti <code>timeout-minutes</code></td><td>Egy runner van: egy beragadt lépés az egész pipeline-t megállítaná. Lépésenként, hogy látszódjon, <em>melyik</em> akadt el.</td><td><code>ci.yml</code></td></tr>
+<tr><td>A vezérlési szerkezet ahhoz igazodik, amit az act_runner tényleg tud</td><td>Előbb kipróbáltad (spike). Amit nem tud (pl. <code>fromJSON()</code> fan-out), arra nem épít a pipeline.</td><td>ADR-0005</td></tr>
+<tr><td>Gépi időbélyegek: <code>MERES …</code> sorok</td><td>A mérés órája a joblogban van, kiolvasható; nem kell kézzel képernyőről leolvasni.</td><td><code>ci.yml</code>, 9. tananyag</td></tr>
+</table></div>
 
+<h2 id="lanc">2. Az ellátási lánc: négy réteg</h2>
+<p>A szoftvered nagy része nem a te kódod: könyvtárak (Flask, psycopg…) és alapképek (<code>python:3.12-slim</code>, <code>node:22-alpine</code>, <code>nginx-unprivileged</code>). Ha abban van hiba, a te alkalmazásodban is.</p>
 <figure>
 <svg viewBox="0 0 640 200" role="img" aria-label="Az ellátási lánc négy védelmi rétege">
   <rect x="10" y="20" width="145" height="160" rx="10" class="n-accent"/>
@@ -102,13 +111,40 @@ A deploy job korábban Ansible-lel egy sima Docker konténert telepített — <e
 <figcaption>Az 1. réteg a reprodukálhatóságot adja (ugyanaz épül újra), a 3. a biztonságot. A kettő nem ugyanaz — lásd lent.</figcaption>
 </figure>
 
-<div class="box story"><strong>A zöld szkennelés lejár (napló 2.7) — ezt meséld el a védésen</strong>
-Egy olyan commit, ami se a Dockerfile-hoz, se a függőségekhez nem nyúlt, hirtelen piros lett: a Trivy 43 hibát talált az alapképben. Miért? Mert a Trivy frissítette az adatbázisát — közben új hibákat fedeztek fel a világban. A kód nem változott, a világ igen.
-<br><br><strong>A tanulság:</strong> a rögzítés garantálja, hogy <em>ugyanaz</em> épüljön újra. De azt, hogy ami ugyanaz, az <em>biztonságos is</em>, újra és újra ellenőrizni kell. Ezt csak egy pipeline csinálja minden commitnál. Kézi telepítésnél ez a kérdés fel sem merül.</div>
+<div class="dontes"><p class="d-cim">Hash-sel rögzített függőségek, digesttel rögzített alapkép, rögzített eszközverziók</p>
+<p><b>Miért:</b> ugyanabból a commitból mindig ugyanaz épüljön, és egy piros futás a változtatásnak legyen tulajdonítható, ne annak, hogy a szkenner frissült (Trivy 0.72.0, hadolint v2.14.0).</p>
+<p><b>Nélküle:</b> két napon két különböző image, és olyan piros pipeline, amit senki nem okozott. Ez szoktat rá a kapu figyelmen kívül hagyására.</p>
+<p class="d-hol">Hol: <code>requirements*.txt</code>, <code>Dockerfile</code>, <code>ci.yml</code> kommentjei</p></div>
 
-<h3 id="alapkep-leptetes">Alapkép léptetése — ellenőrzés előbb, írás utána (napló 3.2)</h3>
-<p>2026-09-30-án ugyanez másodszor történt meg: a rögzített <code>python:3.12-slim</code> digestben az OpenSSL <code>3.5.7-1~deb13u2</code> volt, a javítás a <code>deb13u3</code>-ban jött. A megoldás nem a kapu kikapcsolása, hanem egy új digest — de csak akkor, ha az új kép <em>tényleg</em> tartalmazza a javítást. Ezt csinálja a <code>scripts/pin-base-images.sh</code>, ebben a sorrendben:</p>
+<div class="dontes"><p class="d-cim">A Trivy küszöbe: javított HIGH és CRITICAL → piros</p>
+<p><b>Miért:</b> olyan hibán bukni, amire van javítás, és amit egy alapkép-léptetéssel meg lehet szüntetni. Egy javítás nélküli hibán bukó kapu folyamatosan piros lenne, és senki nem venné komolyan (<code>--ignore-unfixed</code>).</p>
+<p class="d-hol">Hol: <code>ci.yml</code>, „Scan image with Trivy”</p></div>
 
+<div class="dontes"><p class="d-cim">Az SBOM a mérőgépen készül, a futó képekből</p>
+<p><b>Miért:</b> az SBOM annyit ér, amennyire bizonyított, hogy a futó artifaktról szól. 7 fájl, 771 komponens, a mért <code>e4da1d9</code> kiadásra.</p>
+<p><b>Amit közben találtál:</b> az előző generáció a laptopon készült, és <code>arm64</code> képeket írt le, nem a fürtön futó <code>amd64</code>-et. A komponenslistából ez nem látszott, csak a purl <code>arch=</code> mezőjéből.</p>
+<p class="d-hol">Hol: <code>docs/sbom/</code>, <code>scripts/sbom-generate.sh</code>, napló 2.9</p></div>
+
+<details class="q"><summary>Mire jó az SBOM a gyakorlatban?</summary>
+<p>Ha holnap kiderül egy hiba egy könyvtárban, egy kereséssel megmondod, érintett vagy-e, és melyik képben. A frontend kép SBOM-jában nincs npm-csomag, mert a React statikus fájlokba van fordítva; azokat a fájlrendszer-SBOM (<code>package-lock.json</code>) látja.</p></details>
+
+<h2 id="lejar">3. A zöld szkennelés lejár</h2>
+<p>Ugyanaz a kód, ugyanaz a Dockerfile, mégis piros: a Trivy frissítette az adatbázisát, és közben új hibákat találtak az alapképben. Tizennégy nap alatt háromszor:</p>
+<div class="table-wrap"><table>
+<tr><th>Mikor</th><th>Mi</th></tr>
+<tr><td>09-22, bemelegítő futás</td><td>43 találat a régi <code>python:3.12-slim</code>-ben → alapkép léptetve a mérés előtt</td></tr>
+<tr><td>09-30, újraépült gép</td><td>6 HIGH, OpenSSL <code>deb13u2</code> (javítva <code>deb13u3</code>-ban)</td></tr>
+<tr><td>10-05, a script első futása</td><td>OpenSSL már javítva, de új HIGH: pcre2 (CVE-2026-103111)</td></tr>
+</table></div>
+
+<div class="dontes"><p class="d-cim">A kapu nem lazul</p>
+<p><b>Miért:</b> egy kivétel után a „mindkét kép átment a sérülékenységi kapun” állítás hamis lenne. A helyes út az alapkép léptetése, amikor a kiadó kiadta a javítást.</p>
+<p class="d-hol">Hol: napló 3.1, 3.2</p></div>
+
+<details class="q vedes"><summary>„Ha a rögzítés reprodukálható buildet ad, miért nem elég?”</summary>
+<p>Mert a reprodukálhatóság és a biztonság két különböző garancia. A digest-rögzítés feltétel nélkül garantálja, hogy ugyanaz épül. Azt, hogy ami ugyanaz, arról ma sem tudunk súlyos hibát, újra és újra ki kell érdemelni, és ezt csak egy minden commitra futó pipeline teszi meg. A kézi út ezen nem bukik el; csak sosem teszi fel a kérdést.</p></details>
+
+<h2 id="pin">4. Alapkép-léptetés: előbb ellenőrzés, utána írás</h2>
 <figure>
 <svg viewBox="0 0 640 150" role="img" aria-label="Az alapkép-léptetés öt lépése">
   <defs><marker id="nyil8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
@@ -135,65 +171,27 @@ Egy olyan commit, ami se a Dockerfile-hoz, se a függőségekhez nem nyúlt, hir
 </svg>
 <figcaption>A script csak előszűrő: az alapképet nézi. A pipeline a <em>kész</em> képet vizsgálja, amiben a Python-csomagok és a lefordított frontend is benne vannak — a végső kapu ez marad.</figcaption>
 </figure>
+<p>A <code>scripts/pin-base-images.sh</code> feloldja a három alapkép aktuális digestjét, lefuttatja rajtuk ugyanazt a Trivy-kaput, mint a CI, és <strong>csak tiszta eredmény után</strong> írja át a <code>FROM</code> sorokat. 10-05-én: <code>RESULT: not pinned</code> (pcre2), semmit nem írt át. Pár nap múlva újra kell futtatni.</p>
 
-<div class="box whatif"><strong>Mi lett volna, ha csak átírod a digestet?</strong>
-Ha a kiadó még nem építette újra a képet, az új digest ugyanazt az OpenSSL-t tartalmazza: a commit nem javít semmit, a pipeline ugyanúgy piros, és a történetben ott marad egy „javítás”, ami nem az. Az ellenőrzés előbb, írás utána sorrend ezt zárja ki.</div>
+<details class="q"><summary>Miért nem elég egyszerűen beírni az új digestet?</summary>
+<p>Mert ha a kiadó még nem építette újra a képet, az új digest ugyanazt a hibát hozza. A commit nem javítana semmit, és a történetben maradna egy „javítás”, ami nem az.</p></details>
 
-<div class="box story"><strong>A frontend kép eddig átment a kapun — mert nem volt kapu</strong>
-A mérés alatt a frontend Dockerfile-ra szándékosan nem futott se hadolint, se Trivy: egy új kapu a sorozat közepén olyan okból is pirosra válthatott volna, aminek a mért változtatáshoz semmi köze. A mérés lezárult, így most mindkét kép ugyanazon a kapun megy át, és a frontend alapképei is digesttel rögzítettek. Az nginx közben a lejárt 1.27-es ágról a <code>stable-alpine</code> ágra lépett. <strong>A védésen:</strong> a mért pipeline az <code>e4da1d9</code>-es; az új lépések nincsenek benne a mért időkben, és ezt a 6.1-ben ki kell mondani.</div>
+<h2 id="frontend">5. A frontend kapui és ami kimaradt</h2>
+<div class="dontes"><p class="d-cim">A frontend kép hadolint- és Trivy-kapuja a mérés <em>után</em> került be</p>
+<p><b>Miért akkor:</b> egy új kapu a sorozat közepén egy alapkép-riasztástól pirosra válthatott volna, ami nem a mért változtatásról szól, és mérési futtatásokat égetett volna el.</p>
+<p><b>Ezért most:</b> enélkül az 5.5 azt állítaná, hogy a kiadás átmegy a kapun, miközben a két képből csak az egyik ment át.</p>
+<p><b>A dolgozatban:</b> a mért pipeline az <code>e4da1d9</code>-es; az új lépések nincsenek benne a mért időkben. Ezt a 6.1 táblája külön sorban kimondja. A kapuk még nem futottak a gépen (07-lezárás 5. lépés).</p>
+<p class="d-hol">Hol: napló 3.2</p></div>
 
-<div class="box whatif"><strong>Mi a helyzet a képaláírással (cosign)?</strong>
-Az eredeti tervben benne volt, de tudatosan kimaradt, és a 7. fejezetbe (továbbfejlesztés) kerül. Ha rákérdeznek: „Azt garantálná, hogy a fürt csak olyan képet futtasson, amit a pipeline épített. A mérés szempontjából nem változtat semmin, ezért a határidő miatt leírtam, nem megépítettem.”</div>
+<div class="dontes"><p class="d-cim">Képaláírás (cosign) nem készül</p>
+<p><b>Mit adna:</b> a fürt csak a pipeline által épített képet futtatná.</p>
+<p><b>Miért nem:</b> a mérés lezárult, és az aláírás a mért láncot változtatná meg. Az 5.5 enélkül is áll: rögzítés, SBOM, szkennelés, mind bizonyítva. → 7. fejezet.</p>
+<p class="d-hol">Hol: napló 3.0, 00-terv 12. pont</p></div>
 
-<h2 id="megfigyeles">3. Megfigyelhetőség — honnan tudod, mi történik</h2>
-<p>A telepítés kész. De honnan tudod, hogy az app <em>most</em> jól működik? Három eszköz, három feladat:</p>
-
-<div class="table-wrap"><table>
-<tr><th>Eszköz</th><th>Mit gyűjt</th><th>Hasonlat</th></tr>
-<tr><td><strong>Prometheus</strong></td><td><strong>Számokat</strong> időben: hány kérés jött, hány hibás, mennyi ideig tartott.</td><td>a műszerfal mutatói</td></tr>
-<tr><td><strong>Loki</strong></td><td><strong>Naplósorokat</strong>: mi történt pontosan egy adott kérésnél.</td><td>a fekete doboz</td></tr>
-<tr><td><strong>Grafana</strong></td><td>Semmit — <em>megmutatja</em> mindkettőt egy képernyőn, és riaszt.</td><td>a kijelző</td></tr>
-</table></div>
-
-<figure>
-<svg viewBox="0 0 640 170" role="img" aria-label="Hibakeresés: Grafana panel, Prometheus metrika, Loki napló request_id alapján">
-  <defs><marker id="q8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
-  <rect x="10" y="40" width="170" height="80" rx="10" class="n-warn"/>
-  <text x="95" y="68" text-anchor="middle" class="t-bold">1. Grafana panel</text>
-  <text x="95" y="88" text-anchor="middle" class="t-small">„megugrott a hibaarány!”</text>
-  <text x="95" y="104" text-anchor="middle" class="t-small t-muted">(Prometheus-szám)</text>
-  <rect x="235" y="40" width="170" height="80" rx="10" class="n-violet"/>
-  <text x="320" y="68" text-anchor="middle" class="t-bold">2. Loki napló</text>
-  <text x="320" y="88" text-anchor="middle" class="t-small">melyik kérés volt az?</text>
-  <text x="320" y="104" text-anchor="middle" class="t-small t-mono">request_id=…</text>
-  <rect x="460" y="40" width="170" height="80" rx="10" class="n-ok"/>
-  <text x="545" y="68" text-anchor="middle" class="t-bold">3. Megvan az ok</text>
-  <text x="545" y="88" text-anchor="middle" class="t-small">a pontos hibasor</text>
-  <text x="545" y="104" text-anchor="middle" class="t-small">böngészőből, shell nélkül</text>
-  <path d="M180,80 L231,80" class="line" marker-end="url(#q8)"/>
-  <path d="M405,80 L456,80" class="line" marker-end="url(#q8)"/>
-</svg>
-<figcaption>A gyakornokság 3. sprintjének demója pontosan ez volt: hiba → panel → napló → ok (<code>docs/demo-assets-sprint3/</code>).</figcaption>
-</figure>
-
-<div class="box key"><strong>Két döntés, amit tudnod kell megindokolni</strong>
-<strong>Loki, nem ELK (ADR-0006).</strong> Az Elasticsearch minden naplósor tartalmát indexeli — ez erős, de drága: egy használható példány kb. 2 GB memóriát kér, ez a projekt keretének nagy része. A Loki csak címkéket indexel, így könnyű. A fő ok mégis az, hogy Grafanában egy kattintással el lehet jutni a hibaarány-grafikonról a mögötte lévő naplósorokig.<br><br>
-<strong>A <code>request_id</code> naplómező, nem metrika-címke (ADR-0007).</strong> A Prometheus minden címke-értékhez új idősort nyit. Ha minden kérésnek saját azonosítója lenne címkeként, millió idősor lenne, és a Prometheus megfulladna. Ezért a szám (hány hiba) a Prometheusban van, a konkrét kérés (melyik hiba) a Lokiban.</div>
-
-<div class="box thesis"><strong>Hol tart ez most</strong>
-A megfigyelési réteg a laptopon kész volt; a mérés alatt a mérőgépen <strong>szándékosan nem futott</strong> (E9: pontosan három konténer). Az Azure-os fürtre kötése 2026-09-30-án készült el a repóban (ADR-0010) — hogyan éri el a Docker-hálózaton futó Prometheus a fürt podjait, az a <a href="10-megfigyeles-a-furton.html">10. tananyagban</a> van.</div>
-
-<h2 id="kviz">Ellenőrizd magad</h2>
-<div class="quiz">
-<details><summary>Miért a commit SHA a kép neve, miért nem „latest”?</summary>Mert a „latest” mindig mást jelent. A SHA-ból pontosan tudod, melyik kód fut, és a rollback is egy konkrét, ismert képre áll vissza.</details>
-<details><summary>Miért nem ember dönt az automatizált átvételnél, és miért számít ez?</summary>A pipeline-ban minden ellenőrzés elbuktatja a futást, ha rossz. A kézi oldalon a <code>smoke.sh</code> mindig 0-val lép ki, tehát ott te olvasod és döntöd el, jó-e. Ugyanaz az ellenőrzés, de csak az egyik oldalon gépi a döntés — ember elnézheti, a gép nem.</details>
-<details><summary>Miért nem elég az új digestet beírni, ha a Trivy piros?</summary>Mert nem tudod, hogy az új kép tartalmazza-e a javítást. A <code>pin-base-images.sh</code> előbb megnézi az OpenSSL verzióját és lefuttatja ugyanazt a Trivy-kaput, és csak tiszta eredmény után írja át a FROM sorokat.</details>
-<details><summary>Mi a különbség a függőségrögzítés és a Trivy között?</summary>A rögzítés azt garantálja, hogy mindig ugyanaz épül. A Trivy azt nézi, hogy ami épül, arról tudnak-e ma hibát. Az első egyszeri, a második folyamatos.</details>
-<details><summary>Mit csinál a rollback lépés, ha a hiba már a telepítés előtt történt?</summary>Semmit: előbb ellenőrzi, hogy telepített-e egyáltalán valamit. Így nem görget vissza egy egészséges verziót.</details>
-<details><summary>Metrika vagy napló: „hány 500-as hiba volt az elmúlt 5 percben?”</summary>Metrika (Prometheus). A „melyik kérés volt, és mi volt benne?” már napló (Loki).</details>
-</div>
-
-<footer class="page"><span>Utoljára frissítve: 2026. szeptember 22.</span><span>Forrás: ci.yml, ADR-0002, -0006, -0007, -0009, docs/sbom/README.md, naplo.md</span></footer>
+<details class="q"><summary>Hol fut titokkeresés, és miért kétszer?</summary>
+<p>Helyben egy <code>gitleaks</code> pre-commit hook, a pipeline-ban Trivy <code>fs --scanners secret</code>. A hook megkerülhető (<code>--no-verify</code>), a pipeline nem: a 08-10-i próbán a hookot megkerülő kulcsot a CI fogta meg.</p></details>
+<footer class="page"><span>Frissítve: 2026. október 5. · a repó <code>release/meres</code> ágának állapota szerint</span><span>Forrás: .gitea/workflows/ci.yml, ADR-0001, -0002, -0004, -0005, docs/sbom/README.md, scripts/pin-base-images.sh, naplo.md 2.7, 2.9, 3.0–3.2</span></footer>
+<nav class="top"><a href="index.html">☰ Térkép</a><span class="navpair"><a href="07-terraform.html">← 7. Terraform</a><a href="09-meres-es-vedes.html">9. A mérés →</a></span></nav>
 </div>
 <script src="assets/tananyag.js"></script>
 </body>
