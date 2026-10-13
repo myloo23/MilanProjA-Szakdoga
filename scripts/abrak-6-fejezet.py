@@ -89,7 +89,7 @@ def md_table_rows(path: Path, start: str | None = None) -> list[list[str]]:
     """Egy markdown-fájl első táblázatának sorai (a `start` fejléc után)."""
     text = path.read_text(encoding="utf-8").splitlines()
     if start:
-        text = text[next(i for i, l in enumerate(text) if l.startswith(start)):]
+        text = text[next(i for i, ln in enumerate(text) if ln.startswith(start)):]
     rows, inside = [], False
     for line in text:
         if line.startswith("|"):
@@ -328,7 +328,7 @@ def abra_6_4():
     ax.set_xlim(0, 64)
     ax.set_xlabel("idő (mp) — a sorozat medián futtatásának bontása")
     ax.set_title("Kézi és automatizált út: hol tűnik el az idő", loc="left")
-    ax.legend(handles=[Patch(color=c, label=l) for l, c in SEG], loc="upper center",
+    ax.legend(handles=[Patch(color=c, label=lbl) for lbl, c in SEG], loc="upper center",
               bbox_to_anchor=(0.5, -0.2), ncol=2, fontsize=7.5)
     ax.grid(axis="x", color=GRID, linewidth=0.6)
     ax.set_axisbelow(True)
