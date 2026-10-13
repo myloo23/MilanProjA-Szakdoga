@@ -120,7 +120,7 @@ Ebből az következik, hogy **a kiindulási mérés nem most jön, hanem azután
 9. Kubernetes és Helm chart: az alkalmazás fusson a fürtön.
 10. **Kézi telepítési folyamat rögzítése és megmérése** a kész Kubernetes-környezeten.
 11. A pipeline rákötése: build, registry, telepítés, ellenőrzés, visszaállítás.
-12. Supply-chain lépések: függőségrögzítés, SBOM, sérülékenységvizsgálat. *A képaláírás nem készül el, a 7. fejezetbe került (2026-09-30, naplo 3.0): a mérés lezárult, és az aláírás a mért láncot változtatná meg. 2026-10-02 (naplo 3.2): a frontend kép is hadolint- és Trivy-kapun megy át, az alapképei digesttel rögzítettek; az alapkép-léptetés a `scripts/pin-base-images.sh`-val történik.*
+12. Supply-chain lépések: függőségrögzítés, SBOM, sérülékenységvizsgálat. *A képaláírás nem készül el, a 7. fejezetbe került (2026-09-30, naplo 3.0): a mérés lezárult, és az aláírás a mért láncot változtatná meg. 2026-10-02 (naplo 3.2): a frontend kép is hadolint- és Trivy-kapun megy át, az alapképei digesttel rögzítettek; az alapkép-léptetés a `scripts/pin-base-images.sh`-val történik. 2026-10-13 (naplo 3.3): a léptetés megtörtént (`1c2b23d`), a frontend két alapképe is digesttel rögzített, az első zöld futás a frontend kapukkal `861f51b`; a `release/meres` bekerült a `main`-be (PR #2). A technikai rész lezárva.*
 13. Megfigyelhetőségi réteg átvezetése a Kubernetes-környezetre. *Kész (ADR-0010): a mérőgépen ellenőrizve 2026-09-30-án, `bizonyitek/05-megfigyeles-k3s-verify.txt`.*
 14. **Automatizált mérés**, kiértékelés, ábrák.
 15. A 3–6. fejezet megírása. A 2. fejezet és a bevezetés a végén.

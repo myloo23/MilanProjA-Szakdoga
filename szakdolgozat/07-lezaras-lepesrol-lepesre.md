@@ -1,5 +1,7 @@
 # A technikai rész lezárása — lépésről lépésre (2026-10-05)
 
+> **Elvégezve 2026-10-13-án** (naplo 3.3): `1c2b23d` alapkép-léptetés, `861f51b` zöld futás, PR #2 merge a `main`-be.
+
 A kód kész (`d62798c`). Ami maradt, az csak a te gépeden futhat, mert kell
 hozzá a Docker Hub, az Azure és a Gitea-jelszavad. Kb. egy óra, ebből a
 pipeline-futás 3–5 perc.

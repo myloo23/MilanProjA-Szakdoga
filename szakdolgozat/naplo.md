@@ -8,6 +8,45 @@ Legfrissebb elöl.
 
 ---
 
+## 3.3 — A technikai rész lezárása: alapkép-léptetés, első zöld futás a frontend kapukkal, `main` (2026-10-13)
+
+**Mit csináltam.** (1) A `scripts/pin-base-images.sh` második futása `RESULT:
+pinned`: az új `python:3.12-slim` digestben az OpenSSL `3.5.7-1~deb13u3`, a
+pcre2-találat (CVE-2026-103111) is eltűnt, mindkét futó alapkép tiszta
+HIGH/CRITICAL szinten; a script átírta a négy FROM sort, a frontend két alapképe
+most először digesttel rögzített (`1c2b23d`, kimenet:
+`bizonyitek/07-alapkep-leptetes.txt`). (2) Az első push a pipeline ruff-lépésén
+elbukott: E741 az `abrak-6-fejezet.py`-ban (`l` ciklusváltozó). A script a
+`d82f9d3`-ban került be, az utolsó `azure`-ra pusholt commit (`a4be106`) után,
+ezért a kapu eddig nem látta. Javítva (`861f51b`), a pipeline-éval egyező ruff
+0.15.22 az egész repóra tiszta. (3) A második futás zöld: a `build-test-push`
+mindkét Dockerfile-t hadolinttal (nincs találat) és mindkét image-et Trivy-vel
+(`projecta-flask:861f51b` és `projecta-frontend:861f51b`, 0 találat) engedte át;
+a `deploy` Helmmel telepített, a verify-playbook `ok=10 failed=0`, és a fürt
+`/api/version`-je `861f51b`. Naplók: `bizonyitek/08-pipeline-zold-build.log`,
+`08-pipeline-zold-deploy.log` (`c04adb5`). (4) A `release/meres` merge committal
+bekerült a GitHubon a `main`-be (PR #2, `7148ae6`); a `main` 2026-09-17 óta most
+lépett először.
+
+**Mi lett volna nélküle.** A `00-terv` 12. pontja és az 5.5 azt állította
+volna, hogy a frontend alapképei digesttel rögzítettek, miközben a
+`frontend/Dockerfile` tag-et használt — egy `git show` a beadott repón
+megcáfolta volna. A beadott repó alapértelmezett ága pedig az Ansible-es,
+Dockeres telepítést mutatta volna, nem a mértet.
+
+**Mit bizonyít.** Hogy a teljes kiadás (két image) a sérülékenységi kapu mögött
+van, és ezt egy valódi, naplózott zöld futás igazolja, nem csak a `ci.yml`. A
+ruff-bukás mellékesen azt is, hogy a kapu nem díszlet: olyan commitot fogott meg,
+amelyet a laptopon senki nem lintelt. **A mérést nem érinti:** a mért pipeline
+továbbra is az `e4da1d9`-es; az nginx `1.27-alpine` → `stable-alpine` váltás
+és az új kapuk a mérés után kerültek be, ezt a 6.1-ben és az 5.5-ben egy-egy
+mondat rögzíti.
+
+**A technikai rész lezárva.** Nincs nyitott tétel a kódban; ami ezután változna,
+az a 7. fejezetbe megy (képaláírás, a lint-függőségek gyorsítótárazása).
+
+---
+
 ## 3.2 — Alapkép-léptetés ellenőrzéssel, és a frontend kép a kapuk mögé kerül (2026-10-02)
 
 **Mit csináltam.** Két nyitott tétel, ugyanabból a hiányból. (1) A backend
