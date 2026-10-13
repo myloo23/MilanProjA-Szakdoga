@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0. Az egész projekt egyszerűen</title>
+<link rel="stylesheet" href="assets/tananyag.css">
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="index.html">☰ Térkép</a><span class="navpair"><a href="index.html">← Tananyagtérkép</a><a href="01-kubernetes-alapok.html">1. Kubernetes alapok →</a></span></nav>
+<p class="eyebrow">0. tananyag · ~10 perc · kezdd ezzel</p>
+<h1>Az egész projekt egyszerűen</h1>
+<p class="lead">Mit építettél, miért, mi jött ki, és mi van még hátra. Ha csak egy oldalt olvasol el, ezt.</p>
+
+<div class="tldr"><strong>Röviden</strong>
+<ul>
+<li>Egy saját jegyzetkezelő alkalmazást (React frontend, Flask backend, PostgreSQL) egy pipeline visz ki egy Azure-os gépen futó Kubernetes-fürtre.</li>
+<li>Ugyanazt a változtatást tízszer kézzel és tízszer a pipeline-nal telepítetted, és megmérted a különbséget.</li>
+<li>A megvalósítás és a mérés kész. Egy dolog vár: az alapkép frissítése, amíg a Debian ki nem adja a javítást.</li>
+</ul></div>
+
+<h2 id="egy-mondat">1. A dolgozat egy mondatban</h2>
+<div class="box key"><strong>Ezt tanuld meg szó szerint</strong>
+Építettem egy gépsort, ami a kódomat magától kiviszi a szerverre, ellenőrzi, és ha hibás, visszaállítja az előzőt. Aztán megmértem, mennyivel jobb ez, mint ugyanezt kézzel csinálni.</div>
+
+<p>Egy hasonlat, ami végig működik: egy pékség. <strong>Kézzel</strong> te gyúrsz, sütsz, csomagolsz, viszel ki a boltba és kóstolsz: tizenhárom mozdulat. <strong>Pipeline-nal</strong> beadod a receptet, egy futószalag megcsinálja az egészet, közben ellenőrzi az alapanyagot, és ha a kész kenyér rossz, visszateszi a polcra a tegnapit.</p>
+
+<div class="table-wrap"><table>
+<tr><th>Pékség</th><th>Nálad</th></tr>
+<tr><td>recept</td><td>forráskód (Git)</td></tr>
+<tr><td>becsomagolt kenyér</td><td>konténerkép (image), a neve a commit SHA-ja</td></tr>
+<tr><td>raktár</td><td>registry (<code>localhost:5001</code> a gépen)</td></tr>
+<tr><td>bolt polca</td><td>k3s Kubernetes-fürt</td></tr>
+<tr><td>futószalag</td><td>Gitea Actions pipeline (<code>.gitea/workflows/ci.yml</code>)</td></tr>
+<tr><td>összetevőlista</td><td>SBOM</td></tr>
+<tr><td>minőségellenőr</td><td>tesztek, Trivy, füstteszt</td></tr>
+<tr><td>biztonsági kamera</td><td>Prometheus, Loki, Grafana</td></tr>
+</table></div>
+
+<details class="q vedes"><summary>„Foglalja össze a dolgozatát egy percben.”</summary>
+<p>Egy saját webalkalmazáshoz automatizált telepítési láncot építettem: Terraformmal létrehozott Azure-gépen fut egy k3s Kubernetes-fürt, amire egy saját üzemeltetésű Gitea Actions pipeline tesztel, épít, szkennel, telepít, ellenőriz, és hiba esetén visszaállít. Ugyanazt a változtatást tízszer kézzel és tízszer a pipeline-nal telepítettem ugyanarra a fürtre. Az emberi beavatkozások száma 13-ról 2-re, a telepítési szakasz 31-ről 24 másodpercre, egy hibás kiadás utáni kiesés 56-ról 26 másodpercre csökkent. A teljes idő hosszabb, mert a pipeline közben olyan ellenőrzéseket is elvégez, amiket a kézi út egyáltalán nem.</p></details>
+
+<h2 id="rendszer">2. A rendszer egy képen</h2>
+<p>Minden egyetlen Azure-os virtuális gépen fut (<code>szakdoga2-vm</code>, 2 vCPU, 8 GB, Svédország). A gépet nem kattintással hoztad létre, hanem Terraformmal, kódból.</p>
+<figure>
+<svg viewBox="0 0 640 390" role="img" aria-label="A rendszer felépítése: laptop, Azure virtuális gép, rajta Gitea, runner, registry és k3s fürt">
+  <defs><marker id="p0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+
+  <rect x="10" y="150" width="120" height="80" rx="10" class="n-2"/>
+  <text x="70" y="180" text-anchor="middle" class="t-bold">Laptop</text>
+  <text x="70" y="198" text-anchor="middle" class="t-small">itt írod a kódot</text>
+  <text x="70" y="214" text-anchor="middle" class="t-mono t-small">git push</text>
+
+  <rect x="160" y="10" width="470" height="370" rx="14" class="zone"/>
+  <text x="176" y="34" class="t-bold">Azure virtuális gép · szakdoga2-vm</text>
+  <text x="176" y="52" class="t-small t-muted">Terraform hozta létre · 2 vCPU · 8 GB · swedencentral</text>
+
+  <rect x="180" y="70" width="130" height="56" rx="8" class="n-accent"/>
+  <text x="245" y="94" text-anchor="middle" class="t-bold">Gitea</text>
+  <text x="245" y="112" text-anchor="middle" class="t-small">a kód tárolója</text>
+
+  <rect x="330" y="70" width="130" height="56" rx="8" class="n-accent"/>
+  <text x="395" y="94" text-anchor="middle" class="t-bold">act_runner</text>
+  <text x="395" y="112" text-anchor="middle" class="t-small">a futószalag motorja</text>
+
+  <rect x="480" y="70" width="130" height="56" rx="8" class="n-accent"/>
+  <text x="545" y="94" text-anchor="middle" class="t-bold">registry</text>
+  <text x="545" y="112" text-anchor="middle" class="t-small">a képek raktára</text>
+
+  <text x="395" y="146" text-anchor="middle" class="t-small t-muted">ez a három Docker Compose-szal fut</text>
+
+  <rect x="180" y="165" width="430" height="200" rx="10" class="n-ok"/>
+  <text x="196" y="188" class="t-bold">k3s fürt (Kubernetes) · Helm: projecta</text>
+
+  <rect x="200" y="205" width="120" height="60" rx="8" class="n"/>
+  <text x="260" y="230" text-anchor="middle" class="t-bold">frontend ×2</text>
+  <text x="260" y="248" text-anchor="middle" class="t-small">React + nginx</text>
+
+  <rect x="345" y="205" width="120" height="60" rx="8" class="n"/>
+  <text x="405" y="230" text-anchor="middle" class="t-bold">backend ×2</text>
+  <text x="405" y="248" text-anchor="middle" class="t-small">Python Flask</text>
+
+  <rect x="490" y="205" width="105" height="60" rx="8" class="n"/>
+  <text x="542" y="230" text-anchor="middle" class="t-bold">postgres</text>
+  <text x="542" y="248" text-anchor="middle" class="t-small">adatbázis</text>
+
+  <text x="395" y="300" text-anchor="middle" class="t-small">Egy jegyzetelő alkalmazás: jegyzet létrehozása,</text>
+  <text x="395" y="318" text-anchor="middle" class="t-small">listázása, módosítása, törlése. Szándékosan kicsi —</text>
+  <text x="395" y="336" text-anchor="middle" class="t-small">a dolgozat tárgya nem az app, hanem a szállítása.</text>
+
+  <path d="M130,175 C150,130 160,100 176,98" class="line" marker-end="url(#p0)"/>
+  <text x="70" y="250" text-anchor="middle" class="t-small t-muted">SSH-alagúton át</text>
+  <path d="M310,98 L326,98" class="line" marker-end="url(#p0)"/>
+  <path d="M460,98 L476,98" class="line" marker-end="url(#p0)"/>
+  <path d="M545,126 L545,161" class="line" marker-end="url(#p0)"/>
+  <text x="552" y="150" class="t-small t-muted">kép letöltése</text>
+  <path d="M320,235 L341,235" class="line" marker-end="url(#p0)"/>
+  <path d="M465,235 L486,235" class="line" marker-end="url(#p0)"/>
+</svg>
+<figcaption>Miért van minden egy gépen? Mert a fürtnek el kell érnie a registryt, ahonnan a képet letölti. A laptopon lévő registryt a felhőből nem érné el (ADR-0008). A régiót és a méretet az Azure for Students szabályai döntötték el, nem te.</figcaption>
+</figure>
+
+<div class="dontes"><p class="d-cim">Minden egy gépen (Gitea, runner, registry, fürt)</p>
+<p><b>Miért:</b> a fürtnek el kell érnie a registryt, amiből a képet letölti. A laptopon futó registryt a felhőben futó fürt nem látná.</p>
+<p><b>Az ára:</b> a pipeline ugyanazt a gépet terheli, amit mérsz. Ezért a mérés alatt nem mehetett push a <code>main</code>-re, és ezt a dolgozat korlátként kimondja.</p>
+<p class="d-hol">Hol: D5 (01-megvalositasi-terv.md), ADR-0008</p></div>
+
+<details class="q"><summary>Mit csinál a Terraform, és mit nem?</summary>
+<p>Létrehozza a gépet, a hálózatot, a tűzfalat és a fix IP-t, a cloud-init pedig az első induláskor feltelepíti rá a k3s-t. Az alkalmazást nem a Terraform telepíti, hanem a Helm, mert pont az alkalmazás telepítése az, amit mérsz.</p></details>
+
+<h2 id="push">3. Mi történik, amikor pusholsz</h2>
+<p>Kattints végig. A részletek a 8. tananyagban vannak.</p>
+<div class="stepper" data-captions="<strong>1. Push.</strong> A laptopodon kiadod: <code>git push azure release/meres</code>. Ez az egyetlen dolog, amit te csinálsz.|<strong>2. A Gitea észreveszi</strong>, hogy új kód jött egy figyelt ágra, és szól a runnernek: indulhat a futószalag.|<strong>3. Ellenőrzés.</strong> A runner leteszteli a kódot (pytest), átnézi a stílust (ruff), keres benne véletlenül bent hagyott jelszót, és ellenőrzi a Dockerfile-t.|<strong>4. Csomagolás.</strong> Megépíti a backend és a frontend konténerképét. A kép neve a commit azonosítója (SHA), így mindig tudod, pontosan melyik kód van benne.|<strong>5. Biztonsági vizsgálat.</strong> A Trivy átnézi a képet ismert sérülékenységekre. Ha súlyosat talál, a futószalag megáll.|<strong>6. Raktár.</strong> A kép a registrybe kerül. Innentől ez a kép <em>nem változik</em>: ugyanaz megy ki, amit teszteltél.|<strong>7. Telepítés.</strong> <code>helm upgrade --install</code>: a Helm szól a Kubernetesnek, hogy az új képet futtassa. A Kubernetes egyenként cseréli a podokat, így nincs leállás.|<strong>8. Átvétel.</strong> A pipeline megkérdezi az appot: melyik verzió vagy? (<code>/version</code>) Aztán lefuttatja a füsttesztet. Ha minden jó: kész, zöld.|<strong>9. Ha rossz:</strong> <code>helm rollback</code> — magától visszaáll az előző, működő verzióra. Nem kell hozzá ember.">
+<figure>
+<svg viewBox="0 0 640 170" role="img" aria-label="A pipeline kilenc lépése">
+  <g data-step="0"><rect x="5" y="40" width="60" height="50" rx="8" class="n-2"/><text x="35" y="70" text-anchor="middle" class="t-small t-bold">push</text></g>
+  <g data-step="1"><rect x="75" y="40" width="60" height="50" rx="8" class="n-accent"/><text x="105" y="70" text-anchor="middle" class="t-small t-bold">Gitea</text></g>
+  <g data-step="2"><rect x="145" y="40" width="60" height="50" rx="8" class="n-accent"/><text x="175" y="70" text-anchor="middle" class="t-small t-bold">teszt</text></g>
+  <g data-step="3"><rect x="215" y="40" width="60" height="50" rx="8" class="n-accent"/><text x="245" y="70" text-anchor="middle" class="t-small t-bold">build</text></g>
+  <g data-step="4"><rect x="285" y="40" width="60" height="50" rx="8" class="n-violet"/><text x="315" y="70" text-anchor="middle" class="t-small t-bold">Trivy</text></g>
+  <g data-step="5"><rect x="355" y="40" width="60" height="50" rx="8" class="n-accent"/><text x="385" y="70" text-anchor="middle" class="t-small t-bold">registry</text></g>
+  <g data-step="6"><rect x="425" y="40" width="60" height="50" rx="8" class="n-ok"/><text x="455" y="70" text-anchor="middle" class="t-small t-bold">Helm</text></g>
+  <g data-step="7"><rect x="495" y="40" width="60" height="50" rx="8" class="n-ok"/><text x="525" y="70" text-anchor="middle" class="t-small t-bold">átvétel</text></g>
+  <g data-only="7"><text x="600" y="70" text-anchor="middle" class="t-bold t-ok">zöld ✓</text></g>
+  <g data-only="8"><text x="600" y="70" text-anchor="middle" class="t-bold t-bad">piros ✗</text><rect x="425" y="115" width="130" height="40" rx="8" class="n-bad"/><text x="490" y="140" text-anchor="middle" class="t-small t-bold">helm rollback</text>
+  <path d="M525,90 L510,112" class="line-bad"/></g>
+  <text x="140" y="25" text-anchor="middle" class="t-small t-muted">1. job: build-test-push</text>
+  <text x="490" y="25" text-anchor="middle" class="t-small t-muted">2. job: deploy</text>
+</svg>
+</figure>
+<div class="controls">
+  <button data-prev>← Vissza</button>
+  <button data-next class="primary">Tovább →</button>
+  <button data-reset>Elölről</button>
+  <span class="counter"></span>
+</div>
+<div class="caption"></div>
+</div>
+
+<details class="q"><summary>Melyik ágra kell pusholni, hogy elinduljon a pipeline?</summary>
+<p><code>main</code>, <code>release/**</code>, <code>feature/**</code>, <code>hotfix/**</code>. Minden más ágon (pl. <code>meres/kezi-07</code>) nem indul futtató. A mérés ezt használta ki: kézi futtatás <code>meres/…</code> ágra, automatizált a <code>release/meres</code> ágra.</p></details>
+
+<h2 id="eredmeny">4. Az eredmény három számban</h2>
+<div class="stats">
+<div><span class="v">13 → 2</span><span class="l">emberi beavatkozás telepítéskor</span></div>
+<div><span class="v">31 → 24 mp</span><span class="l">telepítési szakasz, medián</span></div>
+<div><span class="v">56 → 26 mp</span><span class="l">kiesés hibás kiadás után, medián</span></div>
+</div>
+<p>A teljes idő viszont 71 mp-ről 129,5 mp-re <em>nő</em>, mert a pipeline lintel, tesztel és kétszer szkennel. Hogy ez miért nem baj, a 9. tananyag mondja el.</p>
+
+<h2 id="allapot">5. Hol tartasz (2026. október 5.)</h2>
+<div class="table-wrap"><table>
+<tr><th>Rész</th><th>Állapot</th></tr>
+<tr><td>Backend, frontend, PostgreSQL, Helm chart</td><td><span class="badge ok">kész</span></td></tr>
+<tr><td>Terraform + k3s cloud-initből (gépcsere után élesben is felállt)</td><td><span class="badge ok">kész</span></td></tr>
+<tr><td>Pipeline: build, teszt, szkennelés, push, Helm-telepítés, ellenőrzés, rollback</td><td><span class="badge ok">kész</span></td></tr>
+<tr><td>Mérés: 10 kézi + 10 automatizált telepítés, 3 + 3 helyreállítás (+ A0)</td><td><span class="badge ok">kész</span></td></tr>
+<tr><td>SBOM-ok a mért kiadásra (7 fájl, 771 komponens)</td><td><span class="badge ok">kész</span></td></tr>
+<tr><td>Megfigyelés a k3s-en (ADR-0010), a gépen ellenőrizve</td><td><span class="badge ok">kész</span></td></tr>
+<tr><td>A 6. fejezet négy ábrája scriptből</td><td><span class="badge ok">kész</span></td></tr>
+<tr><td>Frontend kép hadolint- és Trivy-kapuja</td><td><span class="badge ok">a ci.yml-ben</span>, a gépen még nem futott</td></tr>
+<tr><td>Alapképek léptetése (<code>pin-base-images.sh</code>)</td><td><span class="badge wait">vár</span> 10-05: <code>not pinned</code>, új pcre2 HIGH a <code>python:3.12-slim</code>-ben; pár nap múlva újra</td></tr>
+<tr><td>Utána: commit, gép indítása, push, zöld pipeline, PR a <code>main</code>-be</td><td><span class="badge wait">vár</span> <code>07-lezaras-lepesrol-lepesre.md</code> 2. lépéstől</td></tr>
+<tr><td>A dolgozat szövege (3–6. fejezet először)</td><td><span class="badge out">a technikai lezárás után</span></td></tr>
+</table></div>
+
+<details class="q vedes"><summary>„A pipeline most piros. Akkor nem működik?”</summary>
+<p>Működik, és pont ezért piros. A Trivy egy azóta felfedezett, de a kiadó által már javított HIGH hibát talál az alapképben (pcre2). A kaput nem kapcsoltam ki: megvárom, amíg a <code>python:3.12-slim</code> új kiadása tartalmazza a javítást, és a <code>pin-base-images.sh</code> csak akkor lépteti az alapképet, ha az új kép tiszta. A mérést ez nem érinti, az a <code>e4da1d9</code>-es kiadáson futott.</p></details>
+
+<h2 id="szavak">6. Szószedet</h2>
+<div class="table-wrap"><table>
+<tr><th>Szó</th><th>Egyszerűen</th></tr>
+<tr><td>CI / CD</td><td>Minden változást automatikusan tesztelünk (CI), és a tesztelt kódot automatikusan ki is visszük (CD).</td></tr>
+<tr><td>Pipeline</td><td>Lépések, amik maguktól, egymás után lefutnak.</td></tr>
+<tr><td>Image / konténer</td><td>Az app és minden, ami kell neki, egy dobozban. Az image a fagyasztott doboz, a konténer a futó példánya.</td></tr>
+<tr><td>Registry</td><td>Az image-ek raktára.</td></tr>
+<tr><td>Kubernetes / k3s</td><td>„Karmester”: megmondod, mi fusson, és ő gondoskodik róla. A k3s egy könnyített, teljes értékű kiadás.</td></tr>
+<tr><td>Pod</td><td>Egy futó konténer a fürtben. Eldobható.</td></tr>
+<tr><td>Helm</td><td>A Kubernetes csomagkezelője. Egy paranccsal telepít, és emlékszik az előző verziókra.</td></tr>
+<tr><td>Rollback</td><td>Visszaállás az előző verzióra.</td></tr>
+<tr><td>Terraform</td><td>Infrastruktúra kódból, kattintás helyett.</td></tr>
+<tr><td>Füstteszt</td><td>Gyors próba: néhány kérés, jó választ ad-e.</td></tr>
+<tr><td>Ellátási lánc</td><td>Minden külső darab, amiből a szoftvered áll: könyvtárak, alapkép.</td></tr>
+<tr><td>SBOM / Trivy</td><td>Összetevőlista / szkenner, ami ismert sérülékenységeket keres.</td></tr>
+<tr><td>ADR</td><td>Döntési jegyzet: mit, miért, mi az ára. Tíz van: <code>docs/adr/</code>.</td></tr>
+</table></div>
+<footer class="page"><span>Frissítve: 2026. október 5. · a repó <code>release/meres</code> ágának állapota szerint</span><span>Forrás: naplo.md, 00-terv.md, 07-lezaras-lepesrol-lepesre.md, README.md</span></footer>
+<nav class="top"><a href="index.html">☰ Térkép</a><span class="navpair"><a href="index.html">← Tananyagtérkép</a><a href="01-kubernetes-alapok.html">1. Kubernetes alapok →</a></span></nav>
+</div>
+<script src="assets/tananyag.js"></script>
+</body>
+</html>

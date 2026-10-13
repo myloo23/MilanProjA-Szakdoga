@@ -2,10 +2,10 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.7.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.7",
-  "serialNumber": "urn:uuid:a7832bcd-8c89-4ebc-8aed-04cef392ee1e",
+  "serialNumber": "urn:uuid:bb7aa357-be9a-47bc-95cd-7d1c6f95c8b9",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-08-03T12:00:24+00:00",
+    "timestamp": "2026-09-23T07:34:53+00:00",
     "tools": {
       "components": [
         {
@@ -20,7 +20,7 @@
       ]
     },
     "component": {
-      "bom-ref": "add98437-42bb-449c-a126-f072dd7db51e",
+      "bom-ref": "1e6ec2fa-075f-4d40-8f5e-6f6260ba4828",
       "type": "application",
       "name": ".",
       "properties": [
@@ -33,7 +33,7 @@
   },
   "components": [
     {
-      "bom-ref": "33bf271e-ef01-4c01-affb-ef1d4c11fc67",
+      "bom-ref": "84cc0c1c-367f-4c0b-b224-45d8d0e26536",
       "type": "application",
       "name": "requirements.txt",
       "properties": [
@@ -44,6 +44,93 @@
         {
           "name": "aquasecurity:trivy:Type",
           "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c2aebf2e-431d-4c33-815e-dfee87079fec",
+      "type": "application",
+      "name": "frontend/package-lock.json",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:Class",
+          "value": "lang-pkgs"
+        },
+        {
+          "name": "aquasecurity:trivy:Type",
+          "value": "npm"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/react-dom@19.3.0",
+      "type": "library",
+      "name": "react-dom",
+      "version": "19.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/react-dom@19.3.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgID",
+          "value": "react-dom@19.3.0"
+        },
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "npm"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/react@19.3.0",
+      "type": "library",
+      "name": "react",
+      "version": "19.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/react@19.3.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgID",
+          "value": "react@19.3.0"
+        },
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "npm"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/scheduler@0.28.0",
+      "type": "library",
+      "name": "scheduler",
+      "version": "0.28.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/scheduler@0.28.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgID",
+          "value": "scheduler@0.28.0"
+        },
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "npm"
         }
       ]
     },
@@ -152,6 +239,58 @@
       ]
     },
     {
+      "bom-ref": "pkg:pypi/prometheus-client@0.26.0",
+      "type": "library",
+      "name": "prometheus-client",
+      "version": "0.26.0",
+      "purl": "pkg:pypi/prometheus-client@0.26.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/psycopg-binary@3.3.5",
+      "type": "library",
+      "name": "psycopg-binary",
+      "version": "3.3.5",
+      "purl": "pkg:pypi/psycopg-binary@3.3.5",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/psycopg@3.3.5",
+      "type": "library",
+      "name": "psycopg",
+      "version": "3.3.5",
+      "purl": "pkg:pypi/psycopg@3.3.5",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/typing-extensions@4.16.0",
+      "type": "library",
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "purl": "pkg:pypi/typing-extensions@4.16.0",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
       "bom-ref": "pkg:pypi/werkzeug@3.1.8",
       "type": "library",
       "name": "werkzeug",
@@ -167,7 +306,14 @@
   ],
   "dependencies": [
     {
-      "ref": "33bf271e-ef01-4c01-affb-ef1d4c11fc67",
+      "ref": "1e6ec2fa-075f-4d40-8f5e-6f6260ba4828",
+      "dependsOn": [
+        "84cc0c1c-367f-4c0b-b224-45d8d0e26536",
+        "c2aebf2e-431d-4c33-815e-dfee87079fec"
+      ]
+    },
+    {
+      "ref": "84cc0c1c-367f-4c0b-b224-45d8d0e26536",
       "dependsOn": [
         "pkg:pypi/blinker@1.9.0",
         "pkg:pypi/click@8.4.2",
@@ -177,14 +323,34 @@
         "pkg:pypi/jinja2@3.1.6",
         "pkg:pypi/markupsafe@3.0.3",
         "pkg:pypi/packaging@26.2",
+        "pkg:pypi/prometheus-client@0.26.0",
+        "pkg:pypi/psycopg-binary@3.3.5",
+        "pkg:pypi/psycopg@3.3.5",
+        "pkg:pypi/typing-extensions@4.16.0",
         "pkg:pypi/werkzeug@3.1.8"
       ]
     },
     {
-      "ref": "add98437-42bb-449c-a126-f072dd7db51e",
+      "ref": "c2aebf2e-431d-4c33-815e-dfee87079fec",
       "dependsOn": [
-        "33bf271e-ef01-4c01-affb-ef1d4c11fc67"
+        "pkg:npm/react-dom@19.3.0",
+        "pkg:npm/react@19.3.0"
       ]
+    },
+    {
+      "ref": "pkg:npm/react-dom@19.3.0",
+      "dependsOn": [
+        "pkg:npm/react@19.3.0",
+        "pkg:npm/scheduler@0.28.0"
+      ]
+    },
+    {
+      "ref": "pkg:npm/react@19.3.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:npm/scheduler@0.28.0",
+      "dependsOn": []
     },
     {
       "ref": "pkg:pypi/blinker@1.9.0",
@@ -216,6 +382,22 @@
     },
     {
       "ref": "pkg:pypi/packaging@26.2",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/prometheus-client@0.26.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/psycopg-binary@3.3.5",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/psycopg@3.3.5",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/typing-extensions@4.16.0",
       "dependsOn": []
     },
     {

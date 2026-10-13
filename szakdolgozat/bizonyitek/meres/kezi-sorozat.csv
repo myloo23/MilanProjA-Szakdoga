@@ -1,0 +1,11 @@
+futtatas,ag,commit,kezdes_utc,befejezes_utc,eltelt_mp,beavatkozasok,elfogadas,megjegyzes
+1,meres/kezi-NN,76a9ba1,14:54:57,14:56:58,121,13,sikeres,"az ag neve elgepelesbol kezi-NN lett; a valtoztatas tipusa es a meres ettol valtozatlan"
+2,meres/kezi-03,24144d8,08:06:39,08:09:03,144,13,sikeres,"a kezdo idobelyeg a script-fajl letrehozasi idejebol (a PROMPT tevesen a script elott lett beallitva); a 12. lepes parancssoraba beillesztve a vart kimenet szovege is, a curl -s elnyelte, a valasz helyes volt"
+3,meres/kezi-04,135d7bd,08:16:54,08:18:20,86,13,sikeres,"elteres nelkul; a backend build 12 mp (bemelegedett reteg-gyorsitotar)"
+4,meres/kezi-05,0051c28,08:25:41,08:26:48,67,13,sikeres,"elteres nelkul"
+5,meres/kezi-07,658cbe7,08:31:35,08:32:50,75,13,sikeres,"elteres nelkul; a 2. lepes 9 mp (ssh-kapcsolodas ingadozasa), a 10. lepes 18 mp"
+6,meres/kezi-08,65e83c4,08:37:03,08:38:14,71,13,sikeres,"elteres nelkul"
+7,meres/kezi-09,d1c08c6,08:43:00,08:44:14,74,13,sikeres,"elteres nelkul; a 10. lepes 19 mp, a sorozat eddigi legmagasabb gordulo csere ideje"
+8,meres/kezi-10,62a7daf,08:45:55,08:47:14,79,13,sikeres,"a 12. lepes 11 mp (a tobbi futtatasban 4-6 mp): emberi szunet a kimenet elolvasasakor, nem gepi ok"
+9,meres/kezi-11,70239c4,08:52:11,08:53:22,71,13,sikeres,"elteres nelkul"
+10,meres/kezi-12,be36f74,08:58:05,08:59:09,64,13,sikeres,"elteres nelkul; a sorozat leggyorsabb futtatasa"

@@ -1,0 +1,140 @@
+// Grafana Alloy a mérőgépen (k3s) — ADR-0010.
+//
+// A laptopos config.alloy párja; a compose.azure.yaml ezt csatolja be a helyére.
+// Két forrásból gyűjt, és a kettő ugyanabba a feldolgozó láncba fut:
+//
+//   1. a Docker-konténerek (Gitea, runner, registry, a megfigyelő szolgáltatások)
+//      — ugyanúgy, mint a laptopon, a Docker socketen át;
+//   2. a k3s podjai — ÚJ. Ezek nem a Docker-motorban futnak, hanem a k3s saját
+//      containerd-jében, így a Docker socket nem látja őket. A containerd a
+//      podok kimenetét fájlba írja: /var/log/pods/<névtér>_<pod>_<uid>/<konténer>/0.log.
+//      Az Alloy ezeket a fájlokat olvassa (read-only csatolással).
+//
+// Miért fájlból és nem a Kubernetes API-ból (loki.source.kubernetes)? Mert az
+// API-s olvasáshoz a pods/log jog kellene, és minden naplósor átmenne az API
+// szerveren. A fájl ugyanazon a gépen van, ahol az Alloy fut; egy egycsomópontos
+// fürtön ez a legrövidebb és a legkevesebb jogot igénylő út.
+//
+// A két forrás feldolgozása (JSON, időbélyeg, a `level` címke) szándékosan
+// közös: a config.alloy `app_json` blokkjával beállításaiban azonos, hogy a Loki-
+// lekérdezések és a Grafana derived field mindkét környezetben ugyanúgy
+// működjenek. Ha az egyiket módosítod, a másikat is.
+
+// ---------------------------------------------------------------------------
+// 1. forrás: Docker-konténerek (változatlanul a config.alloy-ból)
+// ---------------------------------------------------------------------------
+
+discovery.docker "containers" {
+  host             = "unix:///var/run/docker.sock"
+  refresh_interval = "10s"
+}
+
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.containers.output
+  labels     = {platform = "projecta"}
+  forward_to = [loki.process.app_json.receiver]
+}
+
+// ---------------------------------------------------------------------------
+// 2. forrás: a k3s podjai, a containerd naplófájljaiból
+// ---------------------------------------------------------------------------
+
+// Mintára illesztett fájllista, 10 másodpercenként újraértékelve. Gördülő
+// cserénél a régi pod könyvtára eltűnik, az újé megjelenik (új név, új uid) —
+// a minta mindkettőt lefedi, így telepítés után nem kell semmit átírni.
+//
+// A `container` címke értéke szándékosan NEM a Kubernetes-konténer neve
+// (`backend`), hanem a laptopos konténernév (`projecta-flask`). A címke itt a
+// szolgáltatás logikai neve: a Grafana „App golden signals" dashboardjának
+// naplópanelje és a request_id-s derived field erre szűr. Ha a két környezetben
+// más lenne, a dashboardot kétszer kellene karbantartani.
+//
+// A pod neve nem címke (ADR-0007): minden telepítés új nevet hoz, és a Loki
+// minden új címkeértékből új adatfolyamot nyit.
+local.file_match "pods" {
+  path_targets = [
+    {"__path__" = "/var/log/pods/default_backend-*/backend/*.log", "container" = "projecta-flask", "namespace" = "default"},
+    {"__path__" = "/var/log/pods/default_frontend-*/frontend/*.log", "container" = "projecta-frontend", "namespace" = "default"},
+  ]
+  sync_period = "10s"
+}
+
+loki.source.file "pods" {
+  targets    = local.file_match.pods.targets
+  forward_to = [loki.process.cri.receiver]
+}
+
+loki.process "cri" {
+  // A containerd minden sort így ír ki:
+  //   2026-09-30T08:12:01.123456789Z stdout F {"level": "info", ...}
+  // időbélyeg, adatfolyam, teljes/részleges jelző, majd maga a sor. A stage.cri
+  // ezt bontja szét, és továbbadja a tiszta sort — onnantól ugyanaz a JSON, amit
+  // a laptopon a Docker adott. Nélküle a stage.json minden sorra elbukna, és a
+  // `level` címke egyik app-soron sem jelenne meg. Mellékhatása egy `stream`
+  // címke (stdout/stderr) — két értéke van, maradhat; a gunicorn saját sorai
+  // stderr-re mennek, így ez a címke választja el őket az alkalmazás JSON-jától.
+  stage.cri {}
+
+  stage.static_labels {
+    values = {platform = "projecta"}
+  }
+
+  // A loki.source.file minden sorra rárakja a forrásfájl útvonalát `filename`
+  // címkeként. Az útvonalban benne van a pod neve és uid-ja, tehát ez ugyanaz a
+  // korlátlan címke, amit fent kerültünk — eldobjuk.
+  stage.label_drop {
+    values = ["filename"]
+  }
+
+  forward_to = [loki.process.app_json.receiver]
+}
+
+// ---------------------------------------------------------------------------
+// Közös feldolgozás — beállításaiban azonos a config.alloy blokkjával
+// (a magyarázó kommentek ott vannak)
+// ---------------------------------------------------------------------------
+
+loki.process "app_json" {
+  stage.json {
+    expressions = {
+      level      = "level",
+      status     = "status",
+      endpoint   = "endpoint",
+      request_id = "request_id",
+      timestamp  = "timestamp",
+    }
+  }
+
+  stage.timestamp {
+    source = "timestamp"
+    format = "RFC3339"
+  }
+
+  stage.labels {
+    values = {level = ""}
+  }
+
+  forward_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+  endpoint {
+    url = "http://projecta-loki:3100/loki/api/v1/push"
+  }
+}

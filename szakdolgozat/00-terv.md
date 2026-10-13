@@ -1,14 +1,14 @@
 # Szakdolgozat — cím, szerkezet és munkaterv
 
-Konzulens: Kurucz Bence (NJE GAMF)
+Témavezető: Dr. Čović Zlatko (NJE GAMF), 2026. szeptember 30-tól. Korábban Kurucz Bence, aki a témát átadta.
 Nyelv: magyar
-Utoljára frissítve: 2026-09-15 (a konzulens visszajelzése után)
+Utoljára frissítve: 2026-09-30 (a 12–13. pont állapota)
 
 ---
 
-## 1. A konzulens válasza — mi változik
+## 1. A korábbi konzulens (Kurucz Bence) válasza — mi változik
 
-A konzulens jóváhagyta a címet és a mérési megközelítést. Két kérése volt:
+Kurucz Bence jóváhagyta a címet és a mérési megközelítést. Két kérése volt:
 
 1. Az alkalmazás legyen kellően összetett: **legyen benne minden az említettek közül** — Kubernetes, Terraform, supply-chain biztonság, valamint saját frontend és backend.
 2. A 3. és 4. fejezet olvadjon össze, az új címe: **A rendszer megismerése és tervezése**.
@@ -106,7 +106,7 @@ Ebből az következik, hogy **a kiindulási mérés nem most jön, hanem azután
 
 ### Most (ez a hét)
 
-1. Küldd el a konzulensnek az összefoglalót és a frissített fejezetszerkezetet.
+1. Küldd el a témavezetőnek az összefoglalót és a frissített fejezetszerkezetet.
 2. Hozd létre a `Szakdolgozat` Claude projectet, csatold a `~/Documents/Szakdolgozat` mappát, másold be a leírást.
 3. Ellenőrizd, hogy a meglévő rendszer felállítható-e a saját gépeden: `platform/` mappa, `.env` kitöltése, `docker compose up -d`, egy teljes deploy. Ez a jelenlegi állapot alapja, és ebből fog kinőni az új.
 4. Dönts a Kubernetes-fürt formájáról. Reális lehetőségek: k3s egy vagy két virtuális gépen a saját gépeden, vagy k3s egy olcsó felhős szerveren. A választás a Terraformot is meghatározza — a Terraformnak valódi erőforrást kell létrehoznia, nem elég a Docker provider.
@@ -120,8 +120,8 @@ Ebből az következik, hogy **a kiindulási mérés nem most jön, hanem azután
 9. Kubernetes és Helm chart: az alkalmazás fusson a fürtön.
 10. **Kézi telepítési folyamat rögzítése és megmérése** a kész Kubernetes-környezeten.
 11. A pipeline rákötése: build, registry, telepítés, ellenőrzés, visszaállítás.
-12. Supply-chain lépések: függőségrögzítés, SBOM, sérülékenységvizsgálat, képaláírás.
-13. Megfigyelhetőségi réteg átvezetése a Kubernetes-környezetre.
+12. Supply-chain lépések: függőségrögzítés, SBOM, sérülékenységvizsgálat. *A képaláírás nem készül el, a 7. fejezetbe került (2026-09-30, naplo 3.0): a mérés lezárult, és az aláírás a mért láncot változtatná meg. 2026-10-02 (naplo 3.2): a frontend kép is hadolint- és Trivy-kapun megy át, az alapképei digesttel rögzítettek; az alapkép-léptetés a `scripts/pin-base-images.sh`-val történik.*
+13. Megfigyelhetőségi réteg átvezetése a Kubernetes-környezetre. *Kész (ADR-0010): a mérőgépen ellenőrizve 2026-09-30-án, `bizonyitek/05-megfigyeles-k3s-verify.txt`.*
 14. **Automatizált mérés**, kiértékelés, ábrák.
 15. A 3–6. fejezet megírása. A 2. fejezet és a bevezetés a végén.
 

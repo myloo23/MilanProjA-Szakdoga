@@ -1,0 +1,346 @@
+2026-09-23T07:06:04.3134709Z projecta-azure-runner(version:v0.2.12) received task 32 of job build-test-push, be triggered by event: push
+2026-09-23T07:06:04.3139903Z workflow prepared
+2026-09-23T07:06:04.3140891Z evaluating expression 'success()'
+2026-09-23T07:06:04.3141540Z expression 'success()' evaluated to 'true'
+2026-09-23T07:06:04.3141682Z 🚀  Start image=docker.gitea.com/runner-images:ubuntu-latest
+2026-09-23T07:06:04.3223002Z   🐳  docker pull image=docker.gitea.com/runner-images:ubuntu-latest platform= username= forcePull=true
+2026-09-23T07:06:04.3223248Z   🐳  docker pull docker.gitea.com/runner-images:ubuntu-latest
+2026-09-23T07:06:04.3223498Z pulling image 'docker.gitea.com/runner-images:ubuntu-latest' ()
+2026-09-23T07:06:06.1669062Z Pulling from runner-images :: ubuntu-latest
+2026-09-23T07:06:07.9071483Z Digest: sha256:fd911d7417bfbf0f454530e447da95b58001e1df41bbc5e1a8dd35d432575aae :: 
+2026-09-23T07:06:07.9072077Z Status: Image is up to date for docker.gitea.com/runner-images:ubuntu-latest :: 
+2026-09-23T07:06:07.9373320Z   🐳  docker create image=docker.gitea.com/runner-images:ubuntu-latest platform= entrypoint=["/bin/sleep" "10800"] cmd=[] network="projecta-platform"
+2026-09-23T07:06:08.4541117Z Created container name=GITEA-ACTIONS-TASK-32_WORKFLOW-Pipeline_JOB-build-test-push id=58ba62a11616e7dec018adefdcb64e37e4c1d4cff92eaa3a0adc526b4920965d from image docker.gitea.com/runner-images:ubuntu-latest (platform: )
+2026-09-23T07:06:08.4541413Z ENV ==> [RUNNER_TOOL_CACHE=/opt/hostedtoolcache RUNNER_OS=Linux RUNNER_ARCH=X64 RUNNER_TEMP=/tmp LANG=C.UTF-8]
+2026-09-23T07:06:08.4541521Z   🐳  docker run image=docker.gitea.com/runner-images:ubuntu-latest platform= entrypoint=["/bin/sleep" "10800"] cmd=[] network="projecta-platform"
+2026-09-23T07:06:08.4541642Z Starting container: 58ba62a11616e7dec018adefdcb64e37e4c1d4cff92eaa3a0adc526b4920965d
+2026-09-23T07:06:08.7133811Z Started container: 58ba62a11616e7dec018adefdcb64e37e4c1d4cff92eaa3a0adc526b4920965d
+2026-09-23T07:06:08.7828149Z Writing entry to tarball workflow/event.json len:8576
+2026-09-23T07:06:08.7830379Z Writing entry to tarball workflow/envs.txt len:0
+2026-09-23T07:06:08.7830713Z Extracting content to '/var/run/act/'
+2026-09-23T07:06:08.8095155Z   ☁  git clone 'https://github.com/actions/checkout' # ref=v4
+2026-09-23T07:06:08.8095393Z   cloning https://github.com/actions/checkout to /root/.cache/act/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab
+2026-09-23T07:06:09.7059795Z Unable to pull refs/heads/v4: non-fast-forward update
+2026-09-23T07:06:09.7060468Z Cloned https://github.com/actions/checkout to /root/.cache/act/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab
+2026-09-23T07:06:09.7390231Z Checked out v4
+2026-09-23T07:06:09.7468092Z   ☁  git clone 'https://github.com/actions/setup-python' # ref=v5
+2026-09-23T07:06:09.7468383Z   cloning https://github.com/actions/setup-python to /root/.cache/act/8dd8b1aead80a801f9b34ee6d45c001ae20a6c2abfe4c7037c4803578f162558
+2026-09-23T07:06:10.5806537Z Non-terminating error while running 'git clone': some refs were not updated
+2026-09-23T07:06:10.6043156Z evaluating expression ''
+2026-09-23T07:06:10.6043631Z expression '' evaluated to 'true'
+2026-09-23T07:06:10.6043758Z ⭐ Run Main Mark the start of the run
+2026-09-23T07:06:10.6044006Z Writing entry to tarball workflow/outputcmd.txt len:0
+2026-09-23T07:06:10.6044162Z Writing entry to tarball workflow/statecmd.txt len:0
+2026-09-23T07:06:10.6044265Z Writing entry to tarball workflow/pathcmd.txt len:0
+2026-09-23T07:06:10.6044380Z Writing entry to tarball workflow/envs.txt len:0
+2026-09-23T07:06:10.6044461Z Writing entry to tarball workflow/SUMMARY.md len:0
+2026-09-23T07:06:10.6044549Z Extracting content to '/var/run/act'
+2026-09-23T07:06:10.6281219Z Wrote command \n\necho "MERES pipeline-start $(date -u +%Y-%m-%dT%H:%M:%SZ)"\n\n to 'workflow/0'
+2026-09-23T07:06:10.6281944Z Writing entry to tarball workflow/0 len:60
+2026-09-23T07:06:10.6282327Z Extracting content to '/var/run/act'
+2026-09-23T07:06:10.6308541Z   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/0] user= workdir=
+2026-09-23T07:06:10.6308997Z Exec command '[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/0]'
+2026-09-23T07:06:10.6309470Z Working directory '/workspace/milan/MilanProjA-Szakdoga'
+2026-09-23T07:06:10.6735408Z MERES pipeline-start 2026-09-23T07:06:10Z
+2026-09-23T07:06:11.0346149Z ::add-matcher::/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/problem-matcher.json
+2026-09-23T07:06:11.0349524Z Syncing repository: milan/MilanProjA-Szakdoga
+2026-09-23T07:06:11.0353066Z ::group::Getting Git version info
+2026-09-23T07:06:11.0354036Z Working directory is '/workspace/milan/MilanProjA-Szakdoga'
+2026-09-23T07:06:11.0385845Z [command]/usr/bin/git version
+2026-09-23T07:06:11.0423992Z git version 2.55.0
+2026-09-23T07:06:11.0445462Z ::endgroup::
+2026-09-23T07:06:11.0569828Z Temporarily overriding HOME='/tmp/4ad16c8c-d17a-43eb-b499-fbcb9cfba747' before making global git config changes
+2026-09-23T07:06:11.0571936Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-23T07:06:11.0575915Z [command]/usr/bin/git config --global --add safe.directory /workspace/milan/MilanProjA-Szakdoga
+2026-09-23T07:06:11.0607685Z Deleting the contents of '/workspace/milan/MilanProjA-Szakdoga'
+2026-09-23T07:06:11.0612545Z ::group::Initializing the repository
+2026-09-23T07:06:11.0616246Z [command]/usr/bin/git init /workspace/milan/MilanProjA-Szakdoga
+2026-09-23T07:06:11.0672273Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-09-23T07:06:11.0672571Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-09-23T07:06:11.0672754Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-09-23T07:06:11.0672907Z hint: call:
+2026-09-23T07:06:11.0673051Z hint:
+2026-09-23T07:06:11.0673209Z hint: 	git config --global init.defaultBranch <name>
+2026-09-23T07:06:11.0673363Z hint:
+2026-09-23T07:06:11.0673539Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-09-23T07:06:11.0673692Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-09-23T07:06:11.0673853Z hint:
+2026-09-23T07:06:11.0673993Z hint: 	git branch -m <name>
+2026-09-23T07:06:11.0674147Z hint:
+2026-09-23T07:06:11.0674274Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-09-23T07:06:11.0678199Z Initialized empty Git repository in /workspace/milan/MilanProjA-Szakdoga/.git/
+2026-09-23T07:06:11.0688864Z [command]/usr/bin/git remote add origin http://gitea:3000/milan/MilanProjA-Szakdoga
+2026-09-23T07:06:11.0715206Z ::endgroup::
+2026-09-23T07:06:11.0716589Z ::group::Disabling automatic garbage collection
+2026-09-23T07:06:11.0719372Z [command]/usr/bin/git config --local gc.auto 0
+2026-09-23T07:06:11.0745259Z ::endgroup::
+2026-09-23T07:06:11.0745574Z ::group::Setting up auth
+2026-09-23T07:06:11.0751000Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-23T07:06:11.0781650Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-23T07:06:11.0984605Z [command]/usr/bin/git config --local --name-only --get-regexp http\.http\:\/\/gitea\:3000\/\.extraheader
+2026-09-23T07:06:11.1012439Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.http\:\/\/gitea\:3000\/\.extraheader' && git config --local --unset-all 'http.http://gitea:3000/.extraheader' || :"
+2026-09-23T07:06:11.1207795Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-23T07:06:11.1233112Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-23T07:06:11.1439261Z [command]/usr/bin/git config --local http.http://gitea:3000/.extraheader AUTHORIZATION: basic ***
+2026-09-23T07:06:11.1494652Z ::endgroup::
+2026-09-23T07:06:11.1495643Z ::group::Fetching the repository
+2026-09-23T07:06:11.1504626Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +544f8953aedcb237f2f2230983e099c71ba50170:refs/remotes/origin/release/meres-hiba
+2026-09-23T07:06:11.4079781Z From http://gitea:3000/milan/MilanProjA-Szakdoga
+2026-09-23T07:06:11.4080499Z  * [new ref]         544f8953aedcb237f2f2230983e099c71ba50170 -> origin/release/meres-hiba
+2026-09-23T07:06:11.4081149Z ::endgroup::
+2026-09-23T07:06:11.4081348Z ::group::Determining the checkout info
+2026-09-23T07:06:11.4081503Z ::endgroup::
+2026-09-23T07:06:11.4081754Z [command]/usr/bin/git sparse-checkout disable
+2026-09-23T07:06:11.4118128Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-09-23T07:06:11.4141932Z ::group::Checking out the ref
+2026-09-23T07:06:11.4145371Z [command]/usr/bin/git checkout --progress --force -B release/meres-hiba refs/remotes/origin/release/meres-hiba
+2026-09-23T07:06:11.4720691Z Switched to a new branch 'release/meres-hiba'
+2026-09-23T07:06:11.4722189Z branch 'release/meres-hiba' set up to track 'origin/release/meres-hiba'.
+2026-09-23T07:06:11.4728839Z ::endgroup::
+2026-09-23T07:06:11.4764903Z [command]/usr/bin/git log -1 --format=%H
+2026-09-23T07:06:11.4786733Z 544f8953aedcb237f2f2230983e099c71ba50170
+2026-09-23T07:06:11.4802424Z ::remove-matcher owner=checkout-git::
+2026-09-23T07:06:11.5728533Z refs/heads/release/meres-hiba -> ships=true, tag=544f895
+2026-09-23T07:06:12.0470889Z ::group::Installed versions
+2026-09-23T07:06:12.0528074Z (node:154) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-23T07:06:12.0528543Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-23T07:06:12.0530767Z Successfully set up CPython (3.12.14)
+2026-09-23T07:06:12.0532137Z ::endgroup::
+2026-09-23T07:06:12.0805929Z [command]/opt/hostedtoolcache/Python/3.12.14/x64/bin/pip cache dir
+2026-09-23T07:06:12.2945117Z /root/.cache/pip
+2026-09-23T07:06:12.4528877Z Cache Size: ~3 MB (2635064 B)
+2026-09-23T07:06:12.4549525Z [command]/usr/bin/tar -xf /tmp/fe4a7435-1ebd-4ca4-b59e-64cb38469309/cache.tzst -P -C /workspace/milan/MilanProjA-Szakdoga --use-compress-program unzstd
+2026-09-23T07:06:12.4710614Z Cache restored successfully
+2026-09-23T07:06:12.4717561Z Cache restored from key: setup-python-linux-x64-24.04-ubuntu-python-3.12.14-pip-528535ef8e9e502a48a298e3d6e02ce098910f414be5bb6da735900e1e78fe89
+2026-09-23T07:06:12.4719590Z ##[add-matcher]/run/act/actions/8dd8b1aead80a801f9b34ee6d45c001ae20a6c2abfe4c7037c4803578f162558/.github/python.json
+2026-09-23T07:06:12.9052238Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (26.2.1)
+2026-09-23T07:06:13.1162131Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-09-23T07:06:13.5043289Z Requirement already satisfied: blinker==1.9.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 7)) (1.9.0)
+2026-09-23T07:06:13.5050317Z Requirement already satisfied: build==1.5.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 11)) (1.5.0)
+2026-09-23T07:06:13.5055147Z Requirement already satisfied: cfgv==3.5.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 15)) (3.5.0)
+2026-09-23T07:06:13.5060471Z Requirement already satisfied: click==8.4.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 19)) (8.4.2)
+2026-09-23T07:06:13.5066059Z Requirement already satisfied: coverage==7.15.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 25)) (7.15.2)
+2026-09-23T07:06:13.5070824Z Requirement already satisfied: distlib==0.4.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 118)) (0.4.3)
+2026-09-23T07:06:13.5075316Z Requirement already satisfied: filelock==3.32.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 122)) (3.32.2)
+2026-09-23T07:06:13.5079899Z Requirement already satisfied: flask==3.1.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 128)) (3.1.3)
+2026-09-23T07:06:13.5084464Z Requirement already satisfied: gunicorn==23.0.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 132)) (23.0.0)
+2026-09-23T07:06:13.5090582Z Requirement already satisfied: identify==2.6.19 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 136)) (2.6.19)
+2026-09-23T07:06:13.5094716Z Requirement already satisfied: iniconfig==2.3.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 140)) (2.3.0)
+2026-09-23T07:06:13.5099607Z Requirement already satisfied: itsdangerous==2.2.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 144)) (2.2.0)
+2026-09-23T07:06:13.5103996Z Requirement already satisfied: jinja2==3.1.6 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 148)) (3.1.6)
+2026-09-23T07:06:13.5108762Z Requirement already satisfied: markupsafe==3.0.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 152)) (3.0.3)
+2026-09-23T07:06:13.5113649Z Requirement already satisfied: nodeenv==1.10.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 246)) (1.10.0)
+2026-09-23T07:06:13.5118073Z Requirement already satisfied: packaging==26.2 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 250)) (26.2)
+2026-09-23T07:06:13.5122598Z Requirement already satisfied: pip-tools==7.6.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 258)) (7.6.0)
+2026-09-23T07:06:13.6579898Z Collecting platformdirs==4.11.1 (from -r requirements-dev.txt (line 262))
+2026-09-23T07:06:13.6594160Z   Using cached platformdirs-4.11.1-py3-none-any.whl (23 kB)
+2026-09-23T07:06:13.6620587Z Requirement already satisfied: pluggy==1.6.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 266)) (1.6.0)
+2026-09-23T07:06:13.6625373Z Requirement already satisfied: pre-commit==4.6.1 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 272)) (4.6.1)
+2026-09-23T07:06:13.6629858Z Requirement already satisfied: prometheus-client==0.26.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 276)) (0.26.0)
+2026-09-23T07:06:13.6634933Z Requirement already satisfied: psycopg==3.3.5 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 280)) (3.3.5)
+2026-09-23T07:06:13.6639397Z Requirement already satisfied: psycopg-binary==3.3.5 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 284)) (3.3.5)
+2026-09-23T07:06:13.6644372Z Requirement already satisfied: pygments==2.20.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 341)) (2.20.0)
+2026-09-23T07:06:13.6649032Z Requirement already satisfied: pyproject-hooks==1.2.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 345)) (1.2.0)
+2026-09-23T07:06:13.6653865Z Requirement already satisfied: pytest==9.1.1 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 351)) (9.1.1)
+2026-09-23T07:06:13.6658473Z Requirement already satisfied: pytest-cov==7.1.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 357)) (7.1.0)
+2026-09-23T07:06:13.6669280Z Requirement already satisfied: python-discovery==1.5.1 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 361)) (1.5.1)
+2026-09-23T07:06:13.6671368Z Requirement already satisfied: pyyaml==6.0.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 365)) (6.0.3)
+2026-09-23T07:06:13.6675624Z Requirement already satisfied: ruff==0.15.22 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 440)) (0.15.22)
+2026-09-23T07:06:13.6681083Z Requirement already satisfied: typing-extensions==4.16.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 460)) (4.16.0)
+2026-09-23T07:06:13.6685685Z Requirement already satisfied: virtualenv==21.7.3 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 464)) (21.7.3)
+2026-09-23T07:06:13.6689860Z Requirement already satisfied: werkzeug==3.1.8 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 468)) (3.1.8)
+2026-09-23T07:06:13.6695082Z Requirement already satisfied: wheel==0.47.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 472)) (0.47.0)
+2026-09-23T07:06:13.6826090Z Collecting pip==26.1.2 (from -r requirements-dev.txt (line 478))
+2026-09-23T07:06:13.6839009Z   Using cached pip-26.1.2-py3-none-any.whl (1.8 MB)
+2026-09-23T07:06:13.6921386Z Requirement already satisfied: setuptools==83.0.0 in /opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages (from -r requirements-dev.txt (line 482)) (83.0.0)
+2026-09-23T07:06:13.7990505Z Installing collected packages: platformdirs, pip
+2026-09-23T07:06:13.7995767Z   Attempting uninstall: platformdirs
+2026-09-23T07:06:13.8020365Z     Found existing installation: platformdirs 4.11.0
+2026-09-23T07:06:13.8059621Z     Uninstalling platformdirs-4.11.0:
+2026-09-23T07:06:13.8072798Z       Successfully uninstalled platformdirs-4.11.0
+2026-09-23T07:06:13.8354522Z   Attempting uninstall: pip
+2026-09-23T07:06:13.8384545Z     Found existing installation: pip 26.2.1
+2026-09-23T07:06:13.8735769Z     Uninstalling pip-26.2.1:
+2026-09-23T07:06:14.0535597Z       Successfully uninstalled pip-26.2.1
+2026-09-23T07:06:14.9287364Z 
+2026-09-23T07:06:14.9391339Z Successfully installed pip-26.1.2 platformdirs-4.11.1
+2026-09-23T07:06:14.9399085Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-09-23T07:06:15.1389489Z All checks passed!
+2026-09-23T07:06:15.3303450Z trivy 0.72.0: scanning 230 tracked files for secrets
+2026-09-23T07:06:18.0832974Z 2026-09-23T07:06:18Z	INFO	[secret] Secret scanning is enabled
+2026-09-23T07:06:18.0833565Z 2026-09-23T07:06:18Z	INFO	[secret] Please see https://trivy.dev/docs/v0.72/guide/scanner/secret#recommendation for faster secret detection
+2026-09-23T07:06:18.4152899Z 2026-09-23T07:06:18Z	INFO	[npm] Run "npm install" to collect the license information of packages	dir="frontend/node_modules"
+2026-09-23T07:06:18.4179526Z 2026-09-23T07:06:18Z	WARN	[pip] Unable to find python `site-packages` directory. License detection is skipped.	err="unable to find path to Python executable"
+2026-09-23T07:06:18.4203240Z 2026-09-23T07:06:18Z	INFO	Suppressing dependencies for development and testing. To display them, try the '--include-dev-deps' flag.
+2026-09-23T07:06:18.4205467Z 2026-09-23T07:06:18Z	INFO	Number of language-specific files	num=2
+2026-09-23T07:06:18.4206908Z 
+2026-09-23T07:06:18.4207107Z 📣 [34mNotices:[0m
+2026-09-23T07:06:18.4207275Z   - Version 0.74.0 of Trivy is now available, current version is 0.72.0
+2026-09-23T07:06:18.4207421Z 
+2026-09-23T07:06:18.4207539Z To suppress version checks, run Trivy scans with the --skip-version-check flag
+2026-09-23T07:06:18.4207732Z 
+2026-09-23T07:06:18.4211082Z 
+2026-09-23T07:06:18.4211420Z Report Summary
+2026-09-23T07:06:18.4211574Z 
+2026-09-23T07:06:18.4211880Z ┌────────────────────────────┬──────┬─────────┐
+2026-09-23T07:06:18.4212080Z │           Target           │ Type │ Secrets │
+2026-09-23T07:06:18.4212225Z ├────────────────────────────┼──────┼─────────┤
+2026-09-23T07:06:18.4212401Z │ frontend/package-lock.json │ npm  │    -    │
+2026-09-23T07:06:18.4212948Z ├────────────────────────────┼──────┼─────────┤
+2026-09-23T07:06:18.4213129Z │ requirements.txt           │ pip  │    -    │
+2026-09-23T07:06:18.4213252Z └────────────────────────────┴──────┴─────────┘
+2026-09-23T07:06:18.4213422Z Legend:
+2026-09-23T07:06:18.4213736Z - '-': Not scanned
+2026-09-23T07:06:18.4213883Z - '0': Clean (no security findings detected)
+2026-09-23T07:06:18.4214057Z 
+2026-09-23T07:06:20.1091451Z hadolint v2.14.0: no findings at or above info
+2026-09-23T07:06:21.3150696Z ============================= test session starts ==============================
+2026-09-23T07:06:21.3151342Z platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0
+2026-09-23T07:06:21.3151562Z rootdir: /workspace/milan/MilanProjA-Szakdoga
+2026-09-23T07:06:21.3151648Z plugins: cov-7.1.0
+2026-09-23T07:06:21.3151757Z collected 48 items
+2026-09-23T07:06:21.3151831Z 
+2026-09-23T07:06:21.3977141Z tests/test_app.py ..F......F.....                                        [ 31%]
+2026-09-23T07:06:21.4386059Z tests/test_notes.py ...............                                      [ 62%]
+2026-09-23T07:06:21.5727799Z tests/test_observability.py ...............F..                           [100%]
+2026-09-23T07:06:21.5728400Z 
+2026-09-23T07:06:21.5728631Z =================================== FAILURES ===================================
+2026-09-23T07:06:21.5728789Z _____________________________ test_echo_valid_json _____________________________
+2026-09-23T07:06:21.5728950Z 
+2026-09-23T07:06:21.5729080Z client = <FlaskClient <Flask 'app.app'>>
+2026-09-23T07:06:21.5729241Z 
+2026-09-23T07:06:21.5729365Z     def test_echo_valid_json(client):
+2026-09-23T07:06:21.5729511Z         payload = {"name": "Milan"}
+2026-09-23T07:06:21.5729642Z     
+2026-09-23T07:06:21.5729782Z         response = client.post("/echo", json=payload)
+2026-09-23T07:06:21.5729948Z     
+2026-09-23T07:06:21.5730226Z >       assert response.status_code == 200
+2026-09-23T07:06:21.5730375Z E       assert 500 == 200
+2026-09-23T07:06:21.5730526Z E        +  where 500 = <WrapperTestResponse streamed [500 INTERNAL SERVER ERROR]>.status_code
+2026-09-23T07:06:21.5730701Z 
+2026-09-23T07:06:21.5730833Z tests/test_app.py:32: AssertionError
+2026-09-23T07:06:21.5730976Z ----------------------------- Captured stderr call -----------------------------
+2026-09-23T07:06:21.5731157Z {"timestamp": "2026-09-23T07:06:21.329+00:00", "level": "ERROR", "logger": "app.app", "message": "request", "event": "http_request", "method": "POST", "path": "/echo", "endpoint": "/echo", "status": 500, "duration_ms": 0.25, "remote_addr": "127.0.0.1", "request_id": "23a0b5b6dc674375bbee735bafa1b045"}
+2026-09-23T07:06:21.5731409Z ------------------------------ Captured log call -------------------------------
+2026-09-23T07:06:21.5731593Z ERROR    app.app:app.py:82 request
+2026-09-23T07:06:21.5731755Z __________________ test_a_body_at_the_limit_is_still_accepted __________________
+2026-09-23T07:06:21.5731906Z 
+2026-09-23T07:06:21.5732037Z client = <FlaskClient <Flask 'app.app'>>
+2026-09-23T07:06:21.5732173Z 
+2026-09-23T07:06:21.5732316Z     def test_a_body_at_the_limit_is_still_accepted(client):
+2026-09-23T07:06:21.5732469Z         # The limit has to be a ceiling rather than an approximation: a fix that
+2026-09-23T07:06:21.5732652Z         # rejected legitimate traffic would pass the test above and still break the
+2026-09-23T07:06:21.5732826Z         # smoke test. Sized to land just inside the limit once JSON quoting and the
+2026-09-23T07:06:21.5733015Z         # key are counted.
+2026-09-23T07:06:21.5733168Z         payload = {"pad": "x" * (MAX_REQUEST_BODY_BYTES - 128)}
+2026-09-23T07:06:21.5733319Z     
+2026-09-23T07:06:21.5733454Z         assert len(json.dumps(payload)) < MAX_REQUEST_BODY_BYTES
+2026-09-23T07:06:21.5733615Z     
+2026-09-23T07:06:21.5733757Z         response = client.post("/echo", json=payload)
+2026-09-23T07:06:21.5733895Z     
+2026-09-23T07:06:21.5734033Z >       assert response.status_code == 200
+2026-09-23T07:06:21.5734184Z E       assert 500 == 200
+2026-09-23T07:06:21.5734352Z E        +  where 500 = <WrapperTestResponse streamed [500 INTERNAL SERVER ERROR]>.status_code
+2026-09-23T07:06:21.5734527Z 
+2026-09-23T07:06:21.5734659Z tests/test_app.py:148: AssertionError
+2026-09-23T07:06:21.5734811Z ----------------------------- Captured stderr call -----------------------------
+2026-09-23T07:06:21.5734968Z {"timestamp": "2026-09-23T07:06:21.377+00:00", "level": "ERROR", "logger": "app.app", "message": "request", "event": "http_request", "method": "POST", "path": "/echo", "endpoint": "/echo", "status": 500, "duration_ms": 0.28, "remote_addr": "127.0.0.1", "request_id": "6b4f82c07a304ed8b319819f27a8226b"}
+2026-09-23T07:06:21.5735193Z ------------------------------ Captured log call -------------------------------
+2026-09-23T07:06:21.5735364Z ERROR    app.app:app.py:82 request
+2026-09-23T07:06:21.5735503Z _____________ test_a_request_increments_the_counter_for_its_route ______________
+2026-09-23T07:06:21.5735650Z 
+2026-09-23T07:06:21.5735772Z client = <FlaskClient <Flask 'app.app'>>
+2026-09-23T07:06:21.5735912Z 
+2026-09-23T07:06:21.5736043Z     def test_a_request_increments_the_counter_for_its_route(client):
+2026-09-23T07:06:21.5736196Z         def total():
+2026-09-23T07:06:21.5736322Z             body = client.get("/metrics").data.decode()
+2026-09-23T07:06:21.5736442Z             wanted = ('http_requests_total{', 'endpoint="/echo"', 'status="200"')
+2026-09-23T07:06:21.5736591Z             for line in body.splitlines():
+2026-09-23T07:06:21.5736714Z                 if line.startswith(wanted[0]) and all(p in line for p in wanted[1:]):
+2026-09-23T07:06:21.5736866Z                     return float(line.rsplit(" ", 1)[1])
+2026-09-23T07:06:21.5737003Z             return 0.0
+2026-09-23T07:06:21.5737112Z     
+2026-09-23T07:06:21.5737259Z         before = total()
+2026-09-23T07:06:21.5737383Z         client.post("/echo", json={"name": "Milan"})
+2026-09-23T07:06:21.5737504Z     
+2026-09-23T07:06:21.5737617Z >       assert total() == before + 1
+2026-09-23T07:06:21.5737754Z E       assert 0.0 == (0.0 + 1)
+2026-09-23T07:06:21.5737887Z E        +  where 0.0 = <function test_a_request_increments_the_counter_for_its_route.<locals>.total at 0x772c40d116c0>()
+2026-09-23T07:06:21.5738040Z 
+2026-09-23T07:06:21.5738157Z tests/test_observability.py:221: AssertionError
+2026-09-23T07:06:21.5738290Z ----------------------------- Captured stderr call -----------------------------
+2026-09-23T07:06:21.5738430Z {"timestamp": "2026-09-23T07:06:21.481+00:00", "level": "ERROR", "logger": "app.app", "message": "request", "event": "http_request", "method": "POST", "path": "/echo", "endpoint": "/echo", "status": 500, "duration_ms": 0.22, "remote_addr": "127.0.0.1", "request_id": "33f3dc4d462e47e084700fe4134f756a"}
+2026-09-23T07:06:21.5738636Z ------------------------------ Captured log call -------------------------------
+2026-09-23T07:06:21.5738770Z ERROR    app.app:app.py:82 request
+2026-09-23T07:06:21.5738904Z ================================ tests coverage ================================
+2026-09-23T07:06:21.5739036Z _______________ coverage: platform linux, python 3.12.14-final-0 _______________
+2026-09-23T07:06:21.5739175Z 
+2026-09-23T07:06:21.5739287Z Name                    Stmts   Miss  Cover   Missing
+2026-09-23T07:06:21.5739413Z -----------------------------------------------------
+2026-09-23T07:06:21.5739548Z app/__init__.py             0      0   100%
+2026-09-23T07:06:21.5739673Z app/app.py                100      0   100%
+2026-09-23T07:06:21.5739800Z app/db.py                  13      5    62%   22, 36-37, 41-42
+2026-09-23T07:06:21.5739923Z app/logging_config.py      38      0   100%
+2026-09-23T07:06:21.5742842Z app/metrics.py             16      0   100%
+2026-09-23T07:06:21.5743074Z app/notes.py               14      8    43%   14-15, 21-22, 30-31, 39-40
+2026-09-23T07:06:21.5743246Z -----------------------------------------------------
+2026-09-23T07:06:21.5743519Z TOTAL                     181     13    93%
+2026-09-23T07:06:21.5743671Z Required test coverage of 80% reached. Total coverage: 92.82%
+2026-09-23T07:06:21.5743822Z =========================== short test summary info ============================
+2026-09-23T07:06:21.5743957Z FAILED tests/test_app.py::test_echo_valid_json - assert 500 == 200
+2026-09-23T07:06:21.5744116Z  +  where 500 = <WrapperTestResponse streamed [500 INTERNAL SERVER ERROR]>.status_code
+2026-09-23T07:06:21.5744390Z FAILED tests/test_app.py::test_a_body_at_the_limit_is_still_accepted - assert 500 == 200
+2026-09-23T07:06:21.5744544Z  +  where 500 = <WrapperTestResponse streamed [500 INTERNAL SERVER ERROR]>.status_code
+2026-09-23T07:06:21.5744686Z FAILED tests/test_observability.py::test_a_request_increments_the_counter_for_its_route - assert 0.0 == (0.0 + 1)
+2026-09-23T07:06:21.5744847Z  +  where 0.0 = <function test_a_request_increments_the_counter_for_its_route.<locals>.total at 0x772c40d116c0>()
+2026-09-23T07:06:21.5745098Z ========================= 3 failed, 45 passed in 1.03s =========================
+2026-09-23T07:06:21.6361394Z   ❌  Failure - Main Run tests with coverage
+2026-09-23T07:06:21.6434706Z exitcode '1': failure
+2026-09-23T07:06:21.9422934Z Error response from daemon: No such container: flask-test
+2026-09-23T07:06:21.9563440Z Error response from daemon: No such container: flask-test
+2026-09-23T07:06:22.1116810Z Error response from daemon: No such image: localhost:5001/projecta-flask:544f895
+2026-09-23T07:06:22.1259498Z Error response from daemon: No such image: localhost:5001/projecta-frontend:544f895
+2026-09-23T07:06:22.1675573Z evaluating expression 'success()'
+2026-09-23T07:06:22.1676166Z expression 'success()' evaluated to 'false'
+2026-09-23T07:06:22.1676376Z Skipping step 'Set up Python' due to 'success()'
+2026-09-23T07:06:22.1861750Z evaluating expression 'always()'
+2026-09-23T07:06:22.1862342Z expression 'always()' evaluated to 'true'
+2026-09-23T07:06:22.1862473Z ⭐ Run Post Checkout repository
+2026-09-23T07:06:22.1862654Z Writing entry to tarball workflow/outputcmd.txt len:0
+2026-09-23T07:06:22.1862786Z Writing entry to tarball workflow/statecmd.txt len:0
+2026-09-23T07:06:22.1862878Z Writing entry to tarball workflow/pathcmd.txt len:0
+2026-09-23T07:06:22.1862969Z Writing entry to tarball workflow/envs.txt len:0
+2026-09-23T07:06:22.1863117Z Writing entry to tarball workflow/SUMMARY.md len:0
+2026-09-23T07:06:22.1863213Z Extracting content to '/var/run/act'
+2026-09-23T07:06:22.1882251Z run post step for 'Checkout repository'
+2026-09-23T07:06:22.1883104Z executing remote job container: [node /var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/index.js]
+2026-09-23T07:06:22.2093015Z   🐳  docker exec cmd=[node /var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/index.js] user= workdir=
+2026-09-23T07:06:22.2093383Z Exec command '[node /var/run/act/actions/c3fe249fe73091a17d6638fe1341e7bd0bcc3466ce52323c0688e83e2463a4ab/dist/index.js]'
+2026-09-23T07:06:22.2093838Z Working directory '/workspace/milan/MilanProjA-Szakdoga'
+2026-09-23T07:06:22.3279589Z [command]/usr/bin/git version
+2026-09-23T07:06:22.3317045Z git version 2.55.0
+2026-09-23T07:06:22.3341053Z ***
+2026-09-23T07:06:22.3355608Z Temporarily overriding HOME='/tmp/20624db5-89c1-4ea1-88db-cb36d3eb82c5' before making global git config changes
+2026-09-23T07:06:22.3357455Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-23T07:06:22.3364705Z [command]/usr/bin/git config --global --add safe.directory /workspace/milan/MilanProjA-Szakdoga
+2026-09-23T07:06:22.3399574Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-23T07:06:22.3437019Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-23T07:06:22.3657402Z [command]/usr/bin/git config --local --name-only --get-regexp http\.http\:\/\/gitea\:3000\/\.extraheader
+2026-09-23T07:06:22.3676984Z http.http://gitea:3000/.extraheader
+2026-09-23T07:06:22.3688322Z [command]/usr/bin/git config --local --unset-all http.http://gitea:3000/.extraheader
+2026-09-23T07:06:22.3716510Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.http\:\/\/gitea\:3000\/\.extraheader' && git config --local --unset-all 'http.http://gitea:3000/.extraheader' || :"
+2026-09-23T07:06:22.3910578Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-23T07:06:22.3934489Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-23T07:06:22.4192752Z   ✅  Success - Post Checkout repository
+2026-09-23T07:06:22.4264824Z Cleaning up container for job build-test-push
+2026-09-23T07:06:23.0453364Z Removed container: 58ba62a11616e7dec018adefdcb64e37e4c1d4cff92eaa3a0adc526b4920965d
+2026-09-23T07:06:23.0463768Z   🐳  docker volume rm GITEA-ACTIONS-TASK-32_WORKFLOW-Pipeline_JOB-build-test-push
+2026-09-23T07:06:23.0645095Z   🐳  docker volume rm GITEA-ACTIONS-TASK-32_WORKFLOW-Pipeline_JOB-build-test-push-env
+2026-09-23T07:06:23.1598968Z 🏁  Job failed
+2026-09-23T07:06:23.1694077Z expression '${{ steps.ref_gate.outputs.sha_short }}' rewritten to 'format('{0}', steps.ref_gate.outputs.sha_short)'
+2026-09-23T07:06:23.1694366Z evaluating expression 'format('{0}', steps.ref_gate.outputs.sha_short)'
+2026-09-23T07:06:23.1694729Z expression 'format('{0}', steps.ref_gate.outputs.sha_short)' evaluated to '%!t(string=544f895)'
+2026-09-23T07:06:23.1694865Z expression '${{ steps.ref_gate.outputs.ships }}' rewritten to 'format('{0}', steps.ref_gate.outputs.ships)'
+2026-09-23T07:06:23.1694934Z evaluating expression 'format('{0}', steps.ref_gate.outputs.ships)'
+2026-09-23T07:06:23.1695075Z expression 'format('{0}', steps.ref_gate.outputs.ships)' evaluated to '%!t(string=true)'
+2026-09-23T07:06:23.1695486Z Job 'build-test-push' failed

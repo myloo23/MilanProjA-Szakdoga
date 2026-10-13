@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>13. Próbavédés</title>
+<link rel="stylesheet" href="assets/tananyag.css">
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="index.html">☰ Térkép</a><span class="navpair"><a href="12-dontesek.html">← 12. A döntések térképe</a><a href="index.html">Tananyagtérkép →</a></span></nav>
+<p class="eyebrow">13. tananyag · ~25 perc · az utolsó nap, és a védés előtti este</p>
+<h1>Próbavédés</h1>
+<p class="lead">Harminckét kérdés, ahogy a bizottság feltenné. Mondd ki hangosan a választ, csak utána nyisd le. Amelyiknél elakadtál, ott a zárójeles tananyagot nézd át újra.</p>
+
+<div class="tldr"><strong>Szabályok</strong>
+<ul>
+<li>Egy válasz 2–4 mondat. Először a lényeg, utána a szám vagy a bizonyíték.</li>
+<li>Ha egy korlátot kérdeznek: kimondod, mit tettél ellene, és mi marad.</li>
+<li>Ha nem tudod: „Ezt nem mértem, de így közelíteném meg: …” Soha ne találj ki számot.</li>
+</ul></div>
+
+<h2 id="nyito">1. Nyitás</h2>
+<div class="box key"><strong>A bemutatkozás (tanuld meg, mondd el háromszor hangosan)</strong>
+Egy saját webalkalmazáshoz automatizált telepítési láncot építettem: Terraformmal létrehozott Azure-gépen fut egy k3s Kubernetes-fürt, amire egy saját üzemeltetésű Gitea Actions pipeline tesztel, épít, szkennel, telepít, ellenőriz, és hiba esetén visszaállít. Ugyanazt a változtatást tízszer kézzel és tízszer a pipeline-nal telepítettem ugyanarra a fürtre. Az emberi beavatkozások száma 13-ról 2-re, a telepítési szakasz 31-ről 24 másodpercre, egy hibás kiadás utáni kiesés 56-ról 26 másodpercre csökkent; a teljes idő azért hosszabb, mert a pipeline közben olyan ellenőrzéseket is elvégez, amiket a kézi út nem.</div>
+
+<details class="q vedes"><summary>Mi a dolgozat kutatási kérdése?</summary><p>Mennyit javít mérhetően az automatizálás a telepítési folyamaton: a változtatástól a működő telepítésig eltelt időben, az emberi beavatkozások számában és a hibás telepítés utáni helyreállításban. (0., 9.)</p></details>
+<details class="q vedes"><summary>Mi a saját munkája, és mi volt meg a gyakornokságból?</summary><p>A gyakornokságból a Gitea-pipeline, a szkennelés és a megfigyelés volt meg, egy Docker-hostra, Ansible-lel. Saját: a frontend és az adatbázis, a Terraform és a k3s, a Helm chart, a pipeline Helm-alapú telepítő–ellenőrző–visszaállító része, a megfigyelés átkötése a fürtre, és a teljes mérés. (0., 12.)</p></details>
+
+<h2 id="meres">2. Mérés</h2>
+<details class="q vedes"><summary>Honnan tudja, hogy a különbség az automatizálásból jön?</summary><p>Ugyanaz a gép, registry, fürt, chart, Helm-verzió és elfogadási feltétel; az ágnév dönti el, indul-e pipeline. A két nem szándékos eltérés (alapkép-digest, image-építő) hatását mértem: a gördülő csere és a build ugyanabban a sávban van, és a telepítési szakaszban nincs build. (9.)</p></details>
+<details class="q vedes"><summary>Az automatizált út lassabb. Akkor minek?</summary><p>Ugyanarra a munkára gyorsabb (31 → 24 mp). A teljes idő a kapuk miatt hosszabb: kapuk nélkül 67–72 mp a kézi 64–79 mellett. Többet végez ugyanabban a nagyságrendben, 2 beavatkozással 13 helyett. (9.)</p></details>
+<details class="q vedes"><summary>Miért beavatkozás egy kimenet elolvasása?</summary><p>Mert ott az ember dönt. A protokoll előre így definiálta, és mindkét oldalon ugyanúgy számoltam; ezért 2 az automatizált oldalon, nem 1. (9.)</p></details>
+<details class="q vedes"><summary>Miért csak 10 futtatás, és mit lehet mondani 3-ból?</summary><p>A kézi futtatás drága; 10 elég mediánhoz és sávhoz. A helyreállításnál 3-ból csak sávot közlök, szórást, szignifikanciát, százalékot nem. (9.)</p></details>
+<details class="q vedes"><summary>Miért a 4–10. kézi futtatás az alap?</summary><p>Az első három lassúságának két azonosított oka van (gyakorlat, build-gyorsítótár), és kifutott. Mind a tízet is közlöm; a beállt szakasz a konzervatívabb választás. (9., 11.)</p></details>
+<details class="q vedes"><summary>Nem kicsalt a rollback az A1–A3-ban?</summary><p>Szándékosan rejtettem el a hibát a unit tesztek elől, hogy a visszaállító út mérhető legyen. Az A0 a kontroll: ugyanaz a hiba ott ki sem ment, kiesés 0. (9.)</p></details>
+<details class="q vedes"><summary>Mi a legerősebb bizonyítéka?</summary><p>Hogy a mérés előtt leírt előrejelzés teljesült: a gépi kivárás (19–22 mp) mindkét oldalon azonos, a javulás a begépelt és elolvasott lépésekből jön. (9., 11.)</p></details>
+<details class="q vedes"><summary>Hogyan mérte az időt?</summary><p>Kézzel <code>script</code>-tel rögzített jegyzőkönyv és időbélyeges prompt (1 mp), a pipeline-ban a joblog <code>MERES</code> sorai (0,1 mp). Összevetés egész másodpercen. Stopperrel nem, mert az az operátor emlékezetén múlik. (9.)</p></details>
+<details class="q vedes"><summary>Mi lett volna, ha a kézi oldalt Docker Compose-on méri?</summary><p>A platform különbségét is mérném, és nem tudnám szétválasztani. Ezért ugyanarra a fürtre telepít mindkét oldal. (9.)</p></details>
+<details class="q vedes"><summary>Mi az, amit a számok nem mutatnak?</summary><p>A <code>psycopg</code>-hibát csak a pipeline vette észre; a 43 Trivy-találatot a kézi út sosem kérdezi meg; és kézzel ember dönt a füstteszt eredményéről, a pipeline-ban gép. (9.)</p></details>
+<details class="q vedes"><summary>Mik a DORA-metrikák, melyiket mérte?</summary><p>Telepítési gyakoriság, átfutási idő, hibás változtatások aránya, helyreállítási idő. Az átfutási és a helyreállítási időt; a másik kettő egyszemélyes projektben, kis mintán nem értelmezhető. (9.)</p></details>
+
+<h2 id="technika">3. Technika</h2>
+<details class="q vedes"><summary>Miért k3s és nem AKS?</summary><p>A téma a telepítési lánc. A k3s tanúsított Kubernetes ugyanazzal az API-val, egy gépen, a hallgatói keretben, cloud-initből telepítve. Az AKS fizetős, és a vezérlősík nem a sajátom. (1., ADR-0008)</p></details>
+<details class="q vedes"><summary>Miért Gitea és nem GitHub Actions?</summary><p>Saját üzemeltetésű láncot akartam, amit végig értek, és a runnernek el kell érnie a gépen futó registryt és fürtöt. A review a GitHubon marad, mert a Gitea a bírálóknak nem érhető el. (8., ADR-0001, -0004)</p></details>
+<details class="q vedes"><summary>Miért Helm, és nem maradt az Ansible?</summary><p>A kézi oldal is Helmmel telepít; ha a pipeline Ansible–Docker maradt volna, a két oldal más célpontot mért volna. A Helm egy paranccsal telepít és áll vissza, és emlékszik a revíziókra. Az Ansible <code>verify</code> playje maradt az ellenőrzésre. (3., ADR-0009)</p></details>
+<details class="q vedes"><summary>Miért nem <code>--atomic</code>?</summary><p>Mert a Helm saját ítéletére állna vissza, és a vizsgált hibát (egészséges pod, hibás alkalmazás) nem látja. A rollback egy külön, a füstteszt után induló, külön mért lépés. (4.)</p></details>
+<details class="q vedes"><summary>Hogyan áll vissza a pipeline, és honnan tudja, hova?</summary><p>Telepítés előtt rögzíti a futó tagot (<code>PREV_TAG</code>). Bukott ellenőrzésnél <code>helm rollback --wait</code>, majd ugyanaz az ellenőrzés a régi SHA-ra. A futás piros marad. (4.)</p></details>
+<details class="q vedes"><summary>Mi a különbség a liveness és a readiness között?</summary><p>Liveness bukása: újraindítás. Readiness bukása: kikerül a forgalomból. Ezért csak a readiness nézi az adatbázist. (2.)</p></details>
+<details class="q vedes"><summary>Hogyan nincs kiesés verzióváltáskor?</summary><p>RollingUpdate <code>maxUnavailable: 0</code>-val: régi pod csak akkor áll le, ha egy új már ready. (4.)</p></details>
+<details class="q vedes"><summary>Mit csinál a Terraform, és mi a state?</summary><p>Létrehozza a gépet, hálózatot, tűzfalat, fix IP-t; a state a nyilvántartás arról, melyik kódbeli erőforrás melyik valódi. Az alkalmazást nem a Terraform telepíti, mert azt mérem. (7.)</p></details>
+<details class="q vedes"><summary>Mi történt, amikor a gép kicserélődött?</summary><p>Egy tűzfal-módosító <code>apply</code> egy korábbi cloud-init-változás miatt gépcserét is végzett. A mérés nem veszett el, mert minden bizonyíték a repóban volt; a k3s kódból állt fel. Azóta <code>ignore_changes = [custom_data]</code>, és <code>apply</code> csak elolvasott terv után. (7.)</p></details>
+<details class="q vedes"><summary>Hogyan találja meg a Prometheus a podokat?</summary><p>A k3s API-tól kérdezi le (service discovery), egy csak-olvasó ServiceAccounttal, ellenőrzött TLS-sel, és podonként kérdezi le őket, nem a Service-en át. (10.)</p></details>
+
+<h2 id="lanc">4. Ellátási lánc</h2>
+<details class="q vedes"><summary>Mi az SBOM, és hogyan készült?</summary><p>Összetevőlista. CycloneDX, Trivyvel, a mérőgépen a futó képekből: 7 fájl, 771 komponens a mért <code>e4da1d9</code>-re. A laptopos generáció rossz architektúrát írt le, ezért készül a gépen. (8.)</p></details>
+<details class="q vedes"><summary>Miért piros most a pipeline?</summary><p>Mert egy új, upstream már javított HIGH hiba (pcre2) van a <code>python:3.12-slim</code> rögzített kiadásában. A kaput nem lazítom; a <code>pin-base-images.sh</code> csak akkor léptet, ha az új alapkép tiszta. (0., 8.)</p></details>
+<details class="q vedes"><summary>Rögzítés vagy szkennelés: melyik a fontosabb?</summary><p>Két különböző garancia. A rögzítés egyszer és feltétel nélkül garantálja, hogy ugyanaz épül; a szkennelés azt, hogy amit építünk, arról ma nem tudunk súlyos, javítható hibát, és ezt minden commitnál újra ki kell érdemelni. (8.)</p></details>
+<details class="q vedes"><summary>Miért nincs képaláírás?</summary><p>A mérés lezárult, és az aláírás a mért láncot változtatta volna. Azt adná, hogy a fürt csak a pipeline által épített képet futtassa; a 7. fejezetben leírom. (8.)</p></details>
+<details class="q vedes"><summary>A frontend kép átment a kapukon a mérés alatt?</summary><p>Nem volt rajta kapu, szándékosan: egy új kapu a sorozat közepén mérési futtatásokat égetett volna el. A mérés után bekerült, ugyanazzal a küszöbbel; a mért időkben nincs benne, és ezt a 6.1 kimondja. (8.)</p></details>
+
+<h2 id="korlat">5. Korlátok és jövő</h2>
+<details class="q vedes"><summary>Általánosítható az eredmény?</summary><p>Nem. Egy alkalmazás, egy gép, egy operátor. Az eredmény erre a rendszerre érvényes; a módszer viszont megismételhető, mert a protokoll, a jegyzőkönyvek és a scriptek a repóban vannak. (9.)</p></details>
+<details class="q vedes"><summary>A CI és a mért fürt egy gépen van. Nem torzít?</summary><p>A mérés alatt nem ment push a <code>main</code>-re, és minden futtatás előtt pontosan 3 platformkonténer futott. A maradék hatás a kézi oldalnak kedvez, tehát a javulás alsó becslés. (9., 12.)</p></details>
+<details class="q vedes"><summary>Mi kerül a továbbfejlesztési fejezetbe?</summary><p>Képaláírás, GitOps, több csomópont, távoli Terraform-state, a platform automatikus visszaépítése, a lint-gyorsítótár, migrációs eszköz, adatbázis-mentés, fürtön belüli megfigyelés. Mindegyiknél: mit adna, miért nem most. (12.)</p></details>
+<details class="q vedes"><summary>Mi volt a legnagyobb tanulság?</summary><p>Hogy egy állítás akkor bizonyított, ha megpróbáltam megcáfolni: a <code>registries.yaml</code>-t kivéve is működött a képletöltés, a build szórása nem a hálózatból jött, hanem egy gyorsítótárazatlan telepítésből. (6.)</p></details>
+<footer class="page"><span>Frissítve: 2026. október 5. · a repó <code>release/meres</code> ágának állapota szerint</span><span>Forrás: a 0–12. tananyag, 05-vazlat-6-fejezet.md („A bíráló legvalószínűbb kérdései”)</span></footer>
+<nav class="top"><a href="index.html">☰ Térkép</a><span class="navpair"><a href="12-dontesek.html">← 12. A döntések térképe</a><a href="index.html">Tananyagtérkép →</a></span></nav>
+</div>
+<script src="assets/tananyag.js"></script>
+</body>
+</html>

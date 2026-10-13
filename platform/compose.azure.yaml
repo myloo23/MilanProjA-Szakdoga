@@ -1,0 +1,88 @@
+# A platform Azure-os rétege — a 01-megvalositasi-terv.md 2.4 pontja.
+#
+# Ez NEM önálló compose-fájl, hanem a `compose.yaml` fölé húzott réteg:
+#
+#   docker compose -f compose.yaml -f compose.azure.yaml up -d
+#
+# Három dolgot csinál, és semmi mást.
+#
+# 1. **A Gitea telepítővarázslóját kikapcsolja.** A laptopon a Gitea a webes
+#    telepítőn keresztül állt be — az egy böngészős kattintássorozat, amit a
+#    mérőgépen minden `terraform destroy` + `apply` után újra kellene csinálni.
+#    A fürt egésze azért készül kódból, hogy ne legyen benne ilyen lépés, így a
+#    platform sem lehet kivétel. Az INSTALL_LOCK mellé a `sqlite3` és az
+#    adatbázis útvonala azért kerül ki kimondva, mert telepítő nélkül nincs, ami
+#    beírja őket az app.ini-be; ez ugyanaz az elrendezés, amit a varázsló
+#    alapértelmezésben választott volna. Az admin felhasználó és a runner
+#    regisztrációs tokenje utána a `gitea` parancssori felületéről jön
+#    (szakdolgozat/04-masodik-het-lepesrol-lepesre.md, 2.4).
+#
+# 2. **A megfigyelhetőségi szolgáltatásokat profil mögé teszi.** Egy sima
+#    `docker compose up -d` itt hármat indít (Gitea, runner, registry), nem
+#    kilencet. A 8 GB-os gépen, amin a k3s és a buildek is futnak, ez nem
+#    esztétikai kérdés — és a mérés (6. fejezet) is így futott: a megfigyelő
+#    réteg a tíz-tíz futtatás alatt NEM működött, tehát a mért időkbe nem
+#    szólhatott bele. Indítás: `--profile observability`, vagy egyszerűbben a
+#    scripts/observability-k3s-up.sh.
+#
+# 3. **A megfigyelést átköti a k3s-re (ADR-0010).** A laptopon az alkalmazás egy
+#    Docker-konténer volt; itt két pod a fürtben. Ezért:
+#      - a Prometheus a prometheus.k3s.yml-t kapja, amely a k3s API-tól kérdezi
+#        le a backend podokat, a prometheus-sd ServiceAccount tokenjével;
+#      - az Alloy a config.k3s.alloy-t kapja, amely a podok naplófájljait is
+#        olvassa a /var/log/pods alól;
+#      - a node-exporter visszakapja az `rslave` csatolást, amit a compose.yaml
+#        a Docker Desktop miatt vett le („If this ever runs on a Linux host, put
+#        it back") — ez Linux-gazdagép.
+#    A dashboardok, a riasztási szabály és a Grafana adatforrásai változatlanok.
+#
+# Amit szándékosan NEM állít: a publikált portok kötése. Mind a 127.0.0.1-en
+# marad, ahogy a compose.yaml eleji indoklás kéri — a gépen kívülről a Gitea
+# felülete SSH-alagúton át érhető el, nem a tűzfalon át. A registrynek pedig
+# továbbra sincs hitelesítése, és most már egy publikus IP-vel rendelkező gépen
+# fut: a loopback-kötés az egyetlen dolog, ami elválasztja az internettől.
+
+name: projecta
+
+services:
+  gitea:
+    environment:
+      GITEA__security__INSTALL_LOCK: "true"
+      GITEA__database__DB_TYPE: "sqlite3"
+      GITEA__database__PATH: "/data/gitea/gitea.db"
+
+  prometheus:
+    profiles: ["observability"]
+    volumes:
+      # Ugyanarra a célútvonalra csatolva, mint a compose.yaml-ben, ezért a
+      # compose felülírja, nem mellé teszi: a konténer a k3s-es változatot
+      # látja /etc/prometheus/prometheus.yml néven.
+      - ./observability/prometheus/prometheus.k3s.yml:/etc/prometheus/prometheus.yml:ro
+      # A ServiceAccount tokenje és a fürt CA-ja. A scripts/observability-k3s-up.sh
+      # írja ki; gitben nincs, és a platform-sync.sh --delete-je sem törli.
+      - ./observability/prometheus/k8s-credentials:/etc/prometheus/k8s:ro
+    extra_hosts:
+      # A gazdagép címe a konténerből — itt fut a k3s API (6443).
+      - "host.docker.internal:host-gateway"
+
+  cadvisor:
+    profiles: ["observability"]
+
+  node-exporter:
+    profiles: ["observability"]
+    volumes:
+      - /:/host:ro,rslave
+
+  loki:
+    profiles: ["observability"]
+
+  alloy:
+    profiles: ["observability"]
+    volumes:
+      - ./observability/alloy/config.k3s.alloy:/etc/alloy/config.alloy:ro
+      # A containerd itt tartja a podok kimenetét. Read-only: a gyűjtő olvas,
+      # nem ír és nem töröl — a naplóforgatás a kubelet dolga.
+      - /var/log/pods:/var/log/pods:ro
+
+  grafana:
+    profiles: ["observability"]

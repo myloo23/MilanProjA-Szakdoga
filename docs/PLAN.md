@@ -1,5 +1,10 @@
 # Project A — Plan
 
+> **Historical — internship era (Docker host, Ansible deploy), until 2026-09-21.**
+> The current system is Terraform + k3s + Helm; see the [README](../README.md),
+> [`RUNBOOK.md`](RUNBOOK.md) and [`szakdolgozat/naplo.md`](../szakdolgozat/naplo.md).
+> Sections on the app, dependencies, tests and Git workflow still apply.
+
 **Owner:** Milán Takács · **Deploy target:** local Docker host
 
 Roadmap, sprints, open work and risks. Overview: [`../README.md`](../README.md).
@@ -393,6 +398,11 @@ today's warm-host rollback number into a defensible one.
       not as of today. A rescan is queued rather than rushed before the review;
       a guard that fires and gets ignored would be worse than no guard, so this
       is written down with a date rather than quietly reset
+      **Rescanned 2026-09-23** against `e4da1d9`, the measured release: seven
+      files, 771 components, generated on the measurement host by
+      `scripts/sbom-generate.sh`. The rescan also showed the previous
+      generation had inventoried arm64 laptop builds, not the amd64 images the
+      cluster runs — see `docs/sbom/README.md`, finding 6
 - [ ] Alert routing, zero-downtime swap, auto-changelog
 - [ ] **Dynamic fan-out to N parallel jobs** — a matrix built from a previous
       job's output. P2 because this pipeline has nothing to parallelise: one
@@ -571,7 +581,7 @@ were built on 2026-08-11 under
 2026-08-11, five merges landed on `origin/release/sprint3` and **none reached
 `gitea`** — so CI ran on the feature branches, CD never ran at all, and the
 container on the host stayed at `ed19d73` for three days while every branch
-showed green. Non-negotiable #2 in [`CLAUDE.md`](../CLAUDE.md) says push to
+showed green. Non-negotiable #2 in `CLAUDE.md` (a local working-notes file, not in the repository) says push to
 `gitea` first and wait for green; it was skipped silently, and nothing in the
 process notices a forge that has simply stopped receiving pushes. Reconciled on
 2026-08-11: `release/sprint3` pushed to `gitea`, run #87 green, `deploy` verified

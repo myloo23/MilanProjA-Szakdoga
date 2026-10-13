@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>11. A 6. fejezet ábrái</title>
+<link rel="stylesheet" href="assets/tananyag.css">
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="index.html">☰ Térkép</a><span class="navpair"><a href="10-megfigyeles-a-furton.html">← 10. Megfigyelés a fürtön</a><a href="12-dontesek.html">12. A döntések térképe →</a></span></nav>
+<p class="eyebrow">11. tananyag · ~10 perc · a dolgozat 6.2–6.4 alfejezete</p>
+<h1>A 6. fejezet ábrái</h1>
+<p class="lead">Négy ábra, mind egy scriptből, a bizonyítékfájlokból. Mit mutat mindegyik egy mondatban, és mit nem állít.</p>
+
+<div class="tldr"><strong>Röviden</strong>
+<ul>
+<li>Az ábrák a CSV-kből készülnek (<code>python3 scripts/abrak-6-fejezet.py</code>), így nem térhetnek el a szövegtől.</li>
+<li>A fő ábra (6.4) egy valódi, medián futtatás szakaszait mutatja, nem a szakaszmediánok összegét.</li>
+<li>Mindegyik ábránál tudd, mit <em>nem</em> állít.</li>
+</ul></div>
+
+<div class="dontes"><p class="d-cim">Az ábra scriptből készül, nem kézzel</p>
+<p><b>Miért:</b> egy számnak egy forrása legyen. Ha az ábra kézzel készülne, két forrás lenne, és eltérnének (a 09-30-i javításoknál a szövegben pont ez történt). A script ellenőriz is: ha a lépések összege nem egyezik a CSV teljes idejével, megáll.</p>
+<p class="d-hol">Hol: <code>scripts/abrak-6-fejezet.py</code></p></div>
+
+<h2 id="61">6.1 — A kézi sorozat tanulási görbéje</h2>
+<figure><img src="../abrak/abra-6-1-kezi-tanulasi-gorbe.png" alt="6.1 ábra: a kézi futtatások teljes ideje a sorszám függvényében" loading="lazy"></figure>
+<p><strong>Mit mond:</strong> az első három futtatás lassú (121, 144, 86 mp), utána a sor 64–79 mp között áll be. <strong>Mit nem állít:</strong> hogy ez csak tanulás. A backend build 35 → 11 mp-re esése a réteg-gyorsítótár bemelegedése, gépi ok.</p>
+
+<h2 id="62">6.2 — A 13 kézi lépés</h2>
+<figure><img src="../abrak/abra-6-2-kezi-lepesbontas.png" alt="6.2 ábra: a 13 kézi lépés mediánjai gépi és emberi színezéssel" loading="lazy"></figure>
+<p><strong>Mit mond:</strong> a két hosszú tétel gépi (gördülő csere kivárása, backend build); a begépelt és elolvasott lépések egyenként rövidek, de sokan vannak. <strong>Mit nem állít:</strong> hogy a lépések mediánjainak összege a teljes idő mediánja. Lépéseket hasonlít össze, nem a teljes időt bontja.</p>
+<details class="q"><summary>Miért vízszintes sávok, és nem egy halmozott oszlop?</summary>
+<p>Mert 14 szelet egy oszlopban olvashatatlan. A cél a lépések egymáshoz mérése.</p></details>
+
+<h2 id="63">6.3 — A pipeline szakaszai</h2>
+<figure><img src="../abrak/abra-6-3-auto-szakaszok.png" alt="6.3 ábra: a pipeline szakaszai futtatásonként, halmozott oszlopokkal" loading="lazy"></figure>
+<p><strong>Mit mond:</strong> minden szakasz futtatásról futtatásra szinte azonos, egy kivétellel: a B5 (ansible-lint és függőségei) 15,9 és 43,6 mp között mozog. A teljes idő szórását egyetlen gyorsítótárazatlan függőségtelepítés adja, nem a módszer.</p>
+<details class="q"><summary>Mi okozza a 6.3 oszlopainak eltérő magasságát?</summary>
+<p>Szinte csak a B5, mert a lint-függőségek nincsenek gyorsítótárazva (<code>cache-dependency-path</code> csak a <code>requirements-dev.txt</code>-et nevezi meg). A javítás a 7. fejezetbe került, mert a mért pipeline-t változtatta volna meg.</p></details>
+
+<h2 id="64">6.4 — A fő ábra</h2>
+<figure><img src="../abrak/abra-6-4-osszevetes.png" alt="6.4 ábra: telepítési szakasz és kiesés, kézi és automatizált, gépi és emberi részre bontva" loading="lazy"></figure>
+<p><strong>Mit mond:</strong> a szürke (gépi kivárás) mind a négy oszlopban 19–20 mp: ezen az automatizálás nem gyorsít. Ami eltűnik, az a kézi parancs és az észlelés (17 → 2 mp), és az ellenőrzés is rövidebb. <strong>Mit nem állít:</strong> hogy az automatizált út összességében gyorsabb (a teljes idő a kapuk miatt hosszabb).</p>
+
+<h3>A „medián futtatás” módszere</h3>
+<figure>
+<svg viewBox="0 0 640 170" role="img" aria-label="Szakaszmediánok összege kontra medián futtatás">
+  <text x="10" y="22" class="t-bold">Szakaszmediánok összege</text>
+  <rect x="10" y="34" width="170" height="30" rx="4" class="n-violet"/>
+  <rect x="182" y="34" width="60" height="30" rx="4" class="n-warn"/>
+  <rect x="244" y="34" width="190" height="30" rx="4" class="n-accent"/>
+  <rect x="436" y="34" width="110" height="30" rx="4" class="n-bad"/>
+  <text x="556" y="54" class="t-bold">53 ≠ 56</text>
+  <text x="10" y="102" class="t-bold">Medián futtatás (H2) valódi szakaszai</text>
+  <rect x="10" y="114" width="170" height="30" rx="4" class="n-violet"/>
+  <rect x="182" y="114" width="110" height="30" rx="4" class="n-warn"/>
+  <rect x="294" y="114" width="190" height="30" rx="4" class="n-accent"/>
+  <rect x="486" y="114" width="90" height="30" rx="4" class="n-bad"/>
+  <text x="586" y="134" class="t-bold">56 ✓</text>
+</svg>
+<figcaption>A felső oszlop szakaszai külön-külön tipikusak, együtt viszont egyetlen valódi futtatást sem írnak le. Az alsó egy ténylegesen lezajlott futtatás.</figcaption>
+</figure>
+<div class="dontes"><p class="d-cim">A bontás a medián futtatás valódi szakaszait mutatja</p>
+<p><b>Miért:</b> a szakaszmediánok összege nem a teljes idő mediánja. A kézi kiesésnél 53 mp jönne ki az 56 helyett, és egy oszlop, aminek a hossza nem egyezik a ráírt számmal, az első kérdés lenne.</p>
+<p><b>Melyik futtatás:</b> kézi telepítés a 4., automatizált a 3., kézi kiesés a H2, automatizált az A2. Ezt az ábraaláírásban ki kell mondani.</p>
+<p><b>Apró eltérés:</b> az automatizált telepítési oszlop tizedes logidőkből 23,5 mp, a ráírt 24 a CSV egész másodperces értéke.</p></div>
+
+<details class="q vedes"><summary>„Foglalja össze a fő ábrát egy mondatban.”</summary>
+<p>A gépi kivárás mindkét oldalon ugyanannyi; az automatizálás azt a részt veszi el, amit ember gépel és olvas, és ezt a mérés előtt leírt előrejelzésben is így vártam.</p></details>
+
+<details class="q"><summary>Mi történik, ha egy CSV-ben javítasz egy számot?</summary>
+<p>Újrafuttatod a scriptet, és mind a négy ábra frissül. Ha a lépések összege nem egyezik a teljes idővel, a script megáll, és nem rajzol hibás ábrát.</p></details>
+<footer class="page"><span>Frissítve: 2026. október 5. · a repó <code>release/meres</code> ágának állapota szerint</span><span>Forrás: scripts/abrak-6-fejezet.py, abrak/, bizonyitek/meres/*.csv, lepesidok.md, auto-lepesidok.md, hiba-lepesidok.md</span></footer>
+<nav class="top"><a href="index.html">☰ Térkép</a><span class="navpair"><a href="10-megfigyeles-a-furton.html">← 10. Megfigyelés a fürtön</a><a href="12-dontesek.html">12. A döntések térképe →</a></span></nav>
+</div>
+<script src="assets/tananyag.js"></script>
+</body>
+</html>

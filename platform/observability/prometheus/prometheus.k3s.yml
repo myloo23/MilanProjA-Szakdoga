@@ -1,0 +1,118 @@
+# A Prometheus lekérdezési beállítása a mérőgépen (k3s) — ADR-0010.
+#
+# A laptopos prometheus.yml párja. A compose.azure.yaml ezt a fájlt csatolja be
+# a prometheus.yml helyére, ugyanarra az útvonalra, így a konténer parancssora
+# és minden más beállítása változatlan marad. Ami eltér, az egyetlen dolog: az
+# alkalmazás már nem egy `projecta-flask` nevű Docker-konténer, hanem két backend
+# pod a k3s-fürtben, változó IP-címmel.
+#
+# A job neve és a `service` címke szándékosan ugyanaz, mint a laptopon
+# (`projecta-flask`): a Grafana-dashboardok és a riasztási szabály erre a két
+# címkére szűrnek, így mindkét környezetben változtatás nélkül működnek.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    # Hogy egy lekérdezés eredményéből kiderüljön, melyik környezetből jön.
+    # A laptopon `local`.
+    environment: azure
+
+scrape_configs:
+  # -------------------------------------------------------------------------
+  # Az alkalmazás: a backend podok, a k3s API-tól kérdezve.
+  # -------------------------------------------------------------------------
+  #
+  # Miért nem egy fix cím (a Service vagy az ingress)? Mert a backend két
+  # replikában fut, és a Service minden kérést másik podra küldhet. A számlálók
+  # (http_requests_total) podonként külön számolnak: ha a Prometheus egyszer az
+  # egyiket, egyszer a másikat látná ugyanazon a címen, a számláló ugrálna, és a
+  # rate() hamis értékeket adna. Podonként kell lekérdezni, ahhoz pedig tudni
+  # kell, melyik pod él — ezt adja a kubernetes_sd (service discovery).
+  #
+  # Miért a pod IP-címe érhető el egy Docker-konténerből? A k3s a podhálózatot
+  # (10.42.0.0/24) a gazdagép útválasztó táblájába teszi (cni0), a Docker pedig a
+  # saját hídjáról kifelé menő forgalmat továbbítja. A Prometheus tehát ugyanúgy
+  # éri el a podot, ahogy a gazdagép — ezt a scripts/verify-observability-k3s.sh
+  # 3. lépése méri, nem feltételezi.
+  - job_name: projecta-flask
+    metrics_path: /metrics
+    kubernetes_sd_configs:
+      - role: pod
+        # A k3s API a gazdagépen fut, a 6443-as porton. A konténerből a
+        # gazdagép a `host.docker.internal` néven érhető el (a compose.azure.yaml
+        # extra_hosts sora adja).
+        api_server: https://host.docker.internal:6443
+        namespaces:
+          names: [default]
+        # A prometheus-sd ServiceAccount tokenje és a fürt CA-tanúsítványa.
+        # A scripts/observability-k3s-up.sh írja ki őket a fürtből; gitben
+        # nincsenek (.gitignore), és a platform-sync.sh sem törli őket.
+        authorization:
+          credentials_file: /etc/prometheus/k8s/token
+        tls_config:
+          ca_file: /etc/prometheus/k8s/ca.crt
+          # A kapcsolat a Docker-híd átjárójára (172.x.0.1) megy, de az API
+          # tanúsítványán ez a cím nincs rajta — ugyanaz a probléma, amit a
+          # scripts/helm-on-host.sh ír le. Itt nem kell másik útvonal: a
+          # Prometheus megengedi, hogy a tanúsítványt egy másik, rajta szereplő
+          # névre ellenőrizze. A `kubernetes.default.svc` a k3s alapértelmezett
+          # API-tanúsítványán szerepel — ezt a scripts/verify-observability-k3s.sh
+          # 2. lépése openssl-lel ellenőrzi. Az ellenőrzés tehát megmarad, nem
+          # kapcsoljuk ki (insecure_skip_verify nincs).
+          server_name: kubernetes.default.svc
+    relabel_configs:
+      # Csak a backend podok. A frontend (nginx) és a Postgres nem ad
+      # Prometheus-metrikát.
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        regex: backend
+        action: keep
+      # Podonként egy célpont: az alkalmazás portja. A migrate init
+      # containernek nincs portja, így az magától kiesik.
+      - source_labels: [__meta_kubernetes_pod_container_port_number]
+        regex: "8000"
+        action: keep
+      # Csak a futó podok: a befejezett (Succeeded), elbukott (Failed) és még
+      # induló (Pending) podok kiesnek. Egy LEÁLLÁS ALATT álló (Terminating) pod
+      # viszont itt bent marad, mert a fázisa ilyenkor még Running — ezt a
+      # verify-observability-k3s.sh 7. lépésének első futtatása mutatta meg
+      # (2026-09-30). Ez nem hiba: a pod a türelmi idő alatt még fut és
+      # válaszol, a számlálói valósak; amint a konténer leáll és a pod törlődik,
+      # a watch kiveszi a célpontok közül.
+      - source_labels: [__meta_kubernetes_pod_phase]
+        regex: Running
+        action: keep
+      # A pod neve címkeként. Korlátos: egyszerre két pod él, telepítésenként
+      # két új név jön. Ez az a kompromisszum, amit az ADR-0007 a Loki oldalán
+      # nem köt meg — ott a pod neve NEM címke —, itt viszont kell, mert e
+      # nélkül a két replika sorozatait csak az `instance` (IP-cím) választaná
+      # szét, azt pedig egy olvasó nem köti össze a kubectl kimenetével.
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - target_label: service
+        replacement: projecta-flask
+
+  # -------------------------------------------------------------------------
+  # A platform konténerei és a gazdagép — változatlanul a laptopos beállítás.
+  # -------------------------------------------------------------------------
+  #
+  # A cAdvisor itt a Docker-konténereket látja (Gitea, runner, registry, a
+  # megfigyelő szolgáltatások), a k3s podjait nem: azok a k3s saját
+  # containerd-jében futnak, nem a Docker-motorban. A podok erőforrás-
+  # felhasználását a kubelet saját cAdvisor-végpontja adná, az viszont a
+  # nodes/proxy jogot kérné, ami jóval tágabb a fenti Role-nál. Tudatosan
+  # kihagyva; a 7. fejezetbe tartozik (ADR-0010).
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["projecta-cadvisor:8080"]
+
+  # A gazdagép — itt valóban az Azure-os virtuális gép, nem egy Docker Desktop
+  # VM, tehát a „szabad memória" a k3s-sel, a buildekkel és a platformmal
+  # közösen használt 8 GB-ból maradt rész.
+  - job_name: node-exporter
+    static_configs:
+      - targets: ["projecta-node-exporter:9100"]
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

@@ -4,6 +4,11 @@
 
 Accepted — 2026-07-30
 
+**Superseded in part by [ADR-0009](0009-helm-replaces-ansible-for-deployment.md)
+(2026-09-21).** The deploy step is Helm on k3s, not Ansible on the Docker host.
+The principle — verification gates the deploy, and a failed verification rolls
+back to a recorded revision — stands, and the `verify` play still runs it.
+
 ## Context
 
 [ADR-0002](0002-build-once-push-to-registry.md) settled *what* gets deployed.

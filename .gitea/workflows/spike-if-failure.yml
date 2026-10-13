@@ -1,0 +1,43 @@
+name: Spike — if failure()
+
+# Throwaway probe, to be deleted once its finding is recorded in ADR-0005.
+#
+# ADR-0005 tested startsWith(), contains(), success() and always() on
+# act_runner v0.2.12 and found them working. It did **not** test failure(),
+# and ci.yml's rollback step depends on it: the step has to run when the
+# verification before it fails, and must not run otherwise.
+#
+# §6 of PLAN.md: an unproven claim is worse than a missing one. Two minutes
+# here is cheaper than discovering mid-measurement that the rollback never
+# fired — or that it fired on every green run.
+#
+# spike/** gets no runner from ci.yml, so this has the capacity-1 runner to
+# itself and cannot build, push or deploy anything.
+#
+# Expected on a correct runner: the job is red, the log contains
+# FAILURE-BRANCH-RAN and ALWAYS-BRANCH-RAN, and does not contain
+# SUCCESS-BRANCH-RAN.
+on:
+  push:
+    branches:
+      - 'spike/**'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fail on purpose
+        run: exit 1
+
+      - name: Runs only if something failed
+        if: failure()
+        run: echo "FAILURE-BRANCH-RAN"
+
+      - name: Runs only if everything succeeded
+        if: success()
+        run: echo "SUCCESS-BRANCH-RAN"
+
+      - name: Runs either way
+        if: always()
+        run: echo "ALWAYS-BRANCH-RAN"

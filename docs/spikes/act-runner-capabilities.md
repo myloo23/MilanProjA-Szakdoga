@@ -201,3 +201,29 @@ The probe workflow is deleted with the branch. The ADR is the artefact; this
 document is the evidence behind it; the workflow was scaffolding. It stays
 recoverable from `spike/act-runner-capabilities` history if a runner upgrade
 makes it worth re-running — every result here is bound to v0.2.12 on ARM64.
+
+## Results — round 3 (2026-09-22): `if: failure()`
+
+One question, asked because `ci.yml`'s rollback stage depends on the answer and
+round 1 never asked it.
+
+`.gitea/workflows/spike-if-failure.yml`, branch `spike/if-failure`, run #5,
+act_runner v0.2.12, `RUNNER_ARCH=X64`, image
+`docker.gitea.com/runner-images:ubuntu-latest`.
+
+| Step | Condition | Ran? |
+|---|---|:--:|
+| `Fail on purpose` (`exit 1`) | — | yes, failed |
+| `Runs only if something failed` | `failure()` | yes — printed `FAILURE-BRANCH-RAN` |
+| `Runs only if everything succeeded` | `success()` | no — no output |
+| `Runs either way` | `always()` | yes — printed `ALWAYS-BRANCH-RAN` |
+
+The job's final state was failed, which is the other half of what the rollback
+stage needs: a step that runs on `failure()` does not reset the job's verdict,
+so a successful rollback still leaves the run red.
+
+Worth noting from the log, because it explains what the runner is doing rather
+than only what it concluded: the runner prints `evaluating expression
+'success()'` before the job starts and `evaluating expression ''` before each
+step, so conditions are evaluated one at a time against the accumulated job
+status rather than resolved up front.

@@ -20,6 +20,33 @@
     status_code: 200
   changed_when: false
 
+- name: Ask the running application which commit it was built from
+  ansible.builtin.uri:
+    url: "{{ deploy_app_smoke_base }}/version"
+    status_code: 200
+  register: deploy_app_smoke_version
+  changed_when: false
+
+- name: Assert the deployed version is the one this deploy meant to ship
+  # Step 12 of the manual measurement protocol, and half of its acceptance
+  # criterion: the pipeline is only allowed to call a deploy successful if the
+  # thing now answering identifies itself as the commit under test. Without it
+  # a deploy that silently left the previous version running would pass every
+  # other check in this file, because the previous version is healthy.
+  #
+  # /version reports APP_VERSION, which the Dockerfile sets from the GIT_SHA
+  # build argument. An image built before that argument was wired through CI
+  # reports "dev" and fails here — correctly: an artifact that cannot say what
+  # it is has no business being accepted by an automated gate.
+  ansible.builtin.assert:
+    that: deploy_app_smoke_version.json.version | default('') == app_version
+    fail_msg: >-
+      /version returned
+      '{{ deploy_app_smoke_version.json.version | default('nothing') }}',
+      expected '{{ app_version }}'. The deploy did not put the intended
+      version in front of traffic.
+    quiet: true
+
 - name: Echo a valid payload
   ansible.builtin.uri:
     url: "{{ deploy_app_smoke_base }}/echo"

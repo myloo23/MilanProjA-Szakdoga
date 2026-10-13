@@ -101,6 +101,10 @@ resource "azurerm_linux_virtual_machine" "main" {
   size                = var.vm_size
   admin_username      = var.admin_username
 
+  # Ha meg van adva, a gép ebbe a rendelkezésre állási zónába kerül. Lásd a
+  # variables.tf "zone" leírását: kapacitáshiánynál ez a kerülőút.
+  zone = var.zone
+
   network_interface_ids = [azurerm_network_interface.main.id]
 
   # Jelszavas belépés nincs. Ez az azurerm alapértelmezése is, de kimondva
@@ -132,4 +136,25 @@ resource "azurerm_linux_virtual_machine" "main" {
     public_ip      = azurerm_public_ip.main.ip_address
     admin_username = var.admin_username
   }))
+
+  # **A custom_data változása NEM cserélheti le a gépet.** Az azurerm-ben a
+  # custom_data „ForceNew" mező: ha a cloud-init.yaml tartalma bármiben eltér
+  # attól, amivel a gép létrejött, a következő `apply` a gépet törli és újat
+  # hoz létre — lemezzel, fürttel, Giteával, registryvel együtt.
+  #
+  # Ez 2026-09-30-án megtörtént. A cloud-init.yaml 2026-09-21-én változott (a
+  # registries.yaml kivezetése, 2.4), de azt a változást senki nem alkalmazta,
+  # mert a gép már futott. Tíz nappal később egy ártatlan NSG-módosítás (az
+  # allowed_cidr új otthoni IP-re) `apply`-ja magával vitte a függő cserét is:
+  # a gép újra létrejött (virtual_machine_id 29cfc322… → 2fff48cb…), és vele
+  # minden, ami nem kódból jön. A mérési bizonyítékanyagot ez nem érintette,
+  # mert az a repóban van (szakdolgozat/bizonyitek/), nem a gépen.
+  #
+  # A cloud-init csak az első induláskor fut le, tehát egy futó gépen a
+  # módosítása amúgy sem hatna. Ha a gépet szándékosan új cloud-init-tel kell
+  # újraépíteni, az kimondott döntés legyen:
+  #   terraform apply -replace=azurerm_linux_virtual_machine.main
+  lifecycle {
+    ignore_changes = [custom_data]
+  }
 }

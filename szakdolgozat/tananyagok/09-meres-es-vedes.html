@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>9. A mérés</title>
+<link rel="stylesheet" href="assets/tananyag.css">
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="index.html">☰ Térkép</a><span class="navpair"><a href="08-pipeline-biztonsag-megfigyeles.html">← 8. Pipeline és ellátási lánc</a><a href="10-megfigyeles-a-furton.html">10. Megfigyelés a fürtön →</a></span></nav>
+<p class="eyebrow">9. tananyag · ~20 perc · a dolgozat gerince: 6. fejezet</p>
+<h1>A mérés</h1>
+<p class="lead">Mit mértél, miért fair, mi jött ki, és hol a mérés gyenge pontja. Ezt tudd a legjobban.</p>
+
+<div class="tldr"><strong>Röviden</strong>
+<ul>
+<li>Négy sorozat, mind kész: 10 kézi és 10 automatizált telepítés, 3 kézi és 3 automatizált helyreállítás (+ az A0 kontroll).</li>
+<li>Az automatizálás nem gyorsabb összesen, hanem többet csinál nagyjából ugyanannyi idő alatt, 13 helyett 2 beavatkozással.</li>
+<li>A gépi kivárás mindkét oldalon ugyanannyi; ami eltűnik, az a begépelt és elolvasott rész. Ezt a mérés előtt megjósoltad.</li>
+</ul></div>
+
+<h2 id="fair">1. A kérdés, és miért fair</h2>
+<div class="box key"><strong>A kutatási kérdés</strong>
+Mennyit javít mérhetően az automatizálás a telepítésen? Ugyanazt a változtatást kézzel és a pipeline-nal is kiviszed, többször, ugyanarra a fürtre, és összehasonlítod.</div>
+<div class="toggle-figure">
+<div class="toggle">
+  <button data-state="kezi" data-caption="<strong>Kézi:</strong> a <code>meres/kezi-NN</code> ágra pusholsz — erre az ágra nem indul pipeline. Utána 13 parancsot adsz ki egyesével, és mindegyik kimenetét elolvasod.">Kézi oldal</button>
+  <button data-state="auto" data-caption="<strong>Automatizált:</strong> a <code>release/meres</code> ágra pusholsz — erre indul a pipeline. Utána csak megnézed, zöld lett-e. <strong>Ugyanaz</strong>: gép, registry, fürt, chart, változtatás. (Az alapkép digestje és az image-építő eltér — lásd a védési kérdéseket lent.)">Automatizált oldal</button>
+</div>
+<figure>
+<svg viewBox="0 0 640 200" role="img" aria-label="A két mérési oldal ugyanarra a fürtre telepít">
+  <defs><marker id="m9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+  <rect x="10" y="70" width="110" height="60" rx="8" class="n-2"/>
+  <text x="65" y="96" text-anchor="middle" class="t-bold">git push</text>
+  <text x="65" y="114" text-anchor="middle" class="t-small t-mono" data-when="kezi">meres/kezi-NN</text>
+  <text x="65" y="114" text-anchor="middle" class="t-small t-mono" data-when="auto">release/meres</text>
+
+  <g data-when="kezi">
+    <rect x="160" y="50" width="220" height="100" rx="10" class="n-violet"/>
+    <text x="270" y="78" text-anchor="middle" class="t-bold">Te, 13 paranccsal</text>
+    <text x="270" y="98" text-anchor="middle" class="t-small">ssh, checkout, 2× build, 2× push,</text>
+    <text x="270" y="114" text-anchor="middle" class="t-small">helm upgrade, 2× rollout status,</text>
+    <text x="270" y="130" text-anchor="middle" class="t-small">/version, füstteszt</text>
+  </g>
+  <g data-when="auto">
+    <rect x="160" y="50" width="220" height="100" rx="10" class="n-accent"/>
+    <text x="270" y="78" text-anchor="middle" class="t-bold">Pipeline</text>
+    <text x="270" y="98" text-anchor="middle" class="t-small">ugyanazok a lépések + lint,</text>
+    <text x="270" y="114" text-anchor="middle" class="t-small">tesztek, szkennelés, és</text>
+    <text x="270" y="130" text-anchor="middle" class="t-small">automatikus rollback</text>
+  </g>
+
+  <rect x="420" y="30" width="210" height="140" rx="12" class="n-ok"/>
+  <text x="525" y="58" text-anchor="middle" class="t-bold">UGYANAZ</text>
+  <text x="525" y="82" text-anchor="middle" class="t-small">Azure VM</text>
+  <text x="525" y="100" text-anchor="middle" class="t-small">registry (localhost:5001)</text>
+  <text x="525" y="118" text-anchor="middle" class="t-small">k3s fürt, Helm chart</text>
+  <text x="525" y="136" text-anchor="middle" class="t-small">elfogadás: /version + füstteszt</text>
+  <path d="M120,100 L156,100" class="line" marker-end="url(#m9)"/>
+  <path d="M380,100 L416,100" class="line" marker-end="url(#m9)"/>
+</svg>
+</figure>
+<div class="caption"></div>
+</div>
+
+<div class="dontes"><p class="d-cim">Mindkét oldal ugyanarra a fürtre telepít</p>
+<p><b>Miért:</b> így a különbség csak az automatizálásból jöhet.</p>
+<p><b>Nélküle:</b> ha a kézi oldalt Docker Compose-on, az automatát Kubernetesen méred, a két platform különbségét is mérnéd, és nem tudnád szétválasztani. Ezt szednék szét elsőként.</p>
+<p class="d-hol">Hol: 00-terv 5. pont</p></div>
+
+<div class="dontes"><p class="d-cim">A független változó az ágnév</p>
+<p><b>Hogyan:</b> <code>meres/kezi-NN</code> ágra nem indul pipeline, kézzel telepítesz; <code>release/meres</code> ágra indul. Ugyanaz a gép, registry, fürt, chart, Helm-verzió és elfogadási feltétel.</p>
+<p><b>Amit utólag találtál:</b> két nem szándékos eltérés is van. (1) A backend alapképének digestje: a kézi sorozat után léptetve, mert a Trivy megfogta. (2) Az image-építő: kézzel legacy, a pipeline-ban BuildKit. Egyik sem torzít, és ez mérve van: a gördülő csere 19–22 vs 19,5–22,0 mp, a build 12–15 vs 11,9–13,4 mp, a telepítési szakaszban pedig build nincs.</p>
+<p class="d-hol">Hol: <code>04-kezi-telepitesi-folyamat.md</code> 4., 4.b, 4.c pont</p></div>
+
+<details class="q vedes"><summary>„Tényleg csak az ágnév különbözik a két sorozat között?”</summary>
+<p>Nem, és ezt én mondom ki előbb: a backend alapképének digestje és az image-építő is eltér. Mindkettő hatását a mért tételeken belül kizártam: a gördülő csere és a build ideje a két oldalon ugyanabban a sávban van, és a telepítési szakasz (31 → 24 mp) buildet egyik oldalon sem tartalmaz.</p></details>
+
+<h2 id="mit">2. Mit mértél, és hogyan</h2>
+<div class="table-wrap"><table>
+<tr><th>Mérőszám</th><th>Kezdete → vége</th></tr>
+<tr><td>Teljes idő</td><td>a commit megvan → az új verzió fut, és az átvétel sikeres</td></tr>
+<tr><td>Telepítési szakasz</td><td>kézi 9–13. lépés; pipeline <code>MERES deploy-start → accepted</code></td></tr>
+<tr><td>Emberi beavatkozás</td><td>minden kiadott parancs, és minden kimenet, amit elolvasol és döntesz róla</td></tr>
+<tr><td>Kiesés hibás kiadás után</td><td>a hibás verzió él → észlelés → az előző verzió újra jól működik</td></tr>
+</table></div>
+<p><strong>Elfogadási feltétel</strong> mindkét oldalon: a <code>/version</code> az új rövid SHA-t adja, és a füstteszt hibátlan. <strong>A változtatás:</strong> egy jelölősor az <code>app/app.py</code> végén (<code>#&nbsp;meres-jelolo:&nbsp;007</code>). Új SHA-t ad, de viselkedést nem változtat, teszt, lint és lefedettség nem bukhat rajta.</p>
+
+<div class="dontes"><p class="d-cim">Időbélyeg, nem stopper</p>
+<p><b>Miért:</b> a kézi oldalon <code>script</code>-tel rögzített jegyzőkönyv és időbélyeges prompt (1 mp-es felbontás), a pipeline-ban a joblog <code>MERES</code> sorai (tized mp). Az első próbafuttatásnál elfelejtetted indítani a stoppert: egy mérés, ami az operátor emlékezetén múlik, nem mérés.</p>
+<p class="d-hol">Hol: napló 2.5, <code>meres/README.md</code></p></div>
+
+<div class="dontes"><p class="d-cim">A kimenet elolvasása is beavatkozás, mindkét oldalon</p>
+<p><b>Miért:</b> a protokoll előre így definiálta: „kiad egy parancsot, vagy elolvas egy kimenetet és dönt róla”. Utólag nem írod át, mert kényelmetlen. Ezért 13 a 2 ellen (és nem 1), illetve 19 a 2 ellen a helyreállításnál.</p>
+<p><b>Nélküle:</b> ha csak az egyik oldalon számítana, az lenne a mérés legtámadhatóbb pontja.</p>
+<p class="d-hol">Hol: napló, „A két nyitott kérdés — eldöntve”</p></div>
+
+<div class="dontes"><p class="d-cim">Két időt közölsz: a teljest és a telepítési szakaszt</p>
+<p><b>Miért:</b> a teljes időben az automatizálás lassabb, a telepítési szakaszban gyorsabb. Csak az egyikkel vagy azt állítanád, hogy 1,8-szor lassabb (pedig nem ugyanazt a munkát fedi), vagy elhallgatnád, hogy a változtatás később ér ki.</p></div>
+
+<details class="q"><summary>Miért 2 a beavatkozás az automatizált oldalon, és nem 1?</summary>
+<p>A push, plusz a pipeline zöld/piros eredményének elolvasása és elbírálása. Ugyanaz a definíció, mint a kézi oldalon.</p></details>
+
+<h2 id="kezi">3. A kézi sorozat</h2>
+<p>Tíz érvényes futtatás (négy elvetett, indokkal: két próbafuttatás és két érvénytelen). 13 parancs, egyesével, mindegyik kimenetét elolvasva.</p>
+<figure>
+<p class="legend"><span style="--c: var(--violet-soft)">bemelegedés (1–3.)</span><span style="--c: var(--violet)">beállt szakasz (4–10.)</span></p>
+<svg viewBox="0 -14 640 254" role="img" aria-label="A kézi futtatások ideje másodpercben: 121, 144, 86, 67, 75, 71, 74, 79, 71, 64">
+  <line x1="40" y1="200" x2="630" y2="200" class="grid"/>
+  <line x1="40" y1="133" x2="630" y2="133" class="grid"/>
+  <line x1="40" y1="67" x2="630" y2="67" class="grid"/>
+  <text x="34" y="204" text-anchor="end" class="t-small t-muted">0</text>
+  <text x="34" y="137" text-anchor="end" class="t-small t-muted">50</text>
+  <text x="34" y="71" text-anchor="end" class="t-small t-muted">100</text>
+  <text x="34" y="20" text-anchor="end" class="t-small t-muted">mp</text>
+  <g id="kezi-bars"></g>
+  <line x1="227" y1="105" x2="630" y2="105" class="line dash"/>
+  <text x="626" y="30" text-anchor="end" class="t-small t-bold">szaggatott vonal: a 4–10. futtatás mediánja, 71 mp</text>
+</svg>
+<figcaption>Vízszintes tengely: a futtatás sorszáma. A 2. futtatás (144 mp) időbélyeg-hiba miatt pontatlanabb, ezt a CSV megjegyzése rögzíti. Két futtatás (<code>kezi-02</code>, <code>kezi-06</code>) érvénytelen lett, és ezt nyíltan dokumentáltad.</figcaption>
+</figure>
+
+<div class="dontes"><p class="d-cim">A beállt szakasz (4–10.) a viszonyítási alap, de mindkét nézetet közlöd</p>
+<p><b>Miért:</b> az első három futtatás lassúságának két azonosított oka van: a gyakorlat és a build-gyorsítótár bemelegedése (a backend build 35 → 11 mp, ez gépi ok). Mindkettő kifutott a 4. futtatásra.</p>
+<p><b>Hogy ne lehessen válogatással vádolni:</b> a tíz futtatás értékét is közlöd (medián 74,5 mp, 64–144).</p>
+<p class="d-hol">Hol: <code>lepesidok.md</code></p></div>
+
+<details class="q vedes"><summary>„A kézi oldalon miért csak hét futtatást nézel?”</summary>
+<p>Nem csak hetet: mind a tíz a táblában és az ábrán van. A beállt szakasz azért az alap, mert a korai lassúság két oka (gyorsítótár és gyakorlat) azonosítható és kifutott. Ha a tízből számolnék, az automatizálás javulása nagyobbnak látszana; a beállt szakasz a konzervatívabb.</p></details>
+
+<h2 id="auto">4. Az automatizált sorozat</h2>
+<p>Tíz érvényes futtatás, mind zöld (egy bemelegítő futás elvetve: Trivy-bukás, 8. tananyag). Teljes idő 115–144 mp (medián 129,5), telepítési szakasz 23–26 mp (medián 24), 2 beavatkozás.</p>
+<div class="table-wrap"><table>
+<tr><th>A teljes idő bontása</th><th>Sáv</th></tr>
+<tr><td>Minőségi kapuk (Trivy secret, hadolint, pytest, ansible-lint, Trivy image)</td><td>48–73 mp</td></tr>
+<tr><td>Minden más (runner, build, push, telepítés, ellenőrzés)</td><td>67–72 mp ← a kézi beállt 64–79 mp mellett</td></tr>
+</table></div>
+
+<div class="dontes"><p class="d-cim">A szórás okát megmérted, nem megtippelted</p>
+<p><b>Az első tipped:</b> a hálózat (Trivy-adatbázis letöltése, runner image). Kimérted: mindkettő állandó. A hipotézis téves volt.</p>
+<p><b>A valódi ok:</b> a B5 szakasz (ansible-lint és függőségei) 15,9–43,6 mp között ingadozik, mert a <code>requirements-lint.txt</code> nincs gyorsítótárazva. Nem javítottad: a mért pipeline-t változtatta volna meg → 7. fejezet.</p>
+<p class="d-hol">Hol: <code>auto-lepesidok.md</code>, napló 2.7</p></div>
+
+<h2 id="hiba">5. Helyreállítás: ha rossz verzió megy ki</h2>
+<p>A beinjektált hiba: az <code>/echo</code> érvényes JSON-ra 500-at ad, minden más működik. A probe-ok átengedik, a telepítés sikeresnek látszik, csak a füstteszt buktatja el (pontosan egy ellenőrzés bukik).</p>
+<div class="table-wrap"><table>
+<tr><th></th><th>Kézi (H1–H3)</th><th>Automatizált (A1–A3)</th></tr>
+<tr><td>Észlelés, medián</td><td>17 mp (16–20)</td><td>2 mp (2–3)</td></tr>
+<tr><td>Helyreállítás, medián</td><td>37 mp (34–39)</td><td>24 mp (23–25)</td></tr>
+<tr><td><strong>Kiesés, medián</strong></td><td><strong>56 mp (50–57)</strong></td><td><strong>26 mp (25–28)</strong></td></tr>
+<tr><td>Beavatkozás</td><td>19</td><td>2</td></tr>
+<tr><td>Visszaállt verzió</td><td><code>be36f74</code> 3/3</td><td><code>e4da1d9</code> 3/3, gépi version-assert</td></tr>
+</table></div>
+
+<div class="dontes"><p class="d-cim">A1–A3-ban a hiba el van rejtve a unit tesztek elől; az A0 a kontroll</p>
+<p><b>Mi derült ki előre:</b> a kézi sorozat hibáját a pipeline-on három unit teszt megfogja, a deploy el sem indul. Így a visszaállító lépést soha nem lehetett volna mérni.</p>
+<p><b>Ezért:</b> A0 = ugyanaz a hiba változatlanul → a pytest megállítja, push → megállás 24 mp, <strong>kiesés 0</strong>. A1–A3 = a hiba egy feltétellel (<code>and not app.testing</code>) átjut a teszteken, hogy a rollback mérhető legyen.</p>
+<p class="d-hol">Hol: <code>auto-hiba-nyers-jegyzet.md</code>, <code>auto-hiba-a0.csv</code>, napló 2.8</p></div>
+
+<details class="q vedes"><summary>„Nem kicsalt hiba az A1–A3? Szándékosan kerülted meg a teszteket.”</summary>
+<p>Igen, szándékosan, és ki is mondom. Az A1–A3 a visszaállító utat méri, nem a tesztkaput. Hogy a tesztkapu mit ér, azt az A0 mutatja: ugyanaz a hiba ott ki sem ment, a kiesés 0. A kézi úton ugyanez 50–57 mp kiesés, mert ott nincs tesztkapu.</p></details>
+
+<details class="q"><summary>Miért olyan hiba, ami nem dönti le a podot?</summary>
+<p>Mert az a legveszélyesebb, ami sikeresnek látszik. Ha a pod összeomlana, a Kubernetes maga jelezné, és a hibás verzió soha nem lenne „élő”, így nem lenne mit észlelni és visszaállítani.</p></details>
+
+<h2 id="allitasok">6. A négy állítás, amit kimondasz (6.4)</h2>
+<ol>
+<li><strong>Az automatizálás nem gyorsabb, hanem többet végez ugyanabban a nagyságrendben.</strong> Kapuk nélkül 67–72 mp a kézi 64–79 mellett; a többlet pontosan a kapuk ára.</li>
+<li><strong>A gépi kivárás mindkét oldalon ugyanaz</strong> (19–22 vs 19,5–22,0 mp). A javulás a begépelt és elolvasott lépésekből jön (kézzel 6–15 mp, gépi ellenőrzés 3,4–3,8 mp). Ezt a mérés előtt leírtad.</li>
+<li><strong>A kiesés kb. a felére csökken</strong> (56 → 26 mp); a gépi kivárás itt is azonos.</li>
+<li><strong>A legnagyobb hatás nem időben mérhető:</strong> az A0-ban a hiba ki sem ment.</li>
+</ol>
+<p>Szövegben, nem számban: a két oldalon ugyanaz az ellenőrzéskészlet fut, de kézzel te döntesz (a <code>smoke.sh</code> mindig 0-val lép ki), a pipeline-ban a gép. Ember elnézheti, gép nem. És amit a számok nem mutatnak: a <code>psycopg</code>-hiba (csak a pipeline vette észre) és a 43 Trivy-találat (a kézi út sosem kérdez).</p>
+
+<div class="box whatif"><strong>Ne írd le</strong>
+„X-szer gyorsabb”, „Y%-os javulás” a teljes időre. A 24/31 és a 26/56 arány közölhető, de mindig a sávval és a korlátokkal.</div>
+
+<details class="q vedes"><summary>„Ha az automatizálás lassabb, mi értelme?”</summary>
+<p>Ugyanarra a munkára nem lassabb: a telepítési szakasz 31 → 24 mp. A teljes idő azért hosszabb, mert közben lintel, tesztel és kétszer szkennel, amit kézzel egyáltalán nem csinálsz. Kapuk nélkül 67–72 mp, a kézi 64–79 mellett. És 13 helyett 2 emberi lépés.</p></details>
+
+<details class="q vedes"><summary>„Mi a legerősebb bizonyítéka annak, hogy a mérés azt méri, amit kell?”</summary>
+<p>Az előrejelzés. A <code>lepesidok.md</code>-ben a pipeline-mérés előtt leírtam, hogy a gördülő csere kivárása ott sem lesz gyorsabb, mert azt a Kubernetes csinálja, és ha nagy javulás jönne ki, a felállást kell megnézni. Így lett, a telepítésnél és a helyreállításnál is.</p></details>
+
+<h2 id="korlatok">7. A korlátok: mondd ki előbb te (6.5)</h2>
+<div class="table-wrap"><table>
+<tr><th>Korlát</th><th>A válaszod</th></tr>
+<tr><td>Egy operátor, a rendszert ismerve játszottad újra.</td><td>A kézi oldalnak kedvez → a javulás alsó becslés. Rögzített lépéslista, azonos feltétel.</td></tr>
+<tr><td>Beállt szakasz csak a kézi oldalon.</td><td>Mindkét nézet közölve, az ok azonosítva.</td></tr>
+<tr><td>Két nem szándékos eltérés.</td><td>Hatásuk mérve, a telepítési szakaszt nem érinti.</td></tr>
+<tr><td>A1–A3 rejtett hiba.</td><td>Szándékos; az A0 a kontroll.</td></tr>
+<tr><td>Az észlelés felállásfüggő.</td><td>Mindkét oldal közvetlenül a telepítés után ellenőriz; amit a füstteszt nem fed, egyik sem észleli.</td></tr>
+<tr><td>Kis minta (10, illetve 3).</td><td>Medián és sáv; nincs szórás, szignifikancia, százalékos hibaarány.</td></tr>
+<tr><td>Eltérő időfelbontás (1 mp vs 0,1 mp).</td><td>Összevetés egész másodpercen.</td></tr>
+<tr><td>Egy gép, egy alkalmazás; a CI a mért gépen.</td><td>Nem általánosítok. A mérés alatt nem ment push a <code>main</code>-re, és pontosan 3 platformkonténer futott (E9).</td></tr>
+<tr><td>A Trivy-adatbázis időfüggő.</td><td>A mért tíz futtatás egy adatbázis-állapoton ment.</td></tr>
+</table></div>
+
+<details class="q vedes"><summary>„Mik a DORA-metrikák, és melyiket mérted?”</summary>
+<p>Négy mutató: telepítési gyakoriság, a változtatás átfutási ideje, a hibás változtatások aránya, helyreállítási idő. Az átfutási időt és a helyreállítási időt mérted. A gyakoriságot egyszemélyes projektben nincs értelme összevetni, a hibaarányt 10 futtatásból nem lehet komolyan venni.</p></details>
+
+<h2 id="puska">8. Fejből tudd</h2>
+<div class="table-wrap"><table>
+<tr><th></th><th>Kézi</th><th>Automatizált</th></tr>
+<tr><td>Futtatások</td><td>10 (ebből 7 beállt)</td><td>10</td></tr>
+<tr><td>Teljes idő, medián</td><td>71 mp (64–79)</td><td>129,5 mp (115–144)</td></tr>
+<tr><td>… kapuk nélkül</td><td>71 mp (64–79)</td><td>69 mp (67–72)</td></tr>
+<tr><td>Telepítési szakasz, medián</td><td>31 mp (29–40)</td><td>24 mp (23–26)</td></tr>
+<tr><td>Beavatkozás, telepítés</td><td>13</td><td>2</td></tr>
+<tr><td>Kiesés, medián</td><td>56 mp (50–57)</td><td>26 mp (25–28)</td></tr>
+<tr><td>Beavatkozás, helyreállítás</td><td>19</td><td>2</td></tr>
+<tr><td>Ha a hibát teszt fedi (A0)</td><td>50–57 mp kiesés</td><td>0 mp</td></tr>
+</table></div>
+<footer class="page"><span>Frissítve: 2026. október 5. · a repó <code>release/meres</code> ágának állapota szerint</span><span>Forrás: bizonyitek/04-kezi-telepitesi-folyamat.md, bizonyitek/meres/ (CSV-k, README, lepesidok.md, auto-lepesidok.md, hiba-lepesidok.md), 05-vazlat-6-fejezet.md, naplo.md</span></footer>
+<nav class="top"><a href="index.html">☰ Térkép</a><span class="navpair"><a href="08-pipeline-biztonsag-megfigyeles.html">← 8. Pipeline és ellátási lánc</a><a href="10-megfigyeles-a-furton.html">10. Megfigyelés a fürtön →</a></span></nav>
+</div>
+<script src="assets/tananyag.js"></script>
+</body>
+</html>

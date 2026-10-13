@@ -4,17 +4,29 @@
 # Mindkét saját képet ugyanabból a commitból buildeljük, ezért egy közös tag
 # van. A pipeline egyetlen kapcsolóval vált verziót:
 #   helm upgrade --install projecta ./chart --set image.tag=<commit-sha>
+#
+# A registry a képhivatkozás előtagja (<registry>/<repository>:<tag>). A
+# mérőgépen ez a gazdagépre publikált registry-port: a k3s ugyanazon a gépen
+# fut, és a containerd a loopback-címre mutató registryt kivételként kezeli,
+# ezért TLS nélkül is lehúzza róla a képet (a 2.4 pont ezt negatív próbával is
+# igazolta: szakdolgozat/bizonyitek/03-platform-koltoztetes.md). Ha a fürt
+# valaha külön gépre kerül, ez az előtag nem maradhat `localhost:` — akkor a
+# registrynek TLS és hitelesítés kell.
+#
+# Üresre állítva („--set image.registry=") a chart előtag nélküli nevet
+# használ: ez a k3d-s fejlesztéshez való, ahol a kép kézzel kerül a fürtbe.
 image:
+  registry: localhost:5001
   tag: dev
 
 backend:
   image:
-    repository: flaskapp
+    repository: projecta-flask
   replicaCount: 2
 
 frontend:
   image:
-    repository: frontend
+    repository: projecta-frontend
   replicaCount: 2
 
 # Hol éri el a backend (és a migrate init container) az adatbázist.

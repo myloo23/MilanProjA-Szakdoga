@@ -1,0 +1,21 @@
+Restored session: Wed 23 Sep 2026 09:12:05 CEST
+[1m[7m%[27m[1m[0m                                                                                                                      ]7;file://Takacss-MacBook-Pro.local/Users/takacsmilan/Documents/Szakdolgozat/MilanProjA-Szakdoga[0m[27m[24m[Jtakacsmilan@Takacss-MacBook-Pro MilanProjA-Szakdoga % [K[?2004h[7mexport TZ=UTC[27m[13D[27me[27mx[27mp[27mo[27mr[27mt[27m [27mT[27mZ[27m=[27mU[27mT[27mC[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                      ]7;file://Takacss-MacBook-Pro.local/Users/takacsmilan/Documents/Szakdolgozat/MilanProjA-Szakdoga[0m[27m[24m[Jtakacsmilan@Takacss-MacBook-Pro MilanProjA-Szakdoga % [K[?2004h[7mPROMPT='[%D{%H:%M:%S}] '$PROMPT[27m[31D[27mP[27mR[27mO[27mM[27mP[27mT[27m=[27m'[27m[[27m%[27mD[27m{[27m%[27mH[27m:[27m%[27mM[27m:[27m%[27mS[27m}[27m][27m [27m'[27m$[27mP[27mR[27mO[27mM[27mP[27mT[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                      ]7;file://Takacss-MacBook-Pro.local/Users/takacsmilan/Documents/Szakdolgozat/MilanProjA-Szakdoga[0m[27m[24m[J[07:16:38] takacsmilan@Takacss-MacBook-Pro MilanProjA-Szakdoga % [K[?2004h[7mgit push azure release/meres-hiba[27m[33D[27mg[27mi[27mt[27m [27mp[27mu[27ms[27mh[27m [27ma[27mz[27mu[27mr[27me[27m [27mr[27me[27ml[27me[27ma[27ms[27me[27m/[27mm[27me[27mr[27me[27ms[27m-[27mh[27mi[27mb[27ma[?2004l
+Enumerating objects: 23, done.
+Counting objects:   4% (1/23)Counting objects:   8% (2/23)Counting objects:  13% (3/23)Counting objects:  17% (4/23)Counting objects:  21% (5/23)Counting objects:  26% (6/23)Counting objects:  30% (7/23)Counting objects:  34% (8/23)Counting objects:  39% (9/23)Counting objects:  43% (10/23)Counting objects:  47% (11/23)Counting objects:  52% (12/23)Counting objects:  56% (13/23)Counting objects:  60% (14/23)Counting objects:  65% (15/23)Counting objects:  69% (16/23)Counting objects:  73% (17/23)Counting objects:  78% (18/23)Counting objects:  82% (19/23)Counting objects:  86% (20/23)Counting objects:  91% (21/23)Counting objects:  95% (22/23)Counting objects: 100% (23/23)Counting objects: 100% (23/23), done.
+Delta compression using up to 12 threads
+Compressing objects:   6% (1/15)Compressing objects:  13% (2/15)Compressing objects:  20% (3/15)Compressing objects:  26% (4/15)Compressing objects:  33% (5/15)Compressing objects:  40% (6/15)Compressing objects:  46% (7/15)Compressing objects:  53% (8/15)Compressing objects:  60% (9/15)Compressing objects:  66% (10/15)Compressing objects:  73% (11/15)Compressing objects:  80% (12/15)Compressing objects:  86% (13/15)Compressing objects:  93% (14/15)Compressing objects: 100% (15/15)Compressing objects: 100% (15/15), done.
+Writing objects:   6% (1/15)Writing objects:  13% (2/15)Writing objects:  20% (3/15)Writing objects:  26% (4/15)Writing objects:  33% (5/15)Writing objects:  40% (6/15)Writing objects:  46% (7/15)Writing objects:  53% (8/15)Writing objects:  60% (9/15)Writing objects:  66% (10/15)Writing objects:  73% (11/15)Writing objects:  80% (12/15)Writing objects:  86% (13/15)Writing objects:  93% (14/15)Writing objects: 100% (15/15)Writing objects: 100% (15/15), 22.82 KiB | 11.41 MiB/s, done.
+Total 15 (delta 8), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: 
+remote: Create a new pull request for 'release/meres-hiba':[K
+remote:   http://localhost:3000/milan/MilanProjA-Szakdoga/pulls/new/release/meres-hiba[K
+remote: 
+To http://localhost:3000/milan/MilanProjA-Szakdoga.git
+   dbe433c..be3a91c  release/meres-hiba -> release/meres-hiba
+[1m[7m%[27m[1m[0m                                                                                                                      ]7;file://Takacss-MacBook-Pro.local/Users/takacsmilan/Documents/Szakdolgozat/MilanProjA-Szakdoga[0m[27m[24m[J[07:16:43] takacsmilan@Takacss-MacBook-Pro MilanProjA-Szakdoga % [K[?2004h[7mexit[27m[27me[27mx[27mi[27mt[?2004l
+
+Saving session...
+...saving history...truncating history files...
+...completed.

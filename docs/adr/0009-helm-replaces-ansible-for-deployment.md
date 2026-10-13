@@ -103,3 +103,71 @@ and after, and a deleted baseline cannot be described accurately.
   write. Rejected: the database is a subject of the thesis chapter on state, and
   a twenty-line manifest that is understood is worth more here than a chart whose
   upgrade behaviour would have to be researched to be described.
+
+## Addendum — 2026-09-22: how the pipeline reaches the cluster
+
+This ADR was accepted a day before `ci.yml` followed it. Building the deploy,
+verify and rollback stages surfaced three questions the decision above did not
+answer, and each is settled here rather than left implicit in the workflow.
+
+**Helm runs in a container on the host's network namespace.** The deploy job
+runs in a container on the `projecta-platform` bridge, and the k3s API server
+listens on the host's `127.0.0.1:6443`. The bridge gateway is not a way around
+that: `terraform/cloud-init.yaml` starts k3s with `--tls-san <public_ip>`, so
+the server certificate names `127.0.0.1`, `localhost` and the public address,
+and not `172.x.0.1`. `scripts/helm-on-host.sh` therefore creates a container
+through the host's Docker socket — which the job already holds, because the
+build stage uses it — with `--network host` and the host's kubeconfig
+bind-mounted. Inside it, `127.0.0.1:6443` is the API server and `127.0.0.1:80`
+is Traefik, exactly as the operator sees them in the manual protocol.
+
+Rejected: installing a second, host-executing runner. It gives perfect symmetry
+with the manual series and costs a new platform component to register, secure
+and describe. Rejected too: hairpinning to the public address, which routes an
+internal deploy through the internet and the network security group.
+
+The helm image is pinned to `alpine/helm:3.22.0` — the version
+`szakdolgozat/bizonyitek/04-kezi-telepitesi-folyamat.md` records on the
+measuring machine (E1). Two series deploying with two helm versions would put a
+second variable next to the branch name, which is the one thing §6.4 may not
+have.
+
+**`helm upgrade --wait` replaces `kubectl rollout status`.** The manual protocol
+spends one command per Deployment (steps 10 and 11); the pipeline spends one
+flag. Both wait on a readiness signal rather than a timer, which is what
+ADR-0003 requires, and the difference in what it costs a human is a finding for
+§6.4 rather than a divergence to correct. A consequence worth stating: the
+deploy job needs no `kubectl` at all, so one pinned image covers the whole
+stage.
+
+**Not `--atomic`.** Helm's built-in rollback would fire on helm's own verdict
+and leave nothing to measure. The failure this project is built to catch is the
+one helm cannot see — pods healthy, application broken — so recovery stays an
+explicit, separately timed step.
+
+**Ansible survives, in one role and with a narrower claim.** The consequence
+above says the deploy step "loses the control-node dependency chain (Ansible,
+collections, their locks)". That is now true of the collections and false of
+Ansible itself: `ansible/playbooks/verify.yml` runs the `deploy_app` role's
+smoke tasks as the post-deploy gate. Every task in that file is
+`ansible.builtin.uri` or `ansible.builtin.assert`, so nothing there touches a
+cluster object and the "Helm owns the objects" rule holds. The deploy job
+installs `ansible-core` and nothing from Galaxy.
+
+The alternative was `scripts/smoke.sh`, which cannot be a gate: it has no
+`set -e` and its `check()` asserts nothing, so its exit code is always 0. Both
+sides of the measurement then run the same check set with the same definition
+of healthy, and the fact that only the automated side decides mechanically is
+itself one of the results.
+
+**The smoke tasks gained the acceptance criterion.** `/version` must report the
+commit being deployed. Without it a deploy that quietly left the previous
+version in place would pass every other check, because the previous version is
+healthy. This also required wiring `GIT_SHA` through `docker build` in CI,
+which had never been passed — images built before this change report `dev`.
+
+**Open, and blocking a green run rather than a decision:** the rollback step is
+conditioned on `if: failure()`, which ADR-0005 did not test on act_runner
+v0.2.12. `.gitea/workflows/spike-if-failure.yml` probes it on a `spike/**`
+branch; if it turns out not to work, deploy, verify and rollback collapse into
+one step's shell script, which needs no expression support at all.

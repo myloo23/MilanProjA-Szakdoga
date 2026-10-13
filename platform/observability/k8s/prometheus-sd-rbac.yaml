@@ -1,0 +1,79 @@
+# A Prometheus fürtbeli jogosultsága — ADR-0010.
+#
+# A Prometheus a Docker-hálózaton fut (platform/compose.yaml), nem a fürtben.
+# Ahhoz, hogy a backend podokat megtalálja, a k3s API-tól kell megkérdeznie,
+# melyik pod él és milyen IP-címen. Ehhez azonosító kell, és ez a fájl adja:
+# egy ServiceAccountot, amely PONTOSAN ennyit tehet — a `default` névtérben
+# podokat lekérdezni és figyelni. Semmi mást.
+#
+# Miért nem a k3s admin-kubeconfigja (/etc/rancher/k3s/k3s.yaml), ami úgyis
+# olvasható a gépen? Mert az cluster-admin: aki a Prometheus konténerébe bejut,
+# az a fürtöt is átvenné. Egy megfigyelő komponensnek olvasási joga kell, és
+# annak is csak arra a névtérre, amelyben a megfigyelt alkalmazás fut.
+#
+# Miért Role és nem ClusterRole? A ClusterRole minden névtérre érvényes lenne,
+# a kube-system podjaira is. A chart a `default` névtérbe telepít (a pipeline
+# `helm upgrade --install` hívása nem ad meg -n kapcsolót), tehát elég ez.
+#
+# Felvétel (a mérőgépen, egyszer; a scripts/observability-k3s-up.sh megcsinálja):
+#   kubectl apply -f ~/platform/observability/k8s/prometheus-sd-rbac.yaml
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus-sd
+  namespace: default
+  labels:
+    app.kubernetes.io/part-of: projecta-observability
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: prometheus-sd
+  namespace: default
+  labels:
+    app.kubernetes.io/part-of: projecta-observability
+rules:
+  # get/list/watch: a Prometheus kubernetes_sd egyszer listáz, utána figyel
+  # (watch), így egy új pod a telepítés után másodpercek alatt célponttá válik,
+  # nem a következő lekérdezési ciklusban. Írási ige (create, delete, patch)
+  # nincs, és a secrets erőforrás sincs a listán.
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: prometheus-sd
+  namespace: default
+  labels:
+    app.kubernetes.io/part-of: projecta-observability
+subjects:
+  - kind: ServiceAccount
+    name: prometheus-sd
+    namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: prometheus-sd
+---
+# Hosszú élettartamú token a ServiceAccounthoz.
+#
+# A Kubernetes 1.24 óta nem hoz létre ilyet magától; a fürtön belüli podok
+# rövid életű, automatikusan cserélt tokent kapnak. A Prometheus viszont a
+# fürtön KÍVÜL fut, oda senki nem cseréli a tokent, ezért kell ez a kifejezetten
+# kért, lejárat nélküli változat. Ez tudatos kompromisszum: ha kiszivárog,
+# visszavonni a Secret törlésével lehet (kubectl delete secret prometheus-sd-token),
+# és a jogköre a fenti Role-ra korlátozódik. A 7. fejezetbe tartozik, hogy
+# éles környezetben a Prometheus a fürtben futna, és ez a Secret eltűnne.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: prometheus-sd-token
+  namespace: default
+  labels:
+    app.kubernetes.io/part-of: projecta-observability
+  annotations:
+    kubernetes.io/service-account.name: prometheus-sd
+type: kubernetes.io/service-account-token

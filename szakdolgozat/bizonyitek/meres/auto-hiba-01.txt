@@ -1,0 +1,21 @@
+Restored session: Wed 23 Sep 2026 09:06:33 CEST
+[1m[7m%[27m[1m[0m                                                                                                                      ]7;file://Takacss-MacBook-Pro.local/Users/takacsmilan/Documents/Szakdolgozat/MilanProjA-Szakdoga[0m[27m[24m[Jtakacsmilan@Takacss-MacBook-Pro MilanProjA-Szakdoga % [K[?2004h[7mexport TZ=UTC[27m[13D[27me[27mx[27mp[27mo[27mr[27mt[27m [27mT[27mZ[27m=[27mU[27mT[27mC[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                      ]7;file://Takacss-MacBook-Pro.local/Users/takacsmilan/Documents/Szakdolgozat/MilanProjA-Szakdoga[0m[27m[24m[Jtakacsmilan@Takacss-MacBook-Pro MilanProjA-Szakdoga % [K[?2004h[7mPROMPT='[%D{%H:%M:%S}] '$PROMPT[27m[31D[27mP[27mR[27mO[27mM[27mP[27mT[27m=[27m'[27m[[27m%[27mD[27m{[27m%[27mH[27m:[27m%[27mM[27m:[27m%[27mS[27m}[27m][27m [27m'[27m$[27mP[27mR[27mO[27mM[27mP[27mT[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                      ]7;file://Takacss-MacBook-Pro.local/Users/takacsmilan/Documents/Szakdolgozat/MilanProjA-Szakdoga[0m[27m[24m[J[07:11:48] takacsmilan@Takacss-MacBook-Pro MilanProjA-Szakdoga % [K[?2004h[7mgit push azure release/meres-hiba[27m[33D[27mg[27mi[27mt[27m [27mp[27mu[27ms[27mh[27m [27ma[27mz[27mu[27mr[27me[27m [27mr[27me[27ml[27me[27ma[27ms[27me[27m/[27mm[27me[27mr[27me[27ms[27m-[27mh[27mi[27mb[27ma[?2004l
+Enumerating objects: 21, done.
+Counting objects:   4% (1/21)Counting objects:   9% (2/21)Counting objects:  14% (3/21)Counting objects:  19% (4/21)Counting objects:  23% (5/21)Counting objects:  28% (6/21)Counting objects:  33% (7/21)Counting objects:  38% (8/21)Counting objects:  42% (9/21)Counting objects:  47% (10/21)Counting objects:  52% (11/21)Counting objects:  57% (12/21)Counting objects:  61% (13/21)Counting objects:  66% (14/21)Counting objects:  71% (15/21)Counting objects:  76% (16/21)Counting objects:  80% (17/21)Counting objects:  85% (18/21)Counting objects:  90% (19/21)Counting objects:  95% (20/21)Counting objects: 100% (21/21)Counting objects: 100% (21/21), done.
+Delta compression using up to 12 threads
+Compressing objects:   7% (1/14)Compressing objects:  14% (2/14)Compressing objects:  21% (3/14)Compressing objects:  28% (4/14)Compressing objects:  35% (5/14)Compressing objects:  42% (6/14)Compressing objects:  50% (7/14)Compressing objects:  57% (8/14)Compressing objects:  64% (9/14)Compressing objects:  71% (10/14)Compressing objects:  78% (11/14)Compressing objects:  85% (12/14)Compressing objects:  92% (13/14)Compressing objects: 100% (14/14)Compressing objects: 100% (14/14), done.
+Writing objects:   7% (1/14)Writing objects:  14% (2/14)Writing objects:  21% (3/14)Writing objects:  28% (4/14)Writing objects:  35% (5/14)Writing objects:  42% (6/14)Writing objects:  50% (7/14)Writing objects:  57% (8/14)Writing objects:  64% (9/14)Writing objects:  71% (10/14)Writing objects:  78% (11/14)Writing objects:  85% (12/14)Writing objects:  92% (13/14)Writing objects: 100% (14/14)Writing objects: 100% (14/14), 14.25 KiB | 14.25 MiB/s, done.
+Total 14 (delta 8), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: 
+remote: Create a new pull request for 'release/meres-hiba':[K
+remote:   http://localhost:3000/milan/MilanProjA-Szakdoga/pulls/new/release/meres-hiba[K
+remote: 
+To http://localhost:3000/milan/MilanProjA-Szakdoga.git
+   544f895..dbe433c  release/meres-hiba -> release/meres-hiba
+[1m[7m%[27m[1m[0m                                                                                                                      ]7;file://Takacss-MacBook-Pro.local/Users/takacsmilan/Documents/Szakdolgozat/MilanProjA-Szakdoga[0m[27m[24m[J[07:11:52] takacsmilan@Takacss-MacBook-Pro MilanProjA-Szakdoga % [K[?2004h[7mexit[27m[27me[27mx[27mi[27mt[?2004l
+
+Saving session...
+...saving history...truncating history files...
+...completed.
