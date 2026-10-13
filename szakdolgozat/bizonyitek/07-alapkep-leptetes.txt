@@ -1,0 +1,90 @@
+generated_utc: 2026-10-13T08:12:12Z
+host: 4A:90:0F:0F:5C:F9
+commit: b18c09e
+trivy_image: aquasec/trivy:0.72.0@sha256:cffe3f5161a47a6823fbd23d985795b3ed72a4c806da4c4df16266c02accdd6f
+hadolint_image: hadolint/hadolint:v2.14.0
+platform: linux/amd64
+
+== Resolving digests
+previous backend base: python:3.12-slim@sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9
+python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
+node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+nginxinc/nginx-unprivileged:stable-alpine@sha256:56b8272e43a0525f67aed68d1e0794a712d10e3e45a563e118e9a77c817e6f86
+
+== OpenSSL in the new backend base
+Unable to find image 'python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1' locally
+docker.io/library/python@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1: Pulling from library/python
+ecc510c1e359: Pulling fs layer
+75b6a36c64a1: Pulling fs layer
+6912e23eb445: Pulling fs layer
+bbc5a1223747: Pulling fs layer
+bbc5a1223747: Waiting
+6912e23eb445: Verifying Checksum
+6912e23eb445: Download complete
+75b6a36c64a1: Verifying Checksum
+75b6a36c64a1: Download complete
+bbc5a1223747: Verifying Checksum
+bbc5a1223747: Download complete
+ecc510c1e359: Verifying Checksum
+ecc510c1e359: Download complete
+ecc510c1e359: Pull complete
+75b6a36c64a1: Pull complete
+6912e23eb445: Pull complete
+bbc5a1223747: Pull complete
+Digest: sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
+Status: Downloaded newer image for python@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
+libssl3t64 3.5.7-1~deb13u3
+openssl 3.5.7-1~deb13u3
+
+== Trivy gate on the runtime bases (the build stage node image does not ship)
+
+Report Summary
+
+┌──────────────────────────────────────────────────────────────────────────────────┬────────────┬─────────────────┬─────────┐
+│                                      Target                                      │    Type    │ Vulnerabilities │ Secrets │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb17- │   debian   │        0        │    -    │
+│ 84edc11b1 (debian 13.7)                                                          │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ usr/local/lib/python3.12/site-packages/pip-25.0.1.dist-info/METADATA             │ python-pkg │        0        │    -    │
+└──────────────────────────────────────────────────────────────────────────────────┴────────────┴─────────────────┴─────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+
+Report Summary
+
+┌──────────────────────────────────────────────────────────────────────────────────┬────────┬─────────────────┬─────────┐
+│                                      Target                                      │  Type  │ Vulnerabilities │ Secrets │
+├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
+│ nginxinc/nginx-unprivileged:stable-alpine@sha256:56b8272e43a0525f67aed68d1e0794- │ alpine │        0        │    -    │
+│ a712d10e3e45a563e118e9a77c817e6f86 (alpine 3.24.2)                               │        │                 │         │
+└──────────────────────────────────────────────────────────────────────────────────┴────────┴─────────────────┴─────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+both bases clean at HIGH/CRITICAL (unfixed ignored)
+
+== Writing the FROM lines
+
+== hadolint (the pipeline's version and threshold)
+Dockerfile: no findings at or above info
+frontend/Dockerfile: no findings at or above info
+
+== Diff
+ Dockerfile          | 4 ++--
+ frontend/Dockerfile | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+-FROM python:3.12-slim@sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9 AS builder
++FROM python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1 AS builder
+-FROM python:3.12-slim@sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9 AS runtime
++FROM python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1 AS runtime
+-FROM node:22-alpine AS build
++FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS build
+-FROM nginxinc/nginx-unprivileged:1.27-alpine
++FROM nginxinc/nginx-unprivileged:stable-alpine@sha256:56b8272e43a0525f67aed68d1e0794a712d10e3e45a563e118e9a77c817e6f86
+
+RESULT: pinned. Commit Dockerfile, frontend/Dockerfile and szakdolgozat/bizonyitek/07-alapkep-leptetes.txt together,
+then push release/meres to azure; the pipeline scans the built images.
