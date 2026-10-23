@@ -21,7 +21,9 @@ Aztán:
 cp terraform.tfvars.example terraform.tfvars
 ```
 
-és töltsd ki a két értéket. Az `allowed_cidr`-be az IP-cím mögé `/32` kell:
+és töltsd ki a két értéket. A régió, a gépméret, a zóna és a névelőtag a
+`variables.tf` alapértéke, mert nem titok — a tfvars-ba csak az kerül, ami
+személyes (előfizetés, saját IP-cím). Az `allowed_cidr`-be az IP-cím mögé `/32` kell:
 `84.0.12.34/32`.
 
 ## Létrehozás
@@ -67,8 +69,8 @@ A hallgatói keret 100 USD, és a gép óradíjas. **A gépen belüli `shutdown`
 állítja le a számlázást** — csak a felszabadítás:
 
 ```bash
-az vm deallocate -g szakdoga-rg -n szakdoga-vm    # este / hétvégén
-az vm start      -g szakdoga-rg -n szakdoga-vm    # amikor dolgozol
+az vm deallocate -g szakdoga2-rg -n szakdoga2-vm    # este / hétvégén
+az vm start      -g szakdoga2-rg -n szakdoga2-vm    # amikor dolgozol
 ```
 
 Felszabadított állapotban a lemez és a publikus IP továbbra is fogy valamennyit,

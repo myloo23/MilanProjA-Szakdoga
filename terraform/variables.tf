@@ -20,36 +20,45 @@ variable "allowed_cidr" {
 
 variable "location" {
   description = <<-EOT
-    Az Azure-régió. Az Azure for Students előfizetésre régiókorlátozó szabály
-    vonatkozik ("Allowed resource deployment regions"), ami a westeurope-ot
-    nem engedi: az apply 403 RequestDisallowedByAzure hibával áll meg. Az
-    engedélyezett listát az
-      az policy assignment list --disable-scope-strict-match
-    adja meg. A legközelebbi engedélyezett régió (austriaeast) kicsi és új:
-    ott a B2ms létrehozása 409 SkuNotAvailable hibával állt meg kapacitáshiány
-    miatt, amit az `az vm list-skus` nem jelez előre. Az alapérték ezért egy
-    nagy, régi régió.
+    Az Azure-régió. Nem ízlés kérdése, hanem lekérdezés eredménye
+    (szakdolgozat/bizonyitek/02-regio-es-meret-valasztas.md):
+      1. Az Azure for Students előfizetésre régiókorlátozó szabály vonatkozik
+         ("Allowed resource deployment regions"); csak belgiumcentral,
+         austriaeast, francecentral, swedencentral és spaincentral engedett.
+         A westeurope 403 RequestDisallowedByAzure hibát adott.
+      2. Az öt régióban a méretek túlnyomó része NotAvailableForSubscription
+         tiltás alatt áll; az austriaeast és a francecentral 409
+         SkuNotAvailable hibát adott B2ms-re és B2s_v2-re is.
+      3. Az `az vm list-skus --all` szerint egyetlen tiltás nélküli kombináció
+         van: swedencentral + Standard_B2s_v2.
+    Az érték nem titok, ezért itt, a verziókezelt alapértékek között a helye:
+    így egy tiszta klónból indított `apply` is a mért gépet hozza létre.
   EOT
   type        = string
-  default     = "austriaeast"
+  default     = "swedencentral"
 }
 
 variable "prefix" {
-  description = "Minden erőforrás neve ezzel kezdődik, hogy a portálon összetartozzanak."
+  description = <<-EOT
+    Minden erőforrás neve ezzel kezdődik, hogy a portálon összetartozzanak.
+    "szakdoga2", mert a régió- és méretpróbák során a "szakdoga-rg" csoportot
+    többször törölni és azonos néven újra létrehozni kellett, és ettől az Azure
+    vezérlősíkja és a state szétcsúszott; a tiszta megoldás az új névtér volt.
+  EOT
   type        = string
-  default     = "szakdoga"
+  default     = "szakdoga2"
 }
 
 variable "vm_size" {
   description = <<-EOT
-    A virtuális gép mérete. A B2ms (2 vCPU, 8 GB) azért kell, mert ezen az egy
-    gépen fut a k3s fürt, a Gitea, a runner, a registry és maguk a buildek is.
-    A B-sorozat CPU-kredites: tartós terhelés alatt fojt. Ha ez a mérési
-    adatokban megjelenik (a hosszú futások szórása nő), a Standard_D2s_v5 a
-    következő lépés — és ezt a dolgozatban meg kell említeni.
+    A virtuális gép mérete: Standard_B2s_v2 (2 vCPU, 8 GB). Ezen az egy gépen
+    fut a k3s fürt, a Gitea, a runner, a registry és maguk a buildek is. Az
+    előfizetésen ez az egyetlen használható méret (lásd a location leírását).
+    A B-sorozat CPU-kredites: tartós terhelés alatt fojthat, ezt a dolgozat a
+    mérés érvényességénél tárgyalja.
   EOT
   type        = string
-  default     = "Standard_B2ms"
+  default     = "Standard_B2s_v2"
 }
 
 variable "admin_username" {
@@ -76,9 +85,10 @@ variable "zone" {
     készletéből való foglaláshoz. Az Azure a kapacitást zónánként tartja
     nyilván: ha a régió általános készlete kifogyott (409 SkuNotAvailable,
     "Capacity Restrictions"), egy konkrét zóna kérése még sikerülhet.
-    A dolgozat szempontjából közömbös, melyik zónában fut a gép — egy
-    csomópont, egy zóna (ADR-0008).
+    A mérőgép az 1-es zónában jött létre; ez az alapérték, hogy a tiszta
+    klónból indított `apply` is ugyanazt a gépet írja le. Egy csomópont, egy
+    zóna (ADR-0008).
   EOT
   type        = string
-  default     = null
+  default     = "1"
 }
