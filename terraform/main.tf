@@ -47,9 +47,16 @@ resource "azurerm_network_security_group" "main" {
     destination_address_prefix = "*"
   }
 
-  # Az alkalmazás és a Gitea webes felülete. Szintén csak a saját címedről:
-  # az alkalmazásban nincs hitelesítés, publikusan bárki írhatna a jegyzetek
+  # Az alkalmazás (Traefik, 80/443). Szintén csak a saját címedről: az
+  # alkalmazásban nincs hitelesítés, publikusan bárki írhatna a jegyzetek
   # táblájába a mérés közben, ami meghamisítaná az eredményt.
+  #
+  # A Gitea 3000-es portja szándékosan NINCS itt. A platform minden portja a
+  # gép 127.0.0.1-es címére kötött (platform/compose.yaml eleje), tehát
+  # kívülről ezen a porton semmi nem fogad kapcsolatot; a Gitea felülete
+  # SSH-alagúton érhető el (docs/RUNBOOK.md). Korábban itt volt, de a platform
+  # átköltöztetése óta nem engedett át semmit — a legkisebb szükséges
+  # jogosultság elve szerint ami nem kell, az ne legyen nyitva.
   security_rule {
     name                       = "http-from-my-ip"
     priority                   = 110
@@ -57,7 +64,7 @@ resource "azurerm_network_security_group" "main" {
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
-    destination_port_ranges    = ["80", "443", "3000"]
+    destination_port_ranges    = ["80", "443"]
     source_address_prefix      = var.allowed_cidr
     destination_address_prefix = "*"
   }
